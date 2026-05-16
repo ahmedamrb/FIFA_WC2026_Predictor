@@ -216,16 +216,16 @@ FIFA_WC2026_Predictor/
 ### Subphase 1.6 — Fixtures Flattening Script
 
 **Tasks**
-- [ ] In `src/data/ingest.py`, write a function `flatten_fixtures()` that: loads `data/raw/wc2026_fixtures.json`, normalises the nested JSON structure into a flat table, and saves it as `data/raw/wc2026_fixtures_flat.csv` with columns: `fixture_id`, `match_date`, `home_team`, `away_team`, `stage`, `status`.
-- [ ] Run the function via `python -c "from src.data.ingest import flatten_fixtures; flatten_fixtures()"`.
-- [ ] Inspect the resulting CSV to confirm structure.
+- [✅] In `src/data/ingest.py`, write a function `flatten_fixtures()` that: loads `data/raw/wc2026_fixtures.json`, normalises the nested JSON structure into a flat table, and saves it as `data/raw/wc2026_fixtures_flat.csv` with columns: `fixture_id`, `match_date`, `home_team`, `away_team`, `stage`, `status`.
+- [✅] Run the function via `python -c "from src.data.ingest import flatten_fixtures; flatten_fixtures()"`.
+- [✅] Inspect the resulting CSV to confirm structure.
 
 **Verification Checklist**
-- [ ] `data/raw/wc2026_fixtures_flat.csv` exists on disk.
-- [ ] The file has the 6 expected column headers.
-- [ ] Row count is at least 104.
-- [ ] No null values in `match_date`, `home_team`, or `away_team`.
-- [ ] All `match_date` values are on or after June 11, 2026.
+- [✅] `data/raw/wc2026_fixtures_flat.csv` exists on disk.
+- [✅] The file has the 6 expected column headers.
+- [✅] Row count is at least 104.
+- [✅] No null values in `match_date`, `home_team`, or `away_team`.
+- [✅] All `match_date` values are on or after June 11, 2026.
 
 ---
 

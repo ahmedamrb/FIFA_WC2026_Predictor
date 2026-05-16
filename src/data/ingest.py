@@ -5,6 +5,7 @@ import os
 import time
 from pathlib import Path
 
+import pandas as pd
 import requests
 from dotenv import load_dotenv
 
@@ -111,3 +112,40 @@ def fetch_openfootball_data(skip_existing: bool = False) -> dict:
             time.sleep(0.5)
 
     return result
+
+
+def flatten_fixtures() -> None:
+    """Normalise wc2026_fixtures.json into a flat 6-column CSV.
+
+    Reads data/raw/wc2026_fixtures.json from the repo root, extracts each
+    match into a row with columns fixture_id, match_date, home_team, away_team,
+    stage, and status, and writes the result to data/raw/wc2026_fixtures_flat.csv.
+    Rows where home_team or away_team is falsy are skipped.
+
+    Raises:
+        FileNotFoundError: If wc2026_fixtures.json does not exist.
+    """
+    src_path = PROJECT_ROOT / "data" / "raw" / "wc2026_fixtures.json"
+    out_path = PROJECT_ROOT / "data" / "raw" / "wc2026_fixtures_flat.csv"
+
+    with src_path.open(encoding="utf-8") as f:
+        raw = json.load(f)
+
+    rows = []
+    for match in raw.get("matches", []):
+        home_team = (match.get("homeTeam") or {}).get("name")
+        away_team = (match.get("awayTeam") or {}).get("name")
+        if not home_team or not away_team:
+            continue
+        rows.append({
+            "fixture_id": match["id"],
+            "match_date": match["utcDate"][:10],
+            "home_team": home_team,
+            "away_team": away_team,
+            "stage": match.get("stage"),
+            "status": match.get("status"),
+        })
+
+    df = pd.DataFrame(rows, columns=["fixture_id", "match_date", "home_team", "away_team", "stage", "status"])
+    df.to_csv(out_path, index=False)
+    print(f"Saved {len(df)} fixtures to {out_path}")
