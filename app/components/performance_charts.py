@@ -1,0 +1,1 @@
+"""Performance charts UI component."""

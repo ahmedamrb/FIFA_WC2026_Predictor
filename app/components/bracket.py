@@ -1,0 +1,1 @@
+"""Tournament bracket UI component."""

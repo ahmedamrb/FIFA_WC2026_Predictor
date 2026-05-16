@@ -1,0 +1,1 @@
+"""Data alignment verification script."""
