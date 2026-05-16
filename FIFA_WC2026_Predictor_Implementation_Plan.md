@@ -193,23 +193,23 @@ FIFA_WC2026_Predictor/
 ### Subphase 1.5 — Open Football Historical WC Data
 
 **Tasks**
-- [ ] Navigate to `github.com/openfootball/world-cup`.
-- [ ] Download or clone data files for WC 1998, 2002, 2006, 2010, 2014, 2018, and 2022.
-- [ ] Place files under `data/raw/openfootball/wc1998/`, `wc2002/`, `wc2006/`, `wc2010/`, `wc2014/`, `wc2018/`, and `wc2022/` respectively.
-- [ ] Inspect the format (plain-text or JSON) and confirm match results and dates are present for all seven tournaments.
-- [ ] Update `data/raw/SOURCES.md` with this source.
+- [✅] Navigate to `github.com/openfootball/world-cup`.
+- [✅] Download or clone data files for WC 1998, 2002, 2006, 2010, 2014, 2018, and 2022.
+- [✅] Place files under `data/raw/openfootball/wc1998/`, `wc2002/`, `wc2006/`, `wc2010/`, `wc2014/`, `wc2018/`, and `wc2022/` respectively.
+- [✅] Inspect the format (plain-text or JSON) and confirm match results and dates are present for all seven tournaments.
+- [✅] Update `data/raw/SOURCES.md` with this source.
 
 **Verification Checklist**
-- [ ] Files exist under all seven `data/raw/openfootball/wc{year}/` folders (1998, 2002, 2006, 2010, 2014, 2018, 2022).
-- [ ] WC 1998 data accounts for all 64 matches.
-- [ ] WC 2002 data accounts for all 64 matches.
-- [ ] WC 2006 data accounts for all 64 matches.
-- [ ] WC 2010 data accounts for all 64 matches.
-- [ ] WC 2014 data accounts for all 64 matches.
-- [ ] WC 2018 data accounts for all 64 matches.
-- [ ] WC 2022 data accounts for all 64 matches.
-- [ ] Match scores (home goals, away goals) are present for all completed matches in all files.
-- [ ] `data/raw/SOURCES.md` updated.
+- [✅] Files exist under all seven `data/raw/openfootball/wc{year}/` folders (1998, 2002, 2006, 2010, 2014, 2018, 2022).
+- [✅] WC 1998 data accounts for all 64 matches.
+- [✅] WC 2002 data accounts for all 64 matches.
+- [✅] WC 2006 data accounts for all 64 matches.
+- [✅] WC 2010 data accounts for all 64 matches.
+- [✅] WC 2014 data accounts for all 64 matches.
+- [✅] WC 2018 data accounts for all 64 matches.
+- [✅] WC 2022 data accounts for all 64 matches.
+- [✅] Match scores (home goals, away goals) are present for all completed matches in all files.
+- [✅] `data/raw/SOURCES.md` updated.
 
 ---
 

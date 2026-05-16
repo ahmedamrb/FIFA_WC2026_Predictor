@@ -2,6 +2,7 @@
 
 import json
 import os
+import time
 from pathlib import Path
 
 import requests
@@ -49,3 +50,64 @@ def fetch_wc2026_fixtures() -> None:
 
     count = data.get("resultSet", {}).get("count", "?")
     print(f"Saved {count} fixtures to {out_path}")
+
+
+def fetch_openfootball_data(skip_existing: bool = False) -> dict:
+    """Download historical World Cup match text files from the openfootball GitHub repo.
+
+    Files are saved under data/raw/openfootball/<wc_key>/.
+
+    Args:
+        skip_existing: If True, skip files that already exist and are non-empty.
+
+    Returns:
+        A dict mapping each wc_key to the list of local file Paths that were
+        written (or already existed when skip_existing=True).
+    """
+    TOURNAMENTS = {
+        "wc1998": ("1998--france",              ["cup.txt", "cup_finals.txt"]),
+        "wc2002": ("2002--south-korea-n-japan", ["cup.txt", "cup_finals.txt"]),
+        "wc2006": ("2006--germany",             ["cup.txt", "cup_finals.txt"]),
+        "wc2010": ("2010--south-africa",        ["cup.txt", "cup_finals.txt"]),
+        "wc2014": ("2014--brazil",              ["cup.txt", "cup_finals.txt"]),
+        "wc2018": ("2018--russia",              ["cup.txt", "cup_finals.txt"]),
+        "wc2022": ("2022--qatar",               ["cup.txt", "cup_finals.txt"]),
+    }
+    BASE_URL = "https://raw.githubusercontent.com/openfootball/worldcup/master"
+
+    _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+    result: dict[str, list[Path]] = {}
+
+    for wc_key, (upstream_dir, filenames) in TOURNAMENTS.items():
+        out_dir = _PROJECT_ROOT / "data" / "raw" / "openfootball" / wc_key
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result[wc_key] = []
+
+        for filename in filenames:
+            out_path = out_dir / filename
+
+            if skip_existing and out_path.exists() and out_path.stat().st_size > 0:
+                print(f"[skip] {wc_key}/{filename} already exists")
+                result[wc_key].append(out_path)
+                continue
+
+            url = f"{BASE_URL}/{upstream_dir}/{filename}"
+            print(f"[fetch] {url}")
+
+            try:
+                response = requests.get(url, timeout=30)
+            except requests.RequestException as exc:
+                print(f"[warn]  Could not fetch {url}: {exc}")
+                continue
+
+            if response.status_code != 200:
+                print(f"[warn]  HTTP {response.status_code} for {url} — skipping")
+                continue
+
+            out_path.write_text(response.text, encoding="utf-8")
+            print(f"[done]  Saved {out_path}")
+            result[wc_key].append(out_path)
+
+            time.sleep(0.5)
+
+    return result

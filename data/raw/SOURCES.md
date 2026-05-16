@@ -43,3 +43,18 @@
 - **Source:** Manual collection from free odds aggregator (e.g., OddsPortal)
 - **Local file:** `data/bookmaker_odds.csv`
 - **Collection method:** Manual, collected before each match day
+
+---
+
+## openfootball World Cup Historical Data
+
+- **Source:** openfootball/worldcup (GitHub)
+- **GitHub URL:** https://github.com/openfootball/worldcup
+- **License:** CC0-1.0 (public domain)
+- **Local directories:** `data/raw/openfootball/wc{year}/` for year in 1998, 2002, 2006, 2010, 2014, 2018, 2022
+- **Files per tournament:** `cup.txt` (group stage, 48 matches), `cup_finals.txt` (knockout stage, 16 matches)
+- **Total matches per tournament:** 64
+- **Format:** Football.TXT plain text; match lines contain ` @ ` separator for venue
+- **Key fields per match line:** date, home team name, away team name, score, venue
+- **Retrieval method:** `python scripts/fetch_openfootball_data.py`
+- **Fetch date:** 2026-05-17
