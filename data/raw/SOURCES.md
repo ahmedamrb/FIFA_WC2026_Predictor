@@ -15,14 +15,14 @@
 
 ## FIFA World Rankings
 
-*(To be populated in Subphase 1.3)*
-
-- **Dataset name:**
-- **Kaggle dataset ID:**
-- **Kaggle URL:**
+- **Dataset name:** FIFA World Ranking 1992-2024
+- **Kaggle dataset ID:** `cashncarry/fifaworldranking`
+- **Kaggle URL:** https://www.kaggle.com/datasets/cashncarry/fifaworldranking
 - **Local file:** `data/raw/rankings.csv`
-- **Download date:**
-- **Row count:**
+- **Download date:** 2026-05-17
+- **Row count:** 70,194
+- **Date range:** 1992-12-31 to 2026-04-01
+- **Columns (9):** index, `rank`, `country_full`, `country_abrv`, `total_points`, `previous_points`, `rank_change`, `confederation`, `rank_date`
 
 ---
 

@@ -148,20 +148,20 @@ FIFA_WC2026_Predictor/
 ### Subphase 1.3 — Kaggle Data Download (FIFA Rankings)
 
 **Tasks**
-- [ ] Navigate to the dataset `cashncarry/fifaworldranking` on Kaggle.
-- [ ] Download the rankings CSV and place it in `data/raw/rankings.csv`.
-- [ ] Inspect the file: confirm a ranking date column, a country/team name column, a rank column, and a points column are all present.
-- [ ] Confirm the data covers at least the years 2000–2022.
-- [ ] Confirm that major nations (Brazil, France, Argentina, England, Germany) are present.
-- [ ] Update `data/raw/SOURCES.md` with this dataset's name, URL, download date, and row count.
+- [✅] Navigate to the dataset `cashncarry/fifaworldranking` on Kaggle.
+- [✅] Download the rankings CSV and place it in `data/raw/rankings.csv`.
+- [✅] Inspect the file: confirm a ranking date column, a country/team name column, a rank column, and a points column are all present.
+- [✅] Confirm the data covers at least the years 2000–2022.
+- [✅] Confirm that major nations (Brazil, France, Argentina, England, Germany) are present.
+- [✅] Update `data/raw/SOURCES.md` with this dataset's name, URL, download date, and row count.
 
 **Verification Checklist**
-- [ ] `data/raw/rankings.csv` exists on disk.
-- [ ] Columns for rank date, team name, rank position, and ranking points are present.
-- [ ] Row count exceeds 10,000.
-- [ ] Data covers dates through at least December 2022.
-- [ ] All 5 major nations named above are present in the team name column.
-- [ ] `data/raw/SOURCES.md` updated.
+- [✅] `data/raw/rankings.csv` exists on disk.
+- [✅] Columns for rank date, team name, rank position, and ranking points are present.
+- [✅] Row count exceeds 10,000.
+- [✅] Data covers dates through at least December 2022.
+- [✅] All 5 major nations named above are present in the team name column.
+- [✅] `data/raw/SOURCES.md` updated.
 
 ---
 
