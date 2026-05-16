@@ -88,7 +88,7 @@ recency_weight = 0.85 ** years_since_match  # decays older matches
 ### Train / Val / Test Split
 ```python
 # Temporal split — NO data leakage
-train = matches from 2010 up to (excl.) WC 2018 and WC 2022 windows
+train = matches from 1998 up to (excl.) WC 2018 and WC 2022 windows
 val   = WC 2022 matches (64 rows)   ← validation during development
 test  = WC 2018 matches (64 rows)   ← held-out backtest
 ```

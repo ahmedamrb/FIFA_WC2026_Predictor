@@ -25,6 +25,11 @@ FIFA_WC2026_Predictor/
 ├── data/
 │   ├── raw/
 │   │   ├── openfootball/
+│   │   │   ├── wc1998/
+│   │   │   ├── wc2002/
+│   │   │   ├── wc2006/
+│   │   │   ├── wc2010/
+│   │   │   ├── wc2014/
 │   │   │   ├── wc2018/
 │   │   │   └── wc2022/
 │   │   ├── results.csv
@@ -189,16 +194,21 @@ FIFA_WC2026_Predictor/
 
 **Tasks**
 - [ ] Navigate to `github.com/openfootball/world-cup`.
-- [ ] Download or clone data files for WC 2018 and WC 2022.
-- [ ] Place files under `data/raw/openfootball/wc2018/` and `data/raw/openfootball/wc2022/`.
-- [ ] Inspect the format (plain-text or JSON) and confirm match results and dates are present for both tournaments.
+- [ ] Download or clone data files for WC 1998, 2002, 2006, 2010, 2014, 2018, and 2022.
+- [ ] Place files under `data/raw/openfootball/wc1998/`, `wc2002/`, `wc2006/`, `wc2010/`, `wc2014/`, `wc2018/`, and `wc2022/` respectively.
+- [ ] Inspect the format (plain-text or JSON) and confirm match results and dates are present for all seven tournaments.
 - [ ] Update `data/raw/SOURCES.md` with this source.
 
 **Verification Checklist**
-- [ ] Files exist under both `data/raw/openfootball/wc2018/` and `data/raw/openfootball/wc2022/`.
+- [ ] Files exist under all seven `data/raw/openfootball/wc{year}/` folders (1998, 2002, 2006, 2010, 2014, 2018, 2022).
+- [ ] WC 1998 data accounts for all 64 matches.
+- [ ] WC 2002 data accounts for all 64 matches.
+- [ ] WC 2006 data accounts for all 64 matches.
+- [ ] WC 2010 data accounts for all 64 matches.
+- [ ] WC 2014 data accounts for all 64 matches.
 - [ ] WC 2018 data accounts for all 64 matches.
 - [ ] WC 2022 data accounts for all 64 matches.
-- [ ] Match scores (home goals, away goals) are present for all completed matches in both files.
+- [ ] Match scores (home goals, away goals) are present for all completed matches in all files.
 - [ ] `data/raw/SOURCES.md` updated.
 
 ---
@@ -239,7 +249,7 @@ FIFA_WC2026_Predictor/
 
 All of the following must be true before starting Phase 2:
 
-- [ ] All raw data files/folders exist: `results.csv`, `rankings.csv`, `wc2026_fixtures.json`, `wc2026_fixtures_flat.csv`, `openfootball/wc2018/`, `openfootball/wc2022/`.
+- [ ] All raw data files/folders exist: `results.csv`, `rankings.csv`, `wc2026_fixtures.json`, `wc2026_fixtures_flat.csv`, and `openfootball/wc{year}/` for 1998, 2002, 2006, 2010, 2014, 2018, 2022.
 - [ ] `data/raw/SOURCES.md` documents all sources with URL, download date, and row/record count.
 - [ ] `.env` is confirmed absent from git history.
 - [ ] `data/bookmaker_odds.csv` has correct headers and at least 2 sample rows.
@@ -377,13 +387,13 @@ All of the following must be true before starting Phase 2:
 
 **Tasks**
 - [ ] Add a section `eda_correlations()` to `scripts/run_eda.py` that:
-  - Filters `results.csv` to WC matches from 2010–2022.
+  - Filters `results.csv` to WC matches from 1998–2022.
   - Looks up the FIFA ranking for each team at the time of the match (use the most recent ranking on or before the match date from `rankings.csv`).
   - Computes a binary outcome column: 1 = home win, 0 = draw or away win.
   - Computes and prints the Pearson correlation between ranking difference and binary outcome.
   - Prints a win-rate table grouped by ranking difference buckets: > 50, 10–50, < 10.
   - Saves a box plot of ranking difference grouped by outcome (home win / draw / away win) to `outputs/plots/ranking_diff_by_outcome.png`.
-  - Saves a histogram of home goals and away goals for WC 2010–2022 to `outputs/plots/wc_goals_distribution.png`.
+  - Saves a histogram of home goals and away goals for WC 1998–2022 to `outputs/plots/wc_goals_distribution.png`.
 
 **Verification Checklist**
 - [ ] Section runs without errors.
@@ -544,7 +554,7 @@ All of the following must be true before starting Phase 3:
   - Assembles all engineered columns into a final feature matrix.
   - Retains `home_score`, `away_score`, and `outcome` as target columns in the training set.
   - Populates the top-level `FEATURE_COLUMNS` constant with the final ordered list of feature column names.
-  - Filters to matches from 2010 onwards for the training set.
+  - Filters to matches from 1998 onwards for the training set.
   - Returns the feature matrix.
 - [ ] Implement `export_features()` that:
   - Calls `build_feature_matrix()` to create the training feature matrix.
@@ -609,7 +619,7 @@ All of the following must be true before starting Phase 4:
 - [ ] Open `src/models/outcome_model.py`.
 - [ ] Implement `load_splits()` that:
   - Loads `data/processed/features_train.parquet`.
-  - Defines splits: test = WC 2018 rows, validation = WC 2022 rows, train = all remaining rows from 2010.
+  - Defines splits: test = WC 2018 rows, validation = WC 2022 rows, train = all remaining rows from 1998.
   - Prints the row count and outcome class distribution for each split.
   - Returns `X_train, y_train, X_val, y_val, X_test, y_test` using `FEATURE_COLUMNS` from `preprocess.py`.
 - [ ] Add a `if __name__ == "__main__":` block that calls `load_splits()` and prints all 6 shapes.

@@ -20,7 +20,7 @@ A Python-based machine learning system that predicts match outcomes for the FIFA
 - Predict expected scorelines (e.g., 2–1) using a goals model.
 - Calculate a betting edge signal by comparing model probabilities against bookmaker implied odds.
 - Provide a clean Streamlit dashboard to browse predictions match-by-match.
-- Achieve strong backtesting performance against historical World Cup data (2010–2022).
+- Achieve strong backtesting performance against historical World Cup data (1998–2022).
 
 ### 1.3 Non-Goals
 
@@ -127,7 +127,7 @@ Two separate modeling tracks run in parallel:
 
 ### 5.2 Training Strategy
 
-- **Training set:** All international matches 2010–2022 (weighted by recency and match importance)
+- **Training set:** All international matches 1998–2022 (weighted by recency and match importance)
 - **Validation set:** 2022 WC matches (group stage + knockout)
 - **Test set (backtest):** 2018 WC matches
 
