@@ -130,18 +130,18 @@ FIFA_WC2026_Predictor/
 - [✅] Create a Kaggle account if not already existing (free).
 - [✅] Navigate to the dataset `martj42/international-football-results-from-1872-to-2026` on Kaggle.
 - [✅] Download `results.csv` manually and place it in `data/raw/results.csv`.
-- [ ] Inspect the file: confirm column headers are `date`, `home_team`, `away_team`, `home_score`, `away_score`, `tournament`, `city`, `country`, `neutral`.
-- [ ] Note the total row count and the latest match date in the file.
-- [ ] Create `data/raw/SOURCES.md` and record: dataset name, Kaggle URL, download date, row count.
+- [✅] Inspect the file: confirm column headers are `date`, `home_team`, `away_team`, `home_score`, `away_score`, `tournament`, `city`, `country`, `neutral`.
+- [✅] Note the total row count and the latest match date in the file.
+- [✅] Create `data/raw/SOURCES.md` and record: dataset name, Kaggle URL, download date, row count.
 
 **Verification Checklist**
-- [ ] `data/raw/results.csv` exists on disk.
-- [ ] The file has exactly 9 column headers as listed above.
-- [ ] Row count exceeds 47,000.
-- [ ] At least one row with `tournament == "FIFA World Cup"` exists.
-- [ ] At least one row with a date in November–December 2022 exists (WC Qatar).
-- [ ] No column is entirely empty.
-- [ ] `data/raw/SOURCES.md` has been created with all required fields.
+- [✅] `data/raw/results.csv` exists on disk.
+- [✅] The file has exactly 9 column headers as listed above.
+- [✅] Row count exceeds 47,000.
+- [✅] At least one row with `tournament == "FIFA World Cup"` exists.
+- [✅] At least one row with a date in November–December 2022 exists (WC Qatar).
+- [✅] No column is entirely empty.
+- [✅] `data/raw/SOURCES.md` has been created with all required fields.
 
 ---
 
