@@ -28,13 +28,11 @@
 
 ## WC 2026 Fixtures (football-data.org API)
 
-*(To be populated in Subphase 1.4)*
-
 - **API name:** football-data.org
-- **Endpoint:**
+- **Endpoint:** https://api.football-data.org/v4/competitions/WC/matches?season=2026
 - **Local file:** `data/raw/wc2026_fixtures.json`
-- **Fetch date:**
-- **Record count:**
+- **Fetch date:** 2026-05-17
+- **Record count:** 104
 
 ---
 

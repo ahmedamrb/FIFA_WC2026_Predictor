@@ -168,20 +168,20 @@ FIFA_WC2026_Predictor/
 ### Subphase 1.4 — football-data.org API Setup & Fixture Fetch
 
 **Tasks**
-- [ ] Register for a free account at `football-data.org` and retrieve your API key.
-- [ ] Add the API key to the `.env` file under `FD_API_KEY`.
-- [ ] In `src/data/ingest.py`, write a function `fetch_wc2026_fixtures()` that: reads the API key from `.env` using `python-dotenv`, calls the football-data.org fixtures endpoint for WC 2026, and saves the raw JSON response to `data/raw/wc2026_fixtures.json`.
-- [ ] Run `python -c "from src.data.ingest import fetch_wc2026_fixtures; fetch_wc2026_fixtures()"` to execute the fetch.
-- [ ] Inspect the saved JSON to identify the fields available per fixture (match ID, date, home team, away team, stage, status).
-- [ ] Update `data/raw/SOURCES.md` with the API name, endpoint, and fetch date.
+- [✅] Register for a free account at `football-data.org` and retrieve your API key.
+- [✅] Add the API key to the `.env` file under `FD_API_KEY`.
+- [✅] In `src/data/ingest.py`, write a function `fetch_wc2026_fixtures()` that: reads the API key from `.env` using `python-dotenv`, calls the football-data.org fixtures endpoint for WC 2026, and saves the raw JSON response to `data/raw/wc2026_fixtures.json`.
+- [✅] Run `python -c "from src.data.ingest import fetch_wc2026_fixtures; fetch_wc2026_fixtures()"` to execute the fetch.
+- [✅] Inspect the saved JSON to identify the fields available per fixture (match ID, date, home team, away team, stage, status).
+- [✅] Update `data/raw/SOURCES.md` with the API name, endpoint, and fetch date.
 
 **Verification Checklist**
-- [ ] `.env` does not appear in `git status`.
-- [ ] `data/raw/wc2026_fixtures.json` exists and is valid JSON.
-- [ ] The JSON contains at least 104 fixture records.
-- [ ] Each fixture record has a non-null match date, home team name, away team name, and stage/round.
-- [ ] At least one fixture has a status of "SCHEDULED" or equivalent.
-- [ ] `data/raw/SOURCES.md` is updated.
+- [✅] `.env` does not appear in `git status`.
+- [✅] `data/raw/wc2026_fixtures.json` exists and is valid JSON.
+- [✅] The JSON contains at least 104 fixture records.
+- [✅] Each fixture record has a non-null match date, home team name, away team name, and stage/round.
+- [✅] At least one fixture has a status of "SCHEDULED" or equivalent.
+- [✅] `data/raw/SOURCES.md` is updated.
 
 ---
 
