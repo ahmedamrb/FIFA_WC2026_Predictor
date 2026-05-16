@@ -232,16 +232,16 @@ FIFA_WC2026_Predictor/
 ### Subphase 1.7 — Bookmaker Odds Placeholder Setup
 
 **Tasks**
-- [ ] Create `data/bookmaker_odds.csv` with column headers: `match_date`, `home_team`, `away_team`, `home_win_odds`, `draw_odds`, `away_win_odds`, `source`, `fetched_at`.
-- [ ] Manually add 2–3 rows of sample odds for confirmed WC 2026 fixtures from any free odds aggregator (e.g., OddsPortal).
-- [ ] Document in `data/raw/SOURCES.md` that odds are collected manually from a free aggregator before each match day.
-- [ ] Commit `data/bookmaker_odds.csv`.
+- [✅] Create `data/bookmaker_odds.csv` with column headers: `match_date`, `home_team`, `away_team`, `home_win_odds`, `draw_odds`, `away_win_odds`, `source`, `fetched_at`.
+- [✅] Manually add 2–3 rows of sample odds for confirmed WC 2026 fixtures from any free odds aggregator (e.g., OddsPortal).
+- [✅] Document in `data/raw/SOURCES.md` that odds are collected manually from a free aggregator before each match day.
+- [✅] Commit `data/bookmaker_odds.csv`.
 
 **Verification Checklist**
-- [ ] `data/bookmaker_odds.csv` exists with the 8 correct column headers.
-- [ ] At least 2 data rows are present with no empty cells.
-- [ ] All odds values are numeric and greater than 1.0.
-- [ ] File is committed and visible in the repository.
+- [✅] `data/bookmaker_odds.csv` exists with the 8 correct column headers.
+- [✅] At least 2 data rows are present with no empty cells.
+- [✅] All odds values are numeric and greater than 1.0.
+- [✅] File is committed and visible in the repository.
 
 ---
 
@@ -249,13 +249,13 @@ FIFA_WC2026_Predictor/
 
 All of the following must be true before starting Phase 2:
 
-- [ ] All raw data files/folders exist: `results.csv`, `rankings.csv`, `wc2026_fixtures.json`, `wc2026_fixtures_flat.csv`, and `openfootball/wc{year}/` for 1998, 2002, 2006, 2010, 2014, 2018, 2022.
-- [ ] `data/raw/SOURCES.md` documents all sources with URL, download date, and row/record count.
-- [ ] `.env` is confirmed absent from git history.
-- [ ] `data/bookmaker_odds.csv` has correct headers and at least 2 sample rows.
-- [ ] `src/data/ingest.py` has `fetch_wc2026_fixtures()` and `flatten_fixtures()` implemented and tested.
-- [ ] All dependencies install cleanly from `requirements.txt` in a fresh virtual environment.
-- [ ] Repository has a clean commit with all of the above in place.
+- [✅] All raw data files/folders exist: `results.csv`, `rankings.csv`, `wc2026_fixtures.json`, `wc2026_fixtures_flat.csv`, and `openfootball/wc{year}/` for 1998, 2002, 2006, 2010, 2014, 2018, 2022.
+- [✅] `data/raw/SOURCES.md` documents all sources with URL, download date, and row/record count.
+- [✅] `.env` is confirmed absent from git history.
+- [✅] `data/bookmaker_odds.csv` has correct headers and at least 2 sample rows.
+- [✅] `src/data/ingest.py` has `fetch_wc2026_fixtures()` and `flatten_fixtures()` implemented and tested.
+- [✅] All dependencies install cleanly from `requirements.txt` in a fresh virtual environment.
+- [✅] Repository has a clean commit with all of the above in place.
 
 ---
 

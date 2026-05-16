@@ -38,11 +38,11 @@
 
 ## Bookmaker Odds
 
-*(To be populated in Subphase 1.7)*
-
-- **Source:** Manual collection from free odds aggregator (e.g., OddsPortal)
-- **Local file:** `data/bookmaker_odds.csv`
-- **Collection method:** Manual, collected before each match day
+- **Source:** Manual collection from free aggregator — OddsPortal (https://www.oddsportal.com)
+- **File:** `data/bookmaker_odds.csv`
+- **Collection method:** Collected manually before each match day from OddsPortal
+- **Columns (8):** `match_date`, `home_team`, `away_team`, `home_win_odds`, `draw_odds`, `away_win_odds`, `source`, `fetched_at`
+- **Notes:** Sample data rows added 2026-05-17 for initial fixtures. Odds should be updated before each gameweek.
 
 ---
 
