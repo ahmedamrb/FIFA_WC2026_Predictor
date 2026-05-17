@@ -25,6 +25,25 @@ FEATURE_COLUMNS: list[str] = [
     "away_rank_points",
     "rank_diff",
     "rank_points_ratio",
+    # --- Form 5-match window (Subphase 3.4) ---
+    "home_form_wins_5",
+    "home_form_goals_scored_5",
+    "home_form_goals_conceded_5",
+    "home_form_wdl_points_5",
+    "away_form_wins_5",
+    "away_form_goals_scored_5",
+    "away_form_goals_conceded_5",
+    "away_form_wdl_points_5",
+    # --- Form 10-match window (Subphase 3.4) ---
+    "home_form_wins_10",
+    "home_form_goals_scored_10",
+    "home_form_goals_conceded_10",
+    "home_form_wdl_points_10",
+    "away_form_wins_10",
+    "away_form_goals_scored_10",
+    "away_form_goals_conceded_10",
+    "away_form_wdl_points_10",
+    "form_diff_wdl_5",
 ]
 
 _RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
@@ -248,6 +267,124 @@ def merge_rankings(
     return df
 
 
+def compute_form_features(matches_df: pd.DataFrame) -> pd.DataFrame:
+    """Compute rolling form features (5- and 10-match windows) for both teams.
+
+    Iterates through matches in chronological order.  For each match the
+    form statistics are computed from the team's accumulated history
+    **before** that match, so there is no data leakage.
+
+    Features computed for each *side* (``home`` / ``away``) and each
+    *window* (``5`` / ``10``):
+
+    * ``{side}_form_wins_{w}`` — number of wins in the last *w* matches.
+    * ``{side}_form_goals_scored_{w}`` — average goals scored per match.
+    * ``{side}_form_goals_conceded_{w}`` — average goals conceded per match.
+    * ``{side}_form_wdl_points_{w}`` — total WDL points (W=3, D=1, L=0).
+
+    Also adds ``form_diff_wdl_5 = home_form_wdl_points_5 - away_form_wdl_points_5``.
+
+    Rows with zero prior history for a team receive ``NaN`` for that team's
+    form columns; these are filled with the global column median after
+    iterating all rows.
+
+    Args:
+        matches_df: Match DataFrame with ``date``, ``home_team``,
+            ``away_team``, ``home_score``, and ``away_score`` columns.
+
+    Returns:
+        A copy of ``matches_df`` sorted by date with 17 new form columns
+        appended.  All columns are null-free after median fill.
+    """
+    from collections import defaultdict
+
+    df = matches_df.copy().sort_values("date").reset_index(drop=True)
+
+    WINDOWS = (5, 10)
+
+    # team -> list of (goals_scored, goals_conceded, wdl_points) in match order
+    team_history: dict[str, list[tuple[int, int, int]]] = defaultdict(list)
+
+    # Pre-allocate output lists for efficiency
+    feature_data: dict[str, list] = {}
+    for side in ("home", "away"):
+        for w in WINDOWS:
+            for stat in ("wins", "goals_scored", "goals_conceded", "wdl_points"):
+                feature_data[f"{side}_form_{stat}_{w}"] = []
+
+    def _stats_from_history(
+        history: list[tuple[int, int, int]], window: int
+    ) -> tuple:
+        """Return (wins, avg_scored, avg_conceded, wdl_points) or all-None."""
+        last_n = history[-window:]
+        if not last_n:
+            return None, None, None, None
+        wins = sum(1 for entry in last_n if entry[2] == 3)
+        avg_scored = sum(entry[0] for entry in last_n) / len(last_n)
+        avg_conceded = sum(entry[1] for entry in last_n) / len(last_n)
+        wdl_pts = sum(entry[2] for entry in last_n)
+        return wins, avg_scored, avg_conceded, wdl_pts
+
+    for row in df.itertuples(index=False):
+        home_team: str = row.home_team
+        away_team: str = row.away_team
+
+        for side, team in (("home", home_team), ("away", away_team)):
+            hist = team_history[team]
+            for w in WINDOWS:
+                wins, avg_scored, avg_conceded, wdl_pts = _stats_from_history(hist, w)
+                feature_data[f"{side}_form_wins_{w}"].append(wins)
+                feature_data[f"{side}_form_goals_scored_{w}"].append(avg_scored)
+                feature_data[f"{side}_form_goals_conceded_{w}"].append(avg_conceded)
+                feature_data[f"{side}_form_wdl_points_{w}"].append(wdl_pts)
+
+        # Update team histories AFTER recording features (no leakage)
+        h_score = row.home_score
+        a_score = row.away_score
+        if pd.notna(h_score) and pd.notna(a_score):
+            h, a = int(h_score), int(a_score)
+            if h > a:
+                hw, aw = 3, 0
+            elif h == a:
+                hw, aw = 1, 1
+            else:
+                hw, aw = 0, 3
+            team_history[home_team].append((h, a, hw))
+            team_history[away_team].append((a, h, aw))
+
+    # Assign computed columns
+    for col, values in feature_data.items():
+        df[col] = values
+
+    # Derived diff (computed before fill so NaN propagates correctly,
+    # then filled below together with the component columns)
+    df["form_diff_wdl_5"] = (
+        df["home_form_wdl_points_5"] - df["away_form_wdl_points_5"]
+    )
+
+    all_form_cols = list(feature_data.keys()) + ["form_diff_wdl_5"]
+
+    # Report null statistics before fill
+    null_rows = df[all_form_cols].isna().any(axis=1).sum()
+    print(f"\nForm features: {null_rows} rows had ≥1 null before median fill")
+    null_by_col = {col: int(df[col].isna().sum()) for col in all_form_cols if df[col].isna().any()}
+    if null_by_col:
+        print("  Columns with nulls before fill:")
+        for col, cnt in null_by_col.items():
+            print(f"    {col}: {cnt}")
+
+    # Fill nulls with global column median
+    for col in all_form_cols:
+        if df[col].isna().any():
+            df[col] = df[col].fillna(df[col].median())
+
+    print("Null counts after fill (all should be 0):")
+    for col in all_form_cols:
+        print(f"  {col}: {int(df[col].isna().sum())}")
+
+    return df
+
+
 # ---------------------------------------------------------------------------
 # Script entry point — quick smoke test
 # ---------------------------------------------------------------------------
@@ -338,4 +475,103 @@ if __name__ == "__main__":
         print(f"  rank_points_ratio:  {row['rank_points_ratio']:.4f}")
     else:
         print("  Match not found — check team names.")
+
+    # ------------------------------------------------------------------
+    # Subphase 3.4 verification
+    # ------------------------------------------------------------------
+    print()
+    print("=" * 60)
+    print("compute_form_features() — Subphase 3.4 verification")
+    print("=" * 60)
+
+    formed = compute_form_features(ranked)
+
+    FORM_COLS_5 = [
+        "home_form_wins_5", "home_form_goals_scored_5",
+        "home_form_goals_conceded_5", "home_form_wdl_points_5",
+        "away_form_wins_5", "away_form_goals_scored_5",
+        "away_form_goals_conceded_5", "away_form_wdl_points_5",
+    ]
+    FORM_COLS_10 = [c.replace("_5", "_10") for c in FORM_COLS_5]
+    ALL_FORM_COLS = FORM_COLS_5 + FORM_COLS_10 + ["form_diff_wdl_5"]
+
+    missing = [c for c in ALL_FORM_COLS if c not in formed.columns]
+    print(f"\nAll 17 form columns present: {not missing}")
+    if missing:
+        print(f"  Missing: {missing}")
+
+    print("\nNull counts (all must be 0):")
+    all_null_ok = True
+    for col in ALL_FORM_COLS:
+        n = int(formed[col].isna().sum())
+        flag = "OK" if n == 0 else "FAIL"
+        if n != 0:
+            all_null_ok = False
+        print(f"  {flag}  {col}: {n}")
+    print(f"All nulls zero: {all_null_ok}")
+
+    wins5_min = formed["home_form_wins_5"].min()
+    wins5_max = formed["home_form_wins_5"].max()
+    wins10_min = formed["home_form_wins_10"].min()
+    wins10_max = formed["home_form_wins_10"].max()
+    print(f"\nhome_form_wins_5  range: [{wins5_min:.0f}, {wins5_max:.0f}]   expected [0, 5]")
+    print(f"home_form_wins_10 range: [{wins10_min:.0f}, {wins10_max:.0f}]  expected [0, 10]")
+    print(f"  wins_5  OK: {0 <= wins5_min and wins5_max <= 5}")
+    print(f"  wins_10 OK: {0 <= wins10_min and wins10_max <= 10}")
+
+    goals_cols = [c for c in ALL_FORM_COLS if "goals" in c]
+    goals_ok = all(
+        formed[c].min() >= 0 and formed[c].max() <= 15 for c in goals_cols
+    )
+    print(f"\nGoals cols all in [0, 15]: {goals_ok}")
+    for c in goals_cols:
+        print(f"  {c}: min={formed[c].min():.3f}  max={formed[c].max():.3f}")
+
+    # Spot check: manually compute Brazil's form before 2022-12-09 QF vs Croatia
+    cutoff = pd.Timestamp("2022-12-09")
+    brazil_hist = ranked[
+        ((ranked["home_team"] == "Brazil") | (ranked["away_team"] == "Brazil"))
+        & (ranked["date"] < cutoff)
+    ].sort_values("date").tail(5)
+    print(f"\nSpot check — Brazil's last 5 matches before {cutoff.date()}:")
+    print(brazil_hist[["date", "home_team", "away_team", "home_score", "away_score"]].to_string(index=False))
+
+    # Manual computation from the printed rows above
+    manual_wins = 0
+    manual_scored = 0.0
+    manual_wdl = 0
+    for _, brow in brazil_hist.iterrows():
+        if brow["home_team"] == "Brazil":
+            gs, gc = int(brow["home_score"]), int(brow["away_score"])
+        else:
+            gs, gc = int(brow["away_score"]), int(brow["home_score"])
+        if gs > gc:
+            pts, win = 3, 1
+        elif gs == gc:
+            pts, win = 1, 0
+        else:
+            pts, win = 0, 0
+        manual_wins += win
+        manual_scored += gs
+        manual_wdl += pts
+    n_rows = len(brazil_hist)
+    manual_avg_scored = manual_scored / n_rows if n_rows else float("nan")
+
+    # Look up the computed value for Brazil in the 2022-12-09 match
+    br_match = formed[
+        ((formed["home_team"] == "Brazil") | (formed["away_team"] == "Brazil"))
+        & (formed["date"] == cutoff)
+    ]
+    if not br_match.empty:
+        bm = br_match.iloc[0]
+        is_home = bm["home_team"] == "Brazil"
+        side_pfx = "home" if is_home else "away"
+        comp_wins = bm[f"{side_pfx}_form_wins_5"]
+        comp_scored = bm[f"{side_pfx}_form_goals_scored_5"]
+        comp_wdl = bm[f"{side_pfx}_form_wdl_points_5"]
+        print(f"\nManual  wins={manual_wins}  avg_scored={manual_avg_scored:.4f}  wdl={manual_wdl}")
+        print(f"Computed wins={comp_wins:.0f}  avg_scored={comp_scored:.4f}  wdl={comp_wdl:.0f}")
+        print(f"Spot check PASS: {manual_wins == comp_wins and abs(manual_avg_scored - comp_scored) < 1e-6 and manual_wdl == comp_wdl}")
+    else:
+        print("  Brazil's 2022-12-09 match not found — check dataset.")
 
