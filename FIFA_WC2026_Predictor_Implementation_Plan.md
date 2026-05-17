@@ -428,16 +428,18 @@ All of the following must be true before starting Phase 3:
 ### Subphase 3.1 — Preprocessing Module Scaffold
 
 **Tasks**
-- [ ] Open `src/data/preprocess.py`.
-- [ ] Define a top-level constant `TRAIN_START_YEAR = 1990` and `FEATURE_COLUMNS = []` (to be populated as features are added).
-- [ ] Define a `load_raw_data()` function that: loads `results.csv`, `rankings.csv`, `wc2026_fixtures_flat.csv`, and `team_name_map.csv`; applies name normalisation from the mapping file to all three datasets; parses all date columns to datetime; and returns the four DataFrames.
-- [ ] Add a `if __name__ == "__main__":` block that calls `load_raw_data()` and prints the shape of each returned DataFrame.
-- [ ] Run `python src/data/preprocess.py` to verify the module loads and runs.
+- [✅] Open `src/data/preprocess.py`.
+- [✅] Define a top-level constant `TRAIN_START_YEAR = 1990` and `FEATURE_COLUMNS = []` (to be populated as features are added).
+- [✅] Define a `load_raw_data()` function that: loads `results.csv`, `rankings.csv`, `wc2026_fixtures_flat.csv`, and `team_name_map.csv`; applies name normalisation from the mapping file to all three datasets; parses all date columns to datetime; and returns the four DataFrames.
+- [✅] Add a `if __name__ == "__main__":` block that calls `load_raw_data()` and prints the shape of each returned DataFrame.
+- [✅] Run `python src/data/preprocess.py` to verify the module loads and runs.
 
 **Verification Checklist**
-- [ ] `python src/data/preprocess.py` exits with code 0.
-- [ ] Four shapes printed to stdout matching expected sizes (results > 47,000 rows, rankings > 10,000, fixtures ≥ 104).
-- [ ] All date columns are confirmed as `datetime64` in printed dtypes.
+- [✅] `python src/data/preprocess.py` exits with code 0.
+- [✅] Four shapes printed to stdout matching expected sizes (results > 47,000 rows, rankings > 10,000, fixtures ≥ 104).
+- [✅] All date columns are confirmed as `datetime64` in printed dtypes.
+
+*(Verified: results 49,287 × 9, rankings 70,194 × 8, fixtures 104 × 6, name_map 48 × 3; all date columns dtype datetime64[us])*
 
 ---
 
