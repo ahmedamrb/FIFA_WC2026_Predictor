@@ -266,15 +266,15 @@ All of the following must be true before starting Phase 2:
 ### Subphase 2.1 — EDA Script Scaffold
 
 **Tasks**
-- [ ] Create `scripts/run_eda.py` as the single entry point for all EDA output.
-- [ ] At the top of the script, define an `OUTPUT_DIR = "outputs/plots/"` constant.
-- [ ] Add a `main()` function that will call each EDA section in sequence.
-- [ ] Add a `if __name__ == "__main__": main()` guard at the bottom.
-- [ ] Confirm `python scripts/run_eda.py` runs (even with an empty `main()`) without import errors.
+- [✅] Create `scripts/run_eda.py` as the single entry point for all EDA output.
+- [✅] At the top of the script, define an `OUTPUT_DIR = "outputs/plots/"` constant.
+- [✅] Add a `main()` function that will call each EDA section in sequence.
+- [✅] Add a `if __name__ == "__main__": main()` guard at the bottom.
+- [✅] Confirm `python scripts/run_eda.py` runs (even with an empty `main()`) without import errors.
 
 **Verification Checklist**
-- [ ] `python scripts/run_eda.py` exits with code 0 and no errors.
-- [ ] `outputs/plots/` directory exists and is writable.
+- [✅] `python scripts/run_eda.py` exits with code 0 and no errors.
+- [✅] `outputs/plots/` directory exists and is writable.
 
 ---
 
