@@ -535,22 +535,24 @@ All of the following must be true before starting Phase 3:
 ### Subphase 3.6 — Context & Venue Features
 
 **Tasks**
-- [ ] In `src/data/preprocess.py`, implement `compute_context_features(matches_df)` that adds:
+- [✅] In `src/data/preprocess.py`, implement `compute_context_features(matches_df)` that adds:
   - `tournament_stage`: ordinal — Group Stage = 1, Round of 32 = 2, Round of 16 = 3, QF = 4, SF = 5, Third Place = 5, Final = 6. Non-WC matches = 0.
   - `is_wc_match`: 1 if `tournament == "FIFA World Cup"`, else 0.
   - `is_neutral_venue`: taken from the `neutral` column in results (1 or 0).
   - `host_nation_advantage`: 1 if home team is one of USA, Canada, or Mexico AND match is a WC 2026 fixture, else 0.
   - `home_days_rest`: days since the home team's previous match; fill with 30 for first matches.
   - `away_days_rest`: days since the away team's previous match; fill with 30 for first matches.
-- [ ] Print value counts for `tournament_stage`, `is_wc_match`, `is_neutral_venue`, and min/max of both days-rest columns.
-- [ ] Run `python src/data/preprocess.py`.
+- [✅] Print value counts for `tournament_stage`, `is_wc_match`, `is_neutral_venue`, and min/max of both days-rest columns.
+- [✅] Run `python src/data/preprocess.py`.
 
 **Verification Checklist**
-- [ ] `tournament_stage` contains only values 0–6 with no nulls.
-- [ ] `is_wc_match` is binary with no nulls.
-- [ ] `is_neutral_venue` is binary with no nulls.
-- [ ] `host_nation_advantage` is binary with no nulls; at least one value of 1 exists.
-- [ ] `home_days_rest` and `away_days_rest` are all ≥ 0 and ≤ 365.
+- [✅] `tournament_stage` contains only values 0–6 with no nulls.
+- [✅] `is_wc_match` is binary with no nulls.
+- [✅] `is_neutral_venue` is binary with no nulls.
+- [✅] `host_nation_advantage` is binary with no nulls; at least one value of 1 exists.
+- [✅] `home_days_rest` and `away_days_rest` are all ≥ 0 and ≤ 365.
+
+> **Verified 2026-05-18** — `compute_context_features` implemented and all verification checks passed. tournament_stage values: 0 (non-WC: 31,549), 1 (Group: 440), 3 (R16: 56), 4 (QF: 28), 5 (SF/3rd: 21), 6 (Final: 7). host_nation_advantage fires correctly on WC 2026 fixtures (6 matches). Spot checks: WC 2022 Final=6 ✓, WC 2022 QF=4 ✓, 2014 SF Brazil–Germany=5 ✓.
 
 ---
 

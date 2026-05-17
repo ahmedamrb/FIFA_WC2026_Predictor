@@ -49,10 +49,46 @@ FEATURE_COLUMNS: list[str] = [
     "h2h_matches_count",
     "h2h_avg_goals_home",
     "h2h_avg_goals_away",
+    # --- Context & Venue (Subphase 3.6) ---
+    "tournament_stage",
+    "is_wc_match",
+    "is_neutral_venue",
+    "host_nation_advantage",
+    "home_days_rest",
+    "away_days_rest",
 ]
 
 _RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 _REFERENCE_DATE: pd.Timestamp = pd.Timestamp("2026-06-01")
+
+_OPENFOOTBALL_DIR = _RAW_DIR / "openfootball"
+
+# Stage header keywords found across all WC openfootball txt files (1998–2022).
+# Checked via str.startswith so longer keys take priority over "final".
+_WC_KNOCKOUT_STAGE_MAP: dict[str, int] = {
+    "round of 16": 3,
+    "quarter-finals": 4,
+    "quarterfinals": 4,
+    "semi-finals": 5,
+    "semifinals": 5,
+    "match for third place": 5,
+    "third-place play-off": 5,
+    "third place play-off": 5,
+    "third place match": 5,
+    "final": 6,
+}
+
+_WC2026_FIXTURE_STAGE_MAP: dict[str, int] = {
+    "GROUP_STAGE": 1,
+    "LAST_32": 2,
+    "LAST_16": 3,
+    "QUARTER_FINALS": 4,
+    "SEMI_FINALS": 5,
+    "THIRD_PLACE": 5,
+    "FINAL": 6,
+}
+
+_WC2026_HOST_TEAMS: frozenset[str] = frozenset({"United States", "Canada", "Mexico"})
 
 
 # ---------------------------------------------------------------------------
@@ -371,7 +407,7 @@ def compute_form_features(matches_df: pd.DataFrame) -> pd.DataFrame:
 
     # Report null statistics before fill
     null_rows = df[all_form_cols].isna().any(axis=1).sum()
-    print(f"\nForm features: {null_rows} rows had ≥1 null before median fill")
+    print(f"\nForm features: {null_rows} rows had >=1 null before median fill")
     null_by_col = {col: int(df[col].isna().sum()) for col in all_form_cols if df[col].isna().any()}
     if null_by_col:
         print("  Columns with nulls before fill:")
@@ -492,6 +528,230 @@ def compute_h2h_features(matches_df: pd.DataFrame) -> pd.DataFrame:
     print("Null counts after fill (all should be 0):")
     for col in H2H_COLS:
         print(f"  {col}: {int(df[col].isna().sum())}")
+
+    return df
+
+
+def _build_wc_stage_lookup() -> dict[pd.Timestamp, int]:
+    """Parse openfootball WC txt files to map each knockout-round match date to its stage ordinal.
+
+    Returns:
+        A dict mapping normalised match dates (time set to midnight) to their
+        tournament_stage ordinal (3=R16, 4=QF, 5=SF/3rd, 6=Final).
+        Group-stage matches are intentionally omitted (they default to 1 elsewhere).
+    """
+    import re
+
+    # WC 1998/2002: "27 June" or "15 June" (day month_name, no day-of-week)
+    _DATE_LONGMONTH = re.compile(
+        r"^\s*(\d{1,2})\s+"
+        r"(January|February|March|April|May|June|July|August|September|October|November|December)"
+        r"\b",
+        re.IGNORECASE,
+    )
+    # WC 2006–2022: "Sat Jun 24", "Mon Jun 28 16:00" (day-of-week month_abbr day)
+    _DATE_DAYOFWEEK = re.compile(
+        r"\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(\w{3,4})\s+(\d{1,2})\b",
+        re.IGNORECASE,
+    )
+
+    lookup: dict[pd.Timestamp, int] = {}
+
+    for year in [1998, 2002, 2006, 2010, 2014, 2018, 2022]:
+        txt_path = _OPENFOOTBALL_DIR / f"wc{year}" / "cup_finals.txt"
+        if not txt_path.exists():
+            continue
+
+        current_stage: int | None = None
+
+        with open(txt_path, encoding="utf-8", errors="replace") as fh:
+            for raw_line in fh:
+                line = raw_line.rstrip()
+                stripped = line.strip()
+
+                # --- Stage header detection (bullet U+25AA) ---
+                if stripped.startswith("\u25aa "):
+                    # Strip bullet, drop date-range suffix after "|"
+                    header_text = stripped[2:].split("|")[0].strip().lower()
+                    matched_stage: int | None = None
+                    for key, val in _WC_KNOCKOUT_STAGE_MAP.items():
+                        if header_text.startswith(key):
+                            matched_stage = val
+                            break
+                    current_stage = matched_stage
+                    continue
+
+                # Only extract dates when inside a known knockout section
+                if current_stage is None:
+                    continue
+
+                # Skip TOC lines that span a date range ("Sat Jun 30 - Tue Jul 3")
+                if " - " in stripped:
+                    continue
+
+                # --- Date extraction ---
+                ts: pd.Timestamp | None = None
+
+                # Try day-of-week format first: "Sat Jun 24", "Mon Jun 28 16:00"
+                m_dow = _DATE_DAYOFWEEK.search(line)
+                if m_dow:
+                    month_abbr, day_str = m_dow.group(1), m_dow.group(2)
+                    try:
+                        ts = pd.to_datetime(
+                            f"{day_str} {month_abbr} {year}",
+                            format="%d %b %Y",
+                            errors="coerce",
+                        )
+                    except Exception:
+                        ts = pd.NaT
+
+                # Fallback: try long-month format: "27 June", "15 June"
+                if ts is None or pd.isna(ts):
+                    m_long = _DATE_LONGMONTH.search(line)
+                    if m_long:
+                        day_str2, month_name = m_long.group(1), m_long.group(2)
+                        try:
+                            ts = pd.to_datetime(
+                                f"{day_str2} {month_name} {year}",
+                                format="%d %B %Y",
+                                errors="coerce",
+                            )
+                        except Exception:
+                            ts = pd.NaT
+
+                if ts is not None and not pd.isna(ts):
+                    normalised = ts.normalize()
+                    if normalised not in lookup:
+                        lookup[normalised] = current_stage
+
+    return lookup
+
+
+def compute_context_features(matches_df: pd.DataFrame) -> pd.DataFrame:
+    """Add context and venue features to a match DataFrame.
+
+    Works on both historical results (``date`` column) and WC 2026 fixture
+    data (``match_date`` column).  When a ``stage`` column is present the
+    WC 2026 fixture-stage mapping is used for ``tournament_stage``; otherwise
+    the openfootball stage lookup is used for historical WC matches.
+
+    Features added:
+
+    * ``tournament_stage`` — ordinal: 0=non-WC, 1=Group, 2=R32, 3=R16,
+      4=QF, 5=SF/3rd, 6=Final.
+    * ``is_wc_match`` — 1 if FIFA World Cup match, else 0.
+    * ``is_neutral_venue`` — 1 if played at a neutral venue, else 0.
+    * ``host_nation_advantage`` — 1 if WC 2026 and home team is USA/Canada/Mexico.
+    * ``home_days_rest`` — days since home team's previous match (30 if first).
+    * ``away_days_rest`` — days since away team's previous match (30 if first).
+
+    Args:
+        matches_df: Match DataFrame.  Must contain ``date`` or ``match_date``,
+            ``home_team``, and ``away_team``.  Optional columns used when
+            present: ``tournament``, ``neutral``, ``stage``.
+
+    Returns:
+        A copy of ``matches_df`` sorted by match date with 6 new columns.
+    """
+    df = matches_df.copy()
+
+    # ------------------------------------------------------------------
+    # Detect date column
+    # ------------------------------------------------------------------
+    if "date" in df.columns:
+        date_col = "date"
+    elif "match_date" in df.columns:
+        date_col = "match_date"
+    else:
+        raise ValueError("matches_df must contain a 'date' or 'match_date' column")
+
+    df = df.sort_values(date_col).reset_index(drop=True)
+    _date: pd.Series = df[date_col]
+
+    # ------------------------------------------------------------------
+    # is_wc_match
+    # ------------------------------------------------------------------
+    if "tournament" in df.columns:
+        df["is_wc_match"] = (df["tournament"] == "FIFA World Cup").astype(int)
+    else:
+        # Fixture-only DataFrame — all rows are WC matches
+        df["is_wc_match"] = 1
+
+    # ------------------------------------------------------------------
+    # tournament_stage
+    # ------------------------------------------------------------------
+    if "stage" in df.columns:
+        # WC 2026 fixtures path — use the fixture stage column
+        df["tournament_stage"] = (
+            df["stage"].map(_WC2026_FIXTURE_STAGE_MAP).fillna(0).astype(int)
+        )
+    else:
+        # Historical data path — parse openfootball files
+        stage_lookup = _build_wc_stage_lookup()
+        date_stage = _date.dt.normalize().map(stage_lookup)
+        df["tournament_stage"] = np.where(
+            df["is_wc_match"] == 0,
+            0,
+            np.where(date_stage.notna(), date_stage, 1),
+        ).astype(int)
+
+    # ------------------------------------------------------------------
+    # is_neutral_venue
+    # ------------------------------------------------------------------
+    if "neutral" in df.columns:
+        df["is_neutral_venue"] = df["neutral"].fillna(0).astype(int)
+    else:
+        # WC 2026 fixtures — treat all as neutral
+        df["is_neutral_venue"] = 1
+
+    # ------------------------------------------------------------------
+    # host_nation_advantage
+    # ------------------------------------------------------------------
+    df["host_nation_advantage"] = (
+        (df["is_wc_match"] == 1)
+        & (_date.dt.year == 2026)
+        & (df["home_team"].isin(_WC2026_HOST_TEAMS))
+    ).astype(int)
+
+    # ------------------------------------------------------------------
+    # home_days_rest and away_days_rest
+    # ------------------------------------------------------------------
+    last_match: dict[str, pd.Timestamp] = {}
+    home_rest: list[int] = []
+    away_rest: list[int] = []
+
+    for row in df.itertuples(index=False):
+        match_date = getattr(row, date_col)
+        for team, rest_list in ((row.home_team, home_rest), (row.away_team, away_rest)):
+            if team in last_match:
+                delta = (match_date - last_match[team]).days
+                rest_list.append(max(0, delta))
+            else:
+                rest_list.append(30)
+
+        last_match[row.home_team] = match_date
+        last_match[row.away_team] = match_date
+
+    df["home_days_rest"] = home_rest
+    df["away_days_rest"] = away_rest
+
+    # ------------------------------------------------------------------
+    # Diagnostics
+    # ------------------------------------------------------------------
+    print(
+        f"\ntournament_stage value counts:\n"
+        f"{df['tournament_stage'].value_counts().sort_index()}"
+    )
+    print(f"\nis_wc_match value counts:\n{df['is_wc_match'].value_counts()}")
+    print(f"\nis_neutral_venue value counts:\n{df['is_neutral_venue'].value_counts()}")
+    print(
+        f"\nhome_days_rest  min: {df['home_days_rest'].min()}  "
+        f"max: {df['home_days_rest'].max()}"
+    )
+    print(
+        f"away_days_rest  min: {df['away_days_rest'].min()}  "
+        f"max: {df['away_days_rest'].max()}"
+    )
 
     return df
 
@@ -733,4 +993,112 @@ if __name__ == "__main__":
         print(f"  h2h_avg_goals_away: {hm['h2h_avg_goals_away']:.3f}  (Germany avg goals in prior H2H)")
     else:
         print("\nSpot check match not found — check team names.")
+
+    # ------------------------------------------------------------------
+    # Subphase 3.6 verification
+    # ------------------------------------------------------------------
+    print()
+    print("=" * 60)
+    print("compute_context_features() — Subphase 3.6 verification")
+    print("=" * 60)
+
+    context_df = compute_context_features(h2h_df)
+
+    CONTEXT_COLS = [
+        "tournament_stage", "is_wc_match", "is_neutral_venue",
+        "host_nation_advantage", "home_days_rest", "away_days_rest",
+    ]
+
+    missing_ctx = [c for c in CONTEXT_COLS if c not in context_df.columns]
+    print(f"\nAll 6 context columns present: {not missing_ctx}")
+    if missing_ctx:
+        print(f"  Missing: {missing_ctx}")
+
+    print("\nNull counts (all must be 0):")
+    all_null_ok_ctx = True
+    for col in CONTEXT_COLS:
+        n = int(context_df[col].isna().sum())
+        flag = "OK" if n == 0 else "FAIL"
+        if n != 0:
+            all_null_ok_ctx = False
+        print(f"  {flag}  {col}: {n}")
+    print(f"All nulls zero: {all_null_ok_ctx}")
+
+    stage_vals = set(context_df["tournament_stage"].unique())
+    stage_ok = stage_vals.issubset(set(range(7)))
+    print(f"\ntournament_stage unique values: {sorted(stage_vals)}  (expect subset of 0-6)")
+    print(f"tournament_stage range OK: {stage_ok}")
+
+    wc_vals = set(context_df["is_wc_match"].unique())
+    wc_binary_ok = wc_vals.issubset({0, 1})
+    print(f"\nis_wc_match unique values: {sorted(wc_vals)}  (expect subset of {{0, 1}})")
+    print(f"is_wc_match binary OK: {wc_binary_ok}")
+
+    iv_vals = set(context_df["is_neutral_venue"].unique())
+    iv_binary_ok = iv_vals.issubset({0, 1})
+    print(f"\nis_neutral_venue unique values: {sorted(iv_vals)}  (expect subset of {{0, 1}})")
+    print(f"is_neutral_venue binary OK: {iv_binary_ok}")
+
+    home_rest_min = int(context_df["home_days_rest"].min())
+    home_rest_max = int(context_df["home_days_rest"].max())
+    away_rest_min = int(context_df["away_days_rest"].min())
+    away_rest_max = int(context_df["away_days_rest"].max())
+    rest_ok = home_rest_min >= 0 and away_rest_min >= 0
+    print(f"\nhome_days_rest  min: {home_rest_min}  max: {home_rest_max}  (min must be >= 0)")
+    print(f"away_days_rest  min: {away_rest_min}  max: {away_rest_max}  (min must be >= 0)")
+    print(f"Days rest range OK: {rest_ok}")
+
+    wc2022_final = context_df[
+        (context_df["date"].dt.date == pd.Timestamp("2022-12-18").date())
+        & (context_df["tournament"] == "FIFA World Cup")
+    ]
+    if not wc2022_final.empty:
+        stage_final = int(wc2022_final.iloc[0]["tournament_stage"])
+        print(
+            f"\nSpot check — WC 2022 Final (2022-12-18) tournament_stage: "
+            f"{stage_final}  (expect 6)  {'PASS' if stage_final == 6 else 'FAIL'}"
+        )
+    else:
+        print("\nWC 2022 Final match not found — check dataset.")
+
+    wc2022_qf = context_df[
+        (context_df["date"].dt.date == pd.Timestamp("2022-12-09").date())
+        & (context_df["tournament"] == "FIFA World Cup")
+    ]
+    if not wc2022_qf.empty:
+        stage_qf = int(wc2022_qf.iloc[0]["tournament_stage"])
+        print(
+            f"Spot check — WC 2022 QF (2022-12-09) tournament_stage: "
+            f"{stage_qf}  (expect 4)  {'PASS' if stage_qf == 4 else 'FAIL'}"
+        )
+
+    sf_match = context_df[
+        (context_df["date"].dt.date == pd.Timestamp("2014-07-08").date())
+        & (context_df["home_team"] == "Brazil")
+        & (context_df["away_team"] == "Germany")
+    ]
+    if not sf_match.empty:
+        stage_sf = int(sf_match.iloc[0]["tournament_stage"])
+        print(
+            f"Spot check — 2014 SF Brazil vs Germany tournament_stage: "
+            f"{stage_sf}  (expect 5)  {'PASS' if stage_sf == 5 else 'FAIL'}"
+        )
+
+    hna_hist = int(context_df["host_nation_advantage"].sum())
+    print(f"\nhost_nation_advantage sum (historical data): {hna_hist}  (expect 0)")
+
+    _, _, fixtures_df_ctx, _ = load_raw_data()
+    fixtures_context = compute_context_features(fixtures_df_ctx)
+    hna_fixtures = int(fixtures_context["host_nation_advantage"].sum())
+    print(f"host_nation_advantage sum (WC 2026 fixtures): {hna_fixtures}  (expect > 0)")
+    print(f"host_nation_advantage >= 1 on fixtures: {hna_fixtures > 0}")
+    hna_rows = fixtures_context[fixtures_context["host_nation_advantage"] == 1][
+        ["match_date", "home_team", "away_team", "tournament_stage", "host_nation_advantage"]
+    ]
+    if not hna_rows.empty:
+        print("Sample host_nation_advantage=1 rows:")
+        print(hna_rows.head(5).to_string(index=False))
+
+    print("\nWC 2026 fixtures tournament_stage value counts:")
+    print(fixtures_context["tournament_stage"].value_counts().sort_index())
 

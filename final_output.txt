@@ -1,0 +1,273 @@
+﻿results_df           shape: (49287, 9)
+rankings_df          shape: (70194, 8)
+fixtures_df          shape: (104, 6)
+name_map_df          shape: (48, 3)
+
+results_df['date']         dtype: datetime64[ns]
+rankings_df['rank_date']   dtype: datetime64[ns]
+fixtures_df['match_date']  dtype: datetime64[ns]
+
+=======================================================
+clean_results() ΓÇö Subphase 3.2 verification
+=======================================================
+Cleaned shape:  (32101, 12)
+
+outcome value counts (0=away win, 1=draw, 2=home win):
+outcome
+0     8999
+1     7554
+2    15548
+
+match_importance unique values: [np.float64(0.5), np.float64(1.0), np.float64(1.5), np.float64(3.0)]
+match_importance null count: 0
+outcome null count: 0
+outcome unique values: [np.int64(0), np.int64(1), np.int64(2)]
+
+recency_weight  min : 0.002704
+recency_weight  max : 0.972790
+
+Spot check ΓÇö older matches must have lower recency_weight:
+  1990 match   : 1990-01-12  Algeria vs Mali  recency_weight = 0.002704
+  2022 WC match: 2022-11-20  Qatar vs Ecuador  recency_weight = 0.563525
+
+=======================================================
+merge_rankings() ΓÇö Subphase 3.3 verification
+=======================================================
+
+Null counts for ranking columns (must all be 0):
+  home_rank: 0
+  away_rank: 0
+  home_rank_points: 0
+  away_rank_points: 0
+
+rank_diff       min: -209.00   max: 210.00
+rank_points_ratio min: 0.1000   max: 10.0000
+
+Spot check ΓÇö France vs Croatia, WC 2018 Final (2018-07-15):
+  home_rank (France): 2   away_rank (Croatia): 12
+  home_rank_points:   2164.0   away_rank_points: 2036.0
+  rank_diff:          -10
+  rank_points_ratio:  1.0629
+
+============================================================
+compute_form_features() ΓÇö Subphase 3.4 verification
+============================================================
+
+Form features: 268 rows had ΓëÑ1 null before median fill
+  Columns with nulls before fill:
+    home_form_wins_5: 147
+    home_form_goals_scored_5: 147
+    home_form_goals_conceded_5: 147
+    home_form_wdl_points_5: 147
+    home_form_wins_10: 147
+    home_form_goals_scored_10: 147
+    home_form_goals_conceded_10: 147
+    home_form_wdl_points_10: 147
+    away_form_wins_5: 176
+    away_form_goals_scored_5: 176
+    away_form_goals_conceded_5: 176
+    away_form_wdl_points_5: 176
+    away_form_wins_10: 176
+    away_form_goals_scored_10: 176
+    away_form_goals_conceded_10: 176
+    away_form_wdl_points_10: 176
+    form_diff_wdl_5: 268
+Null counts after fill (all should be 0):
+  home_form_wins_5: 0
+  home_form_goals_scored_5: 0
+  home_form_goals_conceded_5: 0
+  home_form_wdl_points_5: 0
+  home_form_wins_10: 0
+  home_form_goals_scored_10: 0
+  home_form_goals_conceded_10: 0
+  home_form_wdl_points_10: 0
+  away_form_wins_5: 0
+  away_form_goals_scored_5: 0
+  away_form_goals_conceded_5: 0
+  away_form_wdl_points_5: 0
+  away_form_wins_10: 0
+  away_form_goals_scored_10: 0
+  away_form_goals_conceded_10: 0
+  away_form_wdl_points_10: 0
+  form_diff_wdl_5: 0
+
+All 17 form columns present: True
+
+Null counts (all must be 0):
+  OK  home_form_wins_5: 0
+  OK  home_form_goals_scored_5: 0
+  OK  home_form_goals_conceded_5: 0
+  OK  home_form_wdl_points_5: 0
+  OK  away_form_wins_5: 0
+  OK  away_form_goals_scored_5: 0
+  OK  away_form_goals_conceded_5: 0
+  OK  away_form_wdl_points_5: 0
+  OK  home_form_wins_10: 0
+  OK  home_form_goals_scored_10: 0
+  OK  home_form_goals_conceded_10: 0
+  OK  home_form_wdl_points_10: 0
+  OK  away_form_wins_10: 0
+  OK  away_form_goals_scored_10: 0
+  OK  away_form_goals_conceded_10: 0
+  OK  away_form_wdl_points_10: 0
+  OK  form_diff_wdl_5: 0
+All nulls zero: True
+
+home_form_wins_5  range: [0, 5]   expected [0, 5]
+home_form_wins_10 range: [0, 10]  expected [0, 10]
+  wins_5  OK: True
+  wins_10 OK: True
+
+Goals cols all in [0, 15]: False
+  home_form_goals_scored_5: min=0.000  max=19.000
+  home_form_goals_conceded_5: min=0.000  max=19.000
+  away_form_goals_scored_5: min=0.000  max=15.000
+  away_form_goals_conceded_5: min=0.000  max=19.500
+  home_form_goals_scored_10: min=0.000  max=19.000
+  home_form_goals_conceded_10: min=0.000  max=19.000
+  away_form_goals_scored_10: min=0.000  max=15.000
+  away_form_goals_conceded_10: min=0.000  max=19.500
+
+Spot check ΓÇö Brazil's last 5 matches before 2022-12-09:
+      date home_team   away_team  home_score  away_score
+2022-09-27    Brazil     Tunisia         5.0         1.0
+2022-11-24    Brazil      Serbia         2.0         0.0
+2022-11-28    Brazil Switzerland         1.0         0.0
+2022-12-02  Cameroon      Brazil         1.0         0.0
+2022-12-05    Brazil South Korea         4.0         1.0
+
+Manual  wins=4  avg_scored=2.4000  wdl=12
+Computed wins=4  avg_scored=2.4000  wdl=12
+Spot check PASS: True
+
+============================================================
+compute_h2h_features() ΓÇö Subphase 3.5 verification
+============================================================
+
+H2H features: 6872 rows filled with neutral defaults
+Null counts after fill (all should be 0):
+  h2h_home_win_rate: 0
+  h2h_matches_count: 0
+  h2h_avg_goals_home: 0
+  h2h_avg_goals_away: 0
+
+All 4 h2h columns present: True
+
+Null counts (all must be 0):
+  OK  h2h_home_win_rate: 0
+  OK  h2h_matches_count: 0
+  OK  h2h_avg_goals_home: 0
+  OK  h2h_avg_goals_away: 0
+
+h2h_home_win_rate  range: [0.000, 1.000]
+h2h_matches_count  range: [0, 5]
+h2h_avg_goals_home range: [0.000, 21.000]
+h2h_avg_goals_away range: [0.000, 15.000]
+
+Spot check ΓÇö Brazil vs Germany, 2014-07-08 WC Semi:
+  h2h_matches_count:  5
+  h2h_home_win_rate:  0.600  (Brazil win rate in prior H2H)
+  h2h_avg_goals_home: 2.400  (Brazil avg goals in prior H2H)
+  h2h_avg_goals_away: 1.200  (Germany avg goals in prior H2H)
+
+============================================================
+compute_context_features() ΓÇö Subphase 3.6 verification
+============================================================
+
+tournament_stage value counts:
+tournament_stage
+0    31549
+1      440
+3       56
+4       28
+5       21
+6        7
+Name: count, dtype: int64
+
+is_wc_match value counts:
+is_wc_match
+0    31549
+1      552
+Name: count, dtype: int64
+
+is_neutral_venue value counts:
+is_neutral_venue
+0    23074
+1     9027
+Name: count, dtype: int64
+
+home_days_rest  min: 0  max: 5796
+away_days_rest  min: 0  max: 5841
+
+All 6 context columns present: True
+
+Null counts (all must be 0):
+  OK  tournament_stage: 0
+  OK  is_wc_match: 0
+  OK  is_neutral_venue: 0
+  OK  host_nation_advantage: 0
+  OK  home_days_rest: 0
+  OK  away_days_rest: 0
+All nulls zero: True
+
+tournament_stage unique values: [np.int64(0), np.int64(1), np.int64(3), np.int64(4), np.int64(5), np.int64(6)]  (expect subset of 0-6)
+tournament_stage range OK: True
+
+is_wc_match unique values: [np.int64(0), np.int64(1)]  (expect subset of {0, 1})
+is_wc_match binary OK: True
+
+is_neutral_venue unique values: [np.int64(0), np.int64(1)]  (expect subset of {0, 1})
+is_neutral_venue binary OK: True
+
+home_days_rest  min: 0  max: 5796  (min must be >= 0)
+away_days_rest  min: 0  max: 5841  (min must be >= 0)
+Days rest range OK: True
+
+Spot check ΓÇö WC 2022 Final (2022-12-18) tournament_stage: 6  (expect 6)  PASS
+Spot check ΓÇö WC 2022 QF (2022-12-09) tournament_stage: 4  (expect 4)  PASS
+Spot check ΓÇö 2014 SF Brazil vs Germany tournament_stage: 5  (expect 5)  PASS
+
+host_nation_advantage sum (historical data): 0  (expect 0)
+
+tournament_stage value counts:
+tournament_stage
+1    72
+2    16
+3     8
+4     4
+5     3
+6     1
+Name: count, dtype: int64
+
+is_wc_match value counts:
+is_wc_match
+1    104
+Name: count, dtype: int64
+
+is_neutral_venue value counts:
+is_neutral_venue
+1    104
+Name: count, dtype: int64
+
+home_days_rest  min: 0  max: 30
+away_days_rest  min: 0  max: 30
+host_nation_advantage sum (WC 2026 fixtures): 6  (expect > 0)
+host_nation_advantage >= 1 on fixtures: True
+Sample host_nation_advantage=1 rows:
+match_date     home_team          away_team  tournament_stage  host_nation_advantage
+2026-06-11        Mexico       South Africa                 1                      1
+2026-06-12        Canada Bosnia-Herzegovina                 1                      1
+2026-06-13 United States           Paraguay                 1                      1
+2026-06-18        Canada              Qatar                 1                      1
+2026-06-19        Mexico        South Korea                 1                      1
+
+WC 2026 fixtures tournament_stage value counts:
+tournament_stage
+1    72
+2    16
+3     8
+4     4
+5     3
+6     1
+Name: count, dtype: int64
+
