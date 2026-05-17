@@ -446,21 +446,21 @@ All of the following must be true before starting Phase 3:
 ### Subphase 3.2 — Data Cleaning & Weighting
 
 **Tasks**
-- [ ] In `src/data/preprocess.py`, implement a `clean_results(df)` function that:
+- [✅] In `src/data/preprocess.py`, implement a `clean_results(df)` function that:
   - Filters out matches before `TRAIN_START_YEAR`.
   - Adds a `match_importance` column: `FIFA World Cup` → 3.0, tournament names containing "Qualifier" → 1.5, `Friendly` → 0.5, all others → 1.0.
   - Adds an `outcome` column: 2 = home win, 1 = draw, 0 = away win.
   - Adds a `recency_weight` column: `0.85 ^ years_since_match` where `years_since_match` is computed relative to June 2026.
   - Returns the cleaned DataFrame.
-- [ ] Add a call to `clean_results()` in the `__main__` block and print the shape and value counts of the `outcome` column.
-- [ ] Run `python src/data/preprocess.py` to verify.
+- [✅] Add a call to `clean_results()` in the `__main__` block and print the shape and value counts of the `outcome` column.
+- [✅] Run `python src/data/preprocess.py` to verify.
 
 **Verification Checklist**
-- [ ] No rows with dates before 1990 remain in the output.
-- [ ] `match_importance` column has no nulls and contains only the 4 values defined above.
-- [ ] `outcome` column contains only values 0, 1, 2 with no nulls.
-- [ ] `recency_weight` values are all between 0 and 1 (printed min and max).
-- [ ] Older matches have lower `recency_weight` than more recent matches (spot check printed).
+- [✅] No rows with dates before 1990 remain in the output. *(32,101 rows; all dates ≥ 1990)*
+- [✅] `match_importance` column has no nulls and contains only the 4 values defined above. *([0.5, 1.0, 1.5, 3.0], null count = 0)*
+- [✅] `outcome` column contains only values 0, 1, 2 with no nulls. *(null count = 0)*
+- [✅] `recency_weight` values are all between 0 and 1 (printed min and max). *(min = 0.002704, max = 0.972790)*
+- [✅] Older matches have lower `recency_weight` than more recent matches (spot check printed). *(1990 = 0.002704 < 2022 WC = 0.563525)*
 
 ---
 
