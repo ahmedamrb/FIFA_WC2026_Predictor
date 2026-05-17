@@ -44,6 +44,11 @@ FEATURE_COLUMNS: list[str] = [
     "away_form_goals_conceded_10",
     "away_form_wdl_points_10",
     "form_diff_wdl_5",
+    # --- Head-to-Head (Subphase 3.5) ---
+    "h2h_home_win_rate",
+    "h2h_matches_count",
+    "h2h_avg_goals_home",
+    "h2h_avg_goals_away",
 ]
 
 _RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
@@ -385,6 +390,112 @@ def compute_form_features(matches_df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def compute_h2h_features(matches_df: pd.DataFrame) -> pd.DataFrame:
+    """Compute head-to-head features for each match using prior meetings only.
+
+    Iterates through matches in chronological order.  For each match the
+    function looks back at the last 5 **prior meetings** between the two
+    teams (symmetric — both (A vs B) and (B vs A) count) and computes
+    statistics from the perspective of the *current* home team.
+
+    Features computed:
+
+    * ``h2h_home_win_rate`` — fraction of prior meetings won by the current
+      home team (regardless of which side they were on). Default fill: 0.33
+    * ``h2h_matches_count`` — total prior meetings found (0 if none).
+    * ``h2h_avg_goals_home`` — average goals scored by the current home team
+      per prior meeting. Default fill: 1.3
+    * ``h2h_avg_goals_away`` — average goals scored by the current away team
+      per prior meeting. Default fill: 1.1
+
+    Rows with no prior history (``h2h_matches_count == 0``) are filled with
+    the neutral defaults listed above.  The h2h history is updated **after**
+    each row is processed to prevent data leakage.
+
+    Args:
+        matches_df: Match DataFrame with ``date``, ``home_team``,
+            ``away_team``, ``home_score``, and ``away_score`` columns.
+            Must be sortable by ``date``.
+
+    Returns:
+        A copy of ``matches_df`` sorted by date with 4 new h2h columns
+        appended.  All columns are null-free after neutral-default fill.
+    """
+    from collections import defaultdict
+
+    df = matches_df.copy().sort_values("date").reset_index(drop=True)
+
+    # h2h_history: frozenset({team_a, team_b}) -> list of
+    # (home_team_name, home_goals, away_goals) for each recorded meeting
+    h2h_history: dict = defaultdict(list)
+
+    h2h_home_win_rate: list = []
+    h2h_matches_count: list = []
+    h2h_avg_goals_home: list = []
+    h2h_avg_goals_away: list = []
+
+    for row in df.itertuples(index=False):
+        home_team: str = row.home_team
+        away_team: str = row.away_team
+        key = frozenset({home_team, away_team})
+
+        prior = h2h_history[key][-5:]  # last 5 prior meetings
+        n = len(prior)
+
+        if n == 0:
+            h2h_home_win_rate.append(float("nan"))
+            h2h_matches_count.append(0)
+            h2h_avg_goals_home.append(float("nan"))
+            h2h_avg_goals_away.append(float("nan"))
+        else:
+            wins = 0
+            goals_home_total = 0.0
+            goals_away_total = 0.0
+            for rec_home, rec_home_goals, rec_away_goals in prior:
+                if rec_home == home_team:
+                    g_home = rec_home_goals
+                    g_away = rec_away_goals
+                else:
+                    # home_team was the away side in this prior meeting
+                    g_home = rec_away_goals
+                    g_away = rec_home_goals
+                goals_home_total += g_home
+                goals_away_total += g_away
+                if g_home > g_away:
+                    wins += 1
+            h2h_home_win_rate.append(wins / n)
+            h2h_matches_count.append(n)
+            h2h_avg_goals_home.append(goals_home_total / n)
+            h2h_avg_goals_away.append(goals_away_total / n)
+
+        # Update h2h history AFTER recording features (no leakage)
+        h_score = row.home_score
+        a_score = row.away_score
+        if pd.notna(h_score) and pd.notna(a_score):
+            h2h_history[key].append((home_team, int(h_score), int(a_score)))
+
+    df["h2h_home_win_rate"] = h2h_home_win_rate
+    df["h2h_matches_count"] = h2h_matches_count
+    df["h2h_avg_goals_home"] = h2h_avg_goals_home
+    df["h2h_avg_goals_away"] = h2h_avg_goals_away
+
+    # Fill rows with no prior meetings with neutral defaults
+    no_history_mask = df["h2h_matches_count"] == 0
+    neutral_fill_count = int(no_history_mask.sum())
+    df.loc[no_history_mask, "h2h_home_win_rate"] = 0.33
+    df.loc[no_history_mask, "h2h_avg_goals_home"] = 1.3
+    df.loc[no_history_mask, "h2h_avg_goals_away"] = 1.1
+
+    print(f"\nH2H features: {neutral_fill_count} rows filled with neutral defaults")
+
+    H2H_COLS = ["h2h_home_win_rate", "h2h_matches_count", "h2h_avg_goals_home", "h2h_avg_goals_away"]
+    print("Null counts after fill (all should be 0):")
+    for col in H2H_COLS:
+        print(f"  {col}: {int(df[col].isna().sum())}")
+
+    return df
+
+
 # ---------------------------------------------------------------------------
 # Script entry point — quick smoke test
 # ---------------------------------------------------------------------------
@@ -574,4 +685,52 @@ if __name__ == "__main__":
         print(f"Spot check PASS: {manual_wins == comp_wins and abs(manual_avg_scored - comp_scored) < 1e-6 and manual_wdl == comp_wdl}")
     else:
         print("  Brazil's 2022-12-09 match not found — check dataset.")
+
+    # ------------------------------------------------------------------
+    # Subphase 3.5 verification
+    # ------------------------------------------------------------------
+    print()
+    print("=" * 60)
+    print("compute_h2h_features() — Subphase 3.5 verification")
+    print("=" * 60)
+
+    h2h_df = compute_h2h_features(formed)
+
+    H2H_COLS = ["h2h_home_win_rate", "h2h_matches_count", "h2h_avg_goals_home", "h2h_avg_goals_away"]
+    missing_h2h = [c for c in H2H_COLS if c not in h2h_df.columns]
+    print(f"\nAll 4 h2h columns present: {not missing_h2h}")
+
+    print("\nNull counts (all must be 0):")
+    for col in H2H_COLS:
+        n = int(h2h_df[col].isna().sum())
+        flag = "OK" if n == 0 else "FAIL"
+        print(f"  {flag}  {col}: {n}")
+
+    print(f"\nh2h_home_win_rate  range: [{h2h_df['h2h_home_win_rate'].min():.3f}, "
+          f"{h2h_df['h2h_home_win_rate'].max():.3f}]")
+    print(f"h2h_matches_count  range: [{int(h2h_df['h2h_matches_count'].min())}, "
+          f"{int(h2h_df['h2h_matches_count'].max())}]")
+    print(f"h2h_avg_goals_home range: [{h2h_df['h2h_avg_goals_home'].min():.3f}, "
+          f"{h2h_df['h2h_avg_goals_home'].max():.3f}]")
+    print(f"h2h_avg_goals_away range: [{h2h_df['h2h_avg_goals_away'].min():.3f}, "
+          f"{h2h_df['h2h_avg_goals_away'].max():.3f}]")
+
+    # Spot check: Germany vs Brazil, WC 2014 Semi (2014-07-08), Belo Horizonte
+    # Brazil were home team in the data; Germany won 7-1
+    # Prior meetings between Germany and Brazil should exist in dataset
+    cutoff_h2h = pd.Timestamp("2014-07-08")
+    h2h_match = h2h_df[
+        (h2h_df["date"] == cutoff_h2h)
+        & (h2h_df["home_team"] == "Brazil")
+        & (h2h_df["away_team"] == "Germany")
+    ]
+    if not h2h_match.empty:
+        hm = h2h_match.iloc[0]
+        print(f"\nSpot check — Brazil vs Germany, 2014-07-08 WC Semi:")
+        print(f"  h2h_matches_count:  {int(hm['h2h_matches_count'])}")
+        print(f"  h2h_home_win_rate:  {hm['h2h_home_win_rate']:.3f}  (Brazil win rate in prior H2H)")
+        print(f"  h2h_avg_goals_home: {hm['h2h_avg_goals_home']:.3f}  (Brazil avg goals in prior H2H)")
+        print(f"  h2h_avg_goals_away: {hm['h2h_avg_goals_away']:.3f}  (Germany avg goals in prior H2H)")
+    else:
+        print("\nSpot check match not found — check team names.")
 

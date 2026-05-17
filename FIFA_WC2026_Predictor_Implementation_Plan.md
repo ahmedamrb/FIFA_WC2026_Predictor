@@ -489,44 +489,46 @@ All of the following must be true before starting Phase 3:
 ### Subphase 3.4 — Form Features
 
 **Tasks**
-- ✅ In `src/data/preprocess.py`, implement `compute_form_features(matches_df)` that iterates through matches sorted by date and, for each match, computes the following for both the home and away team using their last **5** prior matches (any competition, before the match date):
+- [✅] In `src/data/preprocess.py`, implement `compute_form_features(matches_df)` that iterates through matches sorted by date and, for each match, computes the following for both the home and away team using their last **5** prior matches (any competition, before the match date):
   - `{side}_form_wins_5`: win count in last 5.
   - `{side}_form_goals_scored_5`: average goals scored per match in last 5.
   - `{side}_form_goals_conceded_5`: average goals conceded per match in last 5.
   - `{side}_form_wdl_points_5`: total form points (win = 3, draw = 1, loss = 0) in last 5.
-- ✅ Repeat the same 4 features for a **10-match lookback** (suffix `_10` instead of `_5`).
-- ✅ Add `form_diff_wdl_5 = home_form_wdl_points_5 − away_form_wdl_points_5`.
-- ✅ Fill any nulls caused by insufficient history with the global median of that feature.
-- ✅ Print the count of rows where median fill was applied and null counts after fill.
-- ✅ Run `python src/data/preprocess.py`.
+- [✅] Repeat the same 4 features for a **10-match lookback** (suffix `_10` instead of `_5`).
+- [✅] Add `form_diff_wdl_5 = home_form_wdl_points_5 − away_form_wdl_points_5`.
+- [✅] Fill any nulls caused by insufficient history with the global median of that feature.
+- [✅] Print the count of rows where median fill was applied and null counts after fill.
+- [✅] Run `python src/data/preprocess.py`.
 
 **Verification Checklist**
-- ✅ All 16 form columns (8 × 5-match, 8 × 10-match) plus `form_diff_wdl_5` exist with zero nulls.
-- ✅ `home_form_wins_5` values are all integers between 0 and 5.
-- ✅ `home_form_wins_10` values are all integers between 0 and 10.
-- ✅ Average goals features are all ≥ 0. Upper bound updated: real data contains legitimate qualifying-match blowouts (e.g. 19-goal single games), so observed max is ~19.5; ≤ 15 bound was too tight — verified ≥ 0 and values are data-accurate.
-- ✅ Spot check: Brazil's last 5 matches before 2022-12-09 (QF vs Croatia) — manual computation matches computed features (wins=4, avg_scored=2.4, wdl=12).
+- [✅] All 16 form columns (8 × 5-match, 8 × 10-match) plus `form_diff_wdl_5` exist with zero nulls.
+- [✅] `home_form_wins_5` values are all integers between 0 and 5.
+- [✅] `home_form_wins_10` values are all integers between 0 and 10.
+- [✅] Average goals features are all ≥ 0. Upper bound updated: real data contains legitimate qualifying-match blowouts (e.g. 19-goal single games), so observed max is ~19.5; ≤ 15 bound was too tight — verified ≥ 0 and values are data-accurate.
+- [✅] Spot check: Brazil's last 5 matches before 2022-12-09 (QF vs Croatia) — manual computation matches computed features (wins=4, avg_scored=2.4, wdl=12).
 
 ---
 
 ### Subphase 3.5 — Head-to-Head Features
 
 **Tasks**
-- [ ] In `src/data/preprocess.py`, implement `compute_h2h_features(matches_df)` that, for each match, looks back at the last 5 prior meetings between the two teams (treating home/away symmetrically) and computes:
+- [✅] In `src/data/preprocess.py`, implement `compute_h2h_features(matches_df)` that, for each match, looks back at the last 5 prior meetings between the two teams (treating home/away symmetrically) and computes:
   - `h2h_home_win_rate`: proportion of prior meetings won by the home team.
   - `h2h_matches_count`: count of prior meetings used (0–5).
   - `h2h_avg_goals_home`: average goals scored by the home team in prior meetings.
   - `h2h_avg_goals_away`: average goals scored by the away team in prior meetings.
-- [ ] Fill matches with zero prior meetings with neutral values: `h2h_home_win_rate` = 0.33, `h2h_matches_count` = 0, `h2h_avg_goals_home` = 1.3, `h2h_avg_goals_away` = 1.1.
-- [ ] Print count of rows filled with neutral values and null counts after fill.
-- [ ] Run `python src/data/preprocess.py`.
+- [✅] Fill matches with zero prior meetings with neutral values: `h2h_home_win_rate` = 0.33, `h2h_matches_count` = 0, `h2h_avg_goals_home` = 1.3, `h2h_avg_goals_away` = 1.1.
+- [✅] Print count of rows filled with neutral values and null counts after fill.
+- [✅] Run `python src/data/preprocess.py`.
 
 **Verification Checklist**
-- [ ] All 4 h2h columns exist with zero nulls.
-- [ ] `h2h_home_win_rate` values are all between 0.0 and 1.0.
-- [ ] `h2h_matches_count` values are all between 0 and 5.
-- [ ] `h2h_avg_goals_home` and `h2h_avg_goals_away` are all ≥ 0.
-- [ ] Spot check: look up the h2h stats for one well-known rivalry in a specific match and confirm they are plausible.
+- [✅] All 4 h2h columns exist with zero nulls.
+- [✅] `h2h_home_win_rate` values are all between 0.0 and 1.0.
+- [✅] `h2h_matches_count` values are all between 0 and 5.
+- [✅] `h2h_avg_goals_home` and `h2h_avg_goals_away` are all ≥ 0.
+- [✅] Spot check: look up the h2h stats for one well-known rivalry in a specific match and confirm they are plausible.
+
+> **Verified 2026-05-18** — `compute_h2h_features` implemented and all verification checks passed.
 
 ---
 
