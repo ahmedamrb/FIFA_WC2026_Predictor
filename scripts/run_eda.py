@@ -41,9 +41,9 @@ def eda_results():
     future_rows = df[df["home_score"].isnull()]
     if not future_rows.empty:
         print(
-            f"\nNOTE: {len(future_rows)} rows have null scores — future/unplayed fixtures "
+            f"\nNOTE: {len(future_rows)} rows have null scores - future/unplayed fixtures "
             f"(date range: {future_rows['date'].min().date()} "
-            f"→ {future_rows['date'].max().date()}). "
+            f"to {future_rows['date'].max().date()}). "
             "Excluded from outcome and goals analysis."
         )
 
@@ -56,8 +56,8 @@ def eda_results():
     print(df_scored.isnull().sum().to_string())
 
     # --- Date range ---
-    print(f"\nDate range (all rows): {df['date'].min().date()} → {df['date'].max().date()}")
-    print(f"Date range (scored)  : {df_scored['date'].min().date()} → {df_scored['date'].max().date()}")
+    print(f"\nDate range (all rows): {df['date'].min().date()} to {df['date'].max().date()}")
+    print(f"Date range (scored)  : {df_scored['date'].min().date()} to {df_scored['date'].max().date()}")
 
     # --- Tournament frequency ---
     print("\nTop 20 tournaments by match count:")
@@ -114,7 +114,7 @@ def eda_results():
         print("\nNo rows with negative or >20 scores found.")
     else:
         print(
-            f"\nRows with score outside [0, 20] ({len(bad_scores)} found — "
+            f"\nRows with score outside [0, 20] ({len(bad_scores)} found - "
             "may be legitimate historic results):"
         )
         print(bad_scores[["date", "home_team", "away_team", "home_score",
@@ -182,7 +182,7 @@ def eda_rankings():
     # --- Parse rank_date to datetime ---
     df["rank_date"] = pd.to_datetime(df["rank_date"])
     print(f"\nrank_date dtype after parsing: {df['rank_date'].dtype}")
-    print(f"Date range: {df['rank_date'].min().date()} → {df['rank_date'].max().date()}")
+    print(f"Date range: {df['rank_date'].min().date()} to {df['rank_date'].max().date()}")
 
     # --- Unique countries ---
     n_countries = df["country_full"].nunique()
@@ -217,7 +217,7 @@ def eda_rankings():
         subset = df[df["country_full"] == country].sort_values("rank_date")
         ax.plot(subset["rank_date"], subset["rank"], label=country, linewidth=1.5)
     ax.invert_yaxis()  # lower rank number = better, so rank 1 should be at top
-    ax.set_title("FIFA Ranking History — Top Nations")
+    ax.set_title("FIFA Ranking History - Top Nations")
     ax.set_xlabel("Date")
     ax.set_ylabel("FIFA Rank (lower = better)")
     ax.legend()
@@ -241,8 +241,38 @@ def eda_rankings():
 
 
 def eda_fixtures():
-    """Analyse the WC 2026 fixtures."""
-    pass
+    """Analyse the WC 2026 fixtures dataset."""
+    csv_path = DATA_RAW / "wc2026_fixtures_flat.csv"
+    df = pd.read_csv(csv_path, parse_dates=["match_date"])
+
+    print("=== WC 2026 Fixtures EDA ===")
+
+    # Total fixture count
+    print(f"\nTotal fixture count: {len(df)}")
+
+    # Unique stage names
+    print(f"\nUnique stages ({df['stage'].nunique()}):")
+    print(df["stage"].value_counts().to_string())
+
+    # Date range
+    print(f"\nEarliest fixture date : {df['match_date'].min().date()}")
+    print(f"Latest fixture date   : {df['match_date'].max().date()}")
+
+    # Fixture count per stage
+    print("\nFixture count per stage:")
+    print(df.groupby("stage").size().to_string())
+
+    # All unique team names (from home + away combined)
+    all_teams = pd.Series(
+        pd.concat([df["home_team"], df["away_team"]]).unique()
+    ).sort_values().reset_index(drop=True)
+    print(f"\nUnique teams ({len(all_teams)}):")
+    print(all_teams.to_string())
+
+    # Missing values for key columns
+    print("\nMissing values in key columns:")
+    for col in ["match_date", "home_team", "away_team"]:
+        print(f"  {col}: {df[col].isnull().sum()}")
 
 
 def eda_correlations():

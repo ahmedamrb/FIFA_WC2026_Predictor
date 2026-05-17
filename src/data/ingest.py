@@ -133,10 +133,8 @@ def flatten_fixtures() -> None:
 
     rows = []
     for match in raw.get("matches", []):
-        home_team = (match.get("homeTeam") or {}).get("name")
-        away_team = (match.get("awayTeam") or {}).get("name")
-        if not home_team or not away_team:
-            continue
+        home_team = (match.get("homeTeam") or {}).get("name") or "TBD"
+        away_team = (match.get("awayTeam") or {}).get("name") or "TBD"
         rows.append({
             "fixture_id": match["id"],
             "match_date": match["utcDate"][:10],

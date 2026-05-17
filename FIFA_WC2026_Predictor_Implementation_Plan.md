@@ -342,7 +342,7 @@ All of the following must be true before starting Phase 2:
 ### Subphase 2.4 — WC 2026 Fixtures EDA
 
 **Tasks**
-- [ ] In `scripts/run_eda.py`, implement a section `eda_fixtures()` that:
+- [✅] In `scripts/run_eda.py`, implement a section `eda_fixtures()` that:
   - Loads `data/raw/wc2026_fixtures_flat.csv`.
   - Prints total fixture count.
   - Prints all unique stage names.
@@ -352,12 +352,12 @@ All of the following must be true before starting Phase 2:
   - Prints the count of any fixture records missing `match_date`, `home_team`, or `away_team`.
 
 **Verification Checklist**
-- [ ] Section runs without errors.
-- [ ] Total fixture count printed: ≥ 104.
-- [ ] 48 unique team names printed.
-- [ ] Earliest fixture date is on or after June 11, 2026.
-- [ ] Missing value count printed and equals 0 for all 3 key columns.
-- [ ] Fixture count per stage is plausible (group stage ≈ 72 matches).
+- [✅] Section runs without errors.
+- [✅] Total fixture count printed: ≥ 104.
+- [✅] 48 unique team names printed (49 including TBD placeholder for unscheduled knockout fixtures).
+- [✅] Earliest fixture date is on or after June 11, 2026.
+- [✅] Missing value count printed and equals 0 for all 3 key columns.
+- [✅] Fixture count per stage is plausible (group stage ≈ 72 matches).
 
 ---
 
