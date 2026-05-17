@@ -4,7 +4,6 @@ __pycache__/
 .env
 *.pyc
 venv/
-outputs/plots/
 *.egg-info/
 .DS_Store
 Thumbs.db
