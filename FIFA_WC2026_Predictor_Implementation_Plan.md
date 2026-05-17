@@ -389,7 +389,7 @@ All of the following must be true before starting Phase 2:
 ### Subphase 2.6 — Feature Correlation Exploration
 
 **Tasks**
-- [ ] Add a section `eda_correlations()` to `scripts/run_eda.py` that:
+- [✅] Add a section `eda_correlations()` to `scripts/run_eda.py` that:
   - Filters `results.csv` to WC matches from 1998–2022.
   - Looks up the FIFA ranking for each team at the time of the match (use the most recent ranking on or before the match date from `rankings.csv`).
   - Computes a binary outcome column: 1 = home win, 0 = draw or away win.
@@ -399,11 +399,11 @@ All of the following must be true before starting Phase 2:
   - Saves a histogram of home goals and away goals for WC 1998–2022 to `outputs/plots/wc_goals_distribution.png`.
 
 **Verification Checklist**
-- [ ] Section runs without errors.
-- [ ] Correlation between ranking difference and outcome printed and has absolute value > 0.05.
-- [ ] Win-rate table printed with 3 bucket rows.
-- [ ] `outputs/plots/ranking_diff_by_outcome.png` saved.
-- [ ] `outputs/plots/wc_goals_distribution.png` saved with two visible distributions.
+- [✅] Section runs without errors.
+- [✅] Correlation between ranking difference and outcome printed and has absolute value > 0.05. *(Pearson r = −0.2530)*
+- [✅] Win-rate table printed with 3 bucket rows.
+- [✅] `outputs/plots/ranking_diff_by_outcome.png` saved.
+- [✅] `outputs/plots/wc_goals_distribution.png` saved with two visible distributions.
 
 ---
 
@@ -411,13 +411,13 @@ All of the following must be true before starting Phase 2:
 
 All of the following must be true before starting Phase 3:
 
-- [ ] `python scripts/run_eda.py` runs end-to-end without errors.
-- [ ] `python scripts/run_alignment_check.py` runs with zero unresolved mismatches after applying the mapping file.
-- [ ] All datasets confirmed non-null in critical columns (printed verification visible in stdout).
-- [ ] `data/raw/team_name_map.csv` exists and covers all 48 WC 2026 teams.
-- [ ] All 6 plot files exist under `outputs/plots/`.
-- [ ] Ranking difference shows non-zero correlation with match outcome (printed).
-- [ ] All new source files and data files are committed.
+- [✅] `python scripts/run_eda.py` runs end-to-end without errors.
+- [✅] `python scripts/run_alignment_check.py` runs with zero unresolved mismatches after applying the mapping file.
+- [✅] All datasets confirmed non-null in critical columns (printed verification visible in stdout).
+- [✅] `data/raw/team_name_map.csv` exists and covers all 48 WC 2026 teams.
+- [✅] All 6 plot files exist under `outputs/plots/`.
+- [✅] Ranking difference shows non-zero correlation with match outcome (printed). *(r = −0.2530)*
+- [✅] All new source files and data files are committed.
 
 ---
 

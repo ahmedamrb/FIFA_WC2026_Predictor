@@ -12,6 +12,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend; must be set before pyplot import
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 # Repo root is one level above this script
@@ -276,8 +277,155 @@ def eda_fixtures():
 
 
 def eda_correlations():
-    """Explore cross-dataset correlations."""
-    pass
+    """Explore feature correlations: ranking difference vs match outcome."""
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    print("=== Feature Correlation Exploration ===")
+
+    # --- Load data ---
+    results = pd.read_csv(DATA_RAW / "results.csv", parse_dates=["date"])
+    rankings = pd.read_csv(DATA_RAW / "rankings.csv", index_col=0)
+    rankings["rank_date"] = pd.to_datetime(rankings["rank_date"])
+    name_map_df = pd.read_csv(DATA_RAW / "team_name_map.csv")
+
+    # Build results_name -> rankings_name mapping
+    results_to_rankings = dict(
+        zip(name_map_df["results_name"], name_map_df["rankings_name"])
+    )
+
+    # --- Filter WC matches 1998–2022 with valid scores ---
+    wc = results[
+        (results["tournament"] == "FIFA World Cup")
+        & (results["date"].dt.year >= 1998)
+        & (results["date"].dt.year <= 2022)
+        & results["home_score"].notna()
+        & results["away_score"].notna()
+    ].copy()
+    wc["home_score"] = wc["home_score"].astype(int)
+    wc["away_score"] = wc["away_score"].astype(int)
+    wc = wc.sort_values("date").reset_index(drop=True)
+    print(f"\nWC matches 1998\u20132022 with valid scores: {len(wc)}")
+
+    # --- Apply name mapping ---
+    wc["home_team_rk"] = wc["home_team"].map(lambda x: results_to_rankings.get(x, x))
+    wc["away_team_rk"] = wc["away_team"].map(lambda x: results_to_rankings.get(x, x))
+
+    # --- Prepare rankings for asof merge ---
+    rk = rankings.dropna(subset=["rank", "rank_date"]).sort_values("rank_date").copy()
+    median_rank = rk["rank"].median()
+
+    # --- Merge home team rankings (most recent on or before match date) ---
+    home_lookup = wc[["date", "home_team_rk"]].rename(columns={"home_team_rk": "country_full"})
+    home_lookup = home_lookup.sort_values("date")
+    home_merged = pd.merge_asof(
+        home_lookup,
+        rk[["rank_date", "country_full", "rank"]].rename(columns={"rank": "home_rank"}),
+        left_on="date",
+        right_on="rank_date",
+        by="country_full",
+    )
+    wc["home_rank"] = home_merged["home_rank"].values
+
+    # --- Merge away team rankings ---
+    away_lookup = wc[["date", "away_team_rk"]].rename(columns={"away_team_rk": "country_full"})
+    away_lookup = away_lookup.sort_values("date")
+    away_merged = pd.merge_asof(
+        away_lookup,
+        rk[["rank_date", "country_full", "rank"]].rename(columns={"rank": "away_rank"}),
+        left_on="date",
+        right_on="rank_date",
+        by="country_full",
+    )
+    wc["away_rank"] = away_merged["away_rank"].values
+
+    # Fill missing rankings with global median
+    missing_home = wc["home_rank"].isna().sum()
+    missing_away = wc["away_rank"].isna().sum()
+    if missing_home or missing_away:
+        print(f"\nMissing home rankings filled with median: {missing_home}")
+        print(f"Missing away rankings filled with median: {missing_away}")
+    wc["home_rank"] = wc["home_rank"].fillna(median_rank)
+    wc["away_rank"] = wc["away_rank"].fillna(median_rank)
+
+    # --- Derived columns ---
+    wc["rank_diff"] = wc["home_rank"] - wc["away_rank"]
+    wc["outcome_binary"] = (wc["home_score"] > wc["away_score"]).astype(int)
+    wc["result_label"] = wc.apply(
+        lambda r: "Home Win" if r["home_score"] > r["away_score"]
+        else ("Draw" if r["home_score"] == r["away_score"] else "Away Win"),
+        axis=1,
+    )
+
+    # --- Pearson correlation ---
+    corr = np.corrcoef(wc["rank_diff"].values, wc["outcome_binary"].values)[0, 1]
+    print(f"\nPearson correlation (rank_diff vs home_win): {corr:.4f}")
+    print("  (Negative: home team better ranked \u2192 higher win rate)")
+
+    # --- Win-rate table by |rank_diff| bucket ---
+    abs_diff = wc["rank_diff"].abs()
+
+    def bucket(d):
+        if d < 10:
+            return "< 10 (close)"
+        elif d <= 50:
+            return "10\u201350 (moderate)"
+        else:
+            return "> 50 (large gap)"
+
+    wc["rank_diff_bucket"] = abs_diff.apply(bucket)
+    bucket_order = ["< 10 (close)", "10\u201350 (moderate)", "> 50 (large gap)"]
+    win_rate_table = (
+        wc.groupby("rank_diff_bucket")["outcome_binary"]
+        .agg(home_win_rate="mean", match_count="count")
+        .reindex(bucket_order)
+    )
+    win_rate_table["home_win_rate"] = win_rate_table["home_win_rate"].map("{:.1%}".format)
+    print("\nHome win rate by ranking difference bucket (|rank_diff|):")
+    print(win_rate_table.to_string())
+
+    # --- Box plot: rank_diff by outcome ---
+    groups = [
+        wc.loc[wc["result_label"] == label, "rank_diff"].values
+        for label in ["Home Win", "Draw", "Away Win"]
+    ]
+    fig, ax = plt.subplots(figsize=(9, 6))
+    ax.boxplot(groups, tick_labels=["Home Win", "Draw", "Away Win"], patch_artist=True,
+               boxprops=dict(facecolor="#aec6cf"), medianprops=dict(color="navy", linewidth=2))
+    ax.axhline(0, color="red", linestyle="--", linewidth=1, label="rank_diff = 0")
+    ax.set_title("Ranking Difference by Match Outcome (WC 1998\u20132022)")
+    ax.set_xlabel("Match Outcome")
+    ax.set_ylabel("Ranking Difference (home_rank \u2212 away_rank)")
+    ax.legend()
+    plt.tight_layout()
+    out1 = OUTPUT_DIR / "ranking_diff_by_outcome.png"
+    fig.savefig(out1, dpi=150)
+    plt.close(fig)
+    print(f"\nSaved: {out1}")
+
+    # --- Goals histogram ---
+    max_goals = max(wc["home_score"].max(), wc["away_score"].max())
+    bins = range(0, max_goals + 2)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    axes[0].hist(wc["home_score"], bins=bins, align="left", rwidth=0.8,
+                 color="#2ca02c", edgecolor="black")
+    axes[0].set_title("Home Goals (WC 1998\u20132022)")
+    axes[0].set_xlabel("Goals")
+    axes[0].set_ylabel("Frequency")
+    axes[0].set_xticks(range(0, max_goals + 1))
+
+    axes[1].hist(wc["away_score"], bins=bins, align="left", rwidth=0.8,
+                 color="#d62728", edgecolor="black")
+    axes[1].set_title("Away Goals (WC 1998\u20132022)")
+    axes[1].set_xlabel("Goals")
+    axes[1].set_xticks(range(0, max_goals + 1))
+
+    plt.suptitle("Goals Distribution \u2014 FIFA World Cup 1998\u20132022", fontsize=13)
+    plt.tight_layout()
+    out2 = OUTPUT_DIR / "wc_goals_distribution.png"
+    fig.savefig(out2, dpi=150)
+    plt.close(fig)
+    print(f"Saved: {out2}")
 
 
 def main():
