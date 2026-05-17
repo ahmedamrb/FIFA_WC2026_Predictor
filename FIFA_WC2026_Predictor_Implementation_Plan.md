@@ -364,23 +364,25 @@ All of the following must be true before starting Phase 2:
 ### Subphase 2.5 — Cross-Dataset Alignment Check
 
 **Tasks**
-- [ ] Create `scripts/run_alignment_check.py` with a `main()` function.
-- [ ] In `main()`:
+- [✅] Create `scripts/run_alignment_check.py` with a `main()` function.
+- [✅] In `main()`:
   - Load all unique team names from `results.csv`.
   - Load all unique team names from `wc2026_fixtures_flat.csv`.
   - Load all unique team names from `rankings.csv`.
   - Compare WC 2026 team names against `results.csv` names — print any that have no match.
   - Compare WC 2026 team names against `rankings.csv` names — print any that have no match.
   - Print the total mismatch count for both comparisons.
-- [ ] Based on the printed mismatches, manually create `data/raw/team_name_map.csv` with columns `fixture_name`, `results_name`, `rankings_name` — one row per team requiring name normalisation.
-- [ ] Re-run the script after creating the mapping file — apply the map and confirm all mismatches are resolved.
+- [✅] Based on the printed mismatches, manually create `data/raw/team_name_map.csv` with columns `fixture_name`, `results_name`, `rankings_name` — one row per team requiring name normalisation.
+- [✅] Re-run the script after creating the mapping file — apply the map and confirm all mismatches are resolved.
 
 **Verification Checklist**
-- [ ] `python scripts/run_alignment_check.py` runs without errors.
-- [ ] After applying the mapping file, zero unresolved mismatches are printed for both `results.csv` and `rankings.csv`.
-- [ ] `data/raw/team_name_map.csv` exists with the correct 3 column headers.
-- [ ] All 48 WC 2026 teams are present in the mapping file (either confirmed matching or explicitly mapped).
-- [ ] Mapping file is committed.
+- [✅] `python scripts/run_alignment_check.py` runs without errors.
+- [✅] After applying the mapping file, zero unresolved mismatches are printed for both `results.csv` and `rankings.csv`.
+- [✅] `data/raw/team_name_map.csv` exists with the correct 3 column headers.
+- [✅] All 48 WC 2026 teams are present in the mapping file (either confirmed matching or explicitly mapped).
+- [✅] Mapping file is committed.
+
+*(Verified: 11 mismatches found and resolved — 4 in results.csv, 7 in rankings.csv. ALIGNMENT CHECK PASSED.)*
 
 ---
 
