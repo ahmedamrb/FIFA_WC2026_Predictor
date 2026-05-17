@@ -162,7 +162,82 @@ def eda_results():
 
 def eda_rankings():
     """Analyse the FIFA rankings dataset."""
-    pass
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    csv_path = DATA_RAW / "rankings.csv"
+    df = pd.read_csv(csv_path, index_col=0)
+
+    print("=== Rankings Dataset EDA ===")
+
+    # --- Shape & columns ---
+    print(f"\nShape: {df.shape[0]} rows × {df.shape[1]} columns")
+    print(f"\nColumns: {list(df.columns)}")
+
+    # --- Data types & null counts ---
+    print("\nData types:")
+    print(df.dtypes.to_string())
+    print("\nNull counts per column:")
+    print(df.isnull().sum().to_string())
+
+    # --- Parse rank_date to datetime ---
+    df["rank_date"] = pd.to_datetime(df["rank_date"])
+    print(f"\nrank_date dtype after parsing: {df['rank_date'].dtype}")
+    print(f"Date range: {df['rank_date'].min().date()} → {df['rank_date'].max().date()}")
+
+    # --- Unique countries ---
+    n_countries = df["country_full"].nunique()
+    print(f"\nUnique countries: {n_countries}")
+
+    # --- Missing years 2000–2022 ---
+    years_present = set(df["rank_date"].dt.year.unique())
+    missing_years = [y for y in range(2000, 2023) if y not in years_present]
+    if missing_years:
+        print(f"\nMissing years between 2000 and 2022: {missing_years}")
+    else:
+        print("\nNo missing years between 2000 and 2022")
+
+    # --- Publication frequency (median gap between consecutive dates for England) ---
+    england_dates = (
+        df[df["country_full"] == "England"]["rank_date"]
+        .drop_duplicates()
+        .sort_values()
+    )
+    gaps = england_dates.diff().dropna().dt.days
+    median_gap = gaps.median()
+    print(f"\nMedian gap between consecutive ranking dates (England): {median_gap:.0f} days")
+
+    # --- Duplicate entries (same country_full + rank_date) ---
+    dup_count = df.duplicated(subset=["country_full", "rank_date"]).sum()
+    print(f"\nDuplicate entries (same country + rank_date): {dup_count}")
+
+    # --- Plot 1: ranking history for 5 countries ---
+    countries = ["Brazil", "France", "Germany", "Argentina", "England"]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for country in countries:
+        subset = df[df["country_full"] == country].sort_values("rank_date")
+        ax.plot(subset["rank_date"], subset["rank"], label=country, linewidth=1.5)
+    ax.invert_yaxis()  # lower rank number = better, so rank 1 should be at top
+    ax.set_title("FIFA Ranking History — Top Nations")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("FIFA Rank (lower = better)")
+    ax.legend()
+    plt.tight_layout()
+    out_path1 = OUTPUT_DIR / "ranking_history.png"
+    fig.savefig(out_path1, dpi=150)
+    plt.close(fig)
+    print(f"\nSaved: {out_path1}")
+
+    # --- Plot 2: total_points histogram ---
+    fig, ax = plt.subplots(figsize=(10, 5))
+    df["total_points"].dropna().plot(kind="hist", bins=50, ax=ax, color="#1f77b4", edgecolor="black")
+    ax.set_title("Distribution of FIFA Ranking Points")
+    ax.set_xlabel("Total Points")
+    ax.set_ylabel("Frequency")
+    plt.tight_layout()
+    out_path2 = OUTPUT_DIR / "ranking_points_distribution.png"
+    fig.savefig(out_path2, dpi=150)
+    plt.close(fig)
+    print(f"Saved: {out_path2}")
 
 
 def eda_fixtures():

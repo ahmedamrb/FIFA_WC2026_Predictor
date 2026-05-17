@@ -314,7 +314,7 @@ All of the following must be true before starting Phase 2:
 ### Subphase 2.3 — Rankings Dataset EDA
 
 **Tasks**
-- [ ] In `scripts/run_eda.py`, implement a section `eda_rankings()` that:
+- [✅] In `scripts/run_eda.py`, implement a section `eda_rankings()` that:
   - Loads `data/raw/rankings.csv`.
   - Prints shape and column names.
   - Prints data types and null counts per column.
@@ -327,14 +327,15 @@ All of the following must be true before starting Phase 2:
   - Saves a histogram of ranking points distribution to `outputs/plots/ranking_points_distribution.png`.
 
 **Verification Checklist**
-- [ ] Section runs without errors.
-- [ ] Date column is confirmed as datetime type in printed output.
-- [ ] At least 150 unique countries printed.
-- [ ] No missing years between 2000 and 2022 printed.
-- [ ] No duplicate (country, date) pairs printed.
-- [ ] All ranking points values printed as positive numbers.
-- [ ] `outputs/plots/ranking_history.png` saved with 5 visible lines.
-- [ ] `outputs/plots/ranking_points_distribution.png` saved.
+- [✅] Section runs without errors.
+- [✅] Date column is confirmed as datetime type in printed output.
+- [✅] At least 150 unique countries printed.
+- [✅] No missing years between 2000 and 2022 printed.
+- [✅] No duplicate (country, date) pairs printed.
+- [✅] All ranking points values printed as positive numbers.
+- [✅] `outputs/plots/ranking_history.png` saved with 5 visible lines.
+- [✅] `outputs/plots/ranking_points_distribution.png` saved.
+  *(Verified: 216 unique countries, 0 duplicates, datetime64[us] dtype, no missing years 2000–2022, both plots saved)*
 
 ---
 
