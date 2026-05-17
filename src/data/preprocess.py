@@ -17,7 +17,15 @@ import pandas as pd
 
 TRAIN_START_YEAR: int = 1990
 
-FEATURE_COLUMNS: list[str] = []
+FEATURE_COLUMNS: list[str] = [
+    # --- Rankings (Subphase 3.3) ---
+    "home_rank",
+    "away_rank",
+    "home_rank_points",
+    "away_rank_points",
+    "rank_diff",
+    "rank_points_ratio",
+]
 
 _RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 _REFERENCE_DATE: pd.Timestamp = pd.Timestamp("2026-06-01")
@@ -136,6 +144,110 @@ def clean_results(df: pd.DataFrame) -> pd.DataFrame:
     return df.reset_index(drop=True)
 
 
+def merge_rankings(
+    matches_df: pd.DataFrame,
+    rankings_df: pd.DataFrame,
+    date_col: str = "date",
+) -> pd.DataFrame:
+    """Attach FIFA rankings to each match row using the most recent available data.
+
+    For every row in ``matches_df`` the function performs an as-of lookup
+    against ``rankings_df`` to find the latest published ranking for both the
+    home team and the away team that falls on or before the match date.  Rows
+    with no prior ranking record (e.g. very early matches) are filled with the
+    global median rank and median points.
+
+    Args:
+        matches_df: Match DataFrame produced by ``clean_results()`` or a
+            fixtures DataFrame.  Must contain ``date_col``, ``home_team``, and
+            ``away_team`` columns.
+        rankings_df: Rankings DataFrame as returned by ``load_raw_data()``.
+            Must contain ``country_full``, ``rank_date``, ``rank``, and
+            ``total_points`` columns with a parsed datetime ``rank_date``.
+        date_col: Name of the date column in ``matches_df``.  Defaults to
+            ``"date"`` (clean results); pass ``"match_date"`` for fixtures.
+
+    Returns:
+        A copy of ``matches_df`` with six additional columns:
+        ``home_rank``, ``away_rank``, ``home_rank_points``,
+        ``away_rank_points``, ``rank_diff``, and ``rank_points_ratio``.
+    """
+    df = matches_df.copy()
+
+    # Ensure rank_date is datetime (defensive in case caller skips load_raw_data)
+    rank_df = rankings_df.copy()
+    rank_df["rank_date"] = pd.to_datetime(rank_df["rank_date"])
+
+    # Compute global medians used for null filling
+    median_rank: float = float(rank_df["rank"].median())
+    median_points: float = float(rank_df["total_points"].median())
+
+    # Prepare a clean lookup table sorted by rank_date
+    rank_lookup = (
+        rank_df[["country_full", "rank_date", "rank", "total_points"]]
+        .sort_values("rank_date")
+        .reset_index(drop=True)
+    )
+
+    # Sort matches by date — required by merge_asof
+    df = df.sort_values(date_col).reset_index(drop=True)
+
+    # ------------------------------------------------------------------
+    # Home-team ranking lookup
+    # ------------------------------------------------------------------
+    home_lookup = rank_lookup.rename(
+        columns={
+            "country_full": "home_team",
+            "rank_date": date_col,
+            "rank": "home_rank",
+            "total_points": "home_rank_points",
+        }
+    )
+    df = pd.merge_asof(
+        df,
+        home_lookup[[date_col, "home_team", "home_rank", "home_rank_points"]],
+        on=date_col,
+        by="home_team",
+        direction="backward",
+    )
+
+    # ------------------------------------------------------------------
+    # Away-team ranking lookup
+    # ------------------------------------------------------------------
+    away_lookup = rank_lookup.rename(
+        columns={
+            "country_full": "away_team",
+            "rank_date": date_col,
+            "rank": "away_rank",
+            "total_points": "away_rank_points",
+        }
+    )
+    df = pd.merge_asof(
+        df,
+        away_lookup[[date_col, "away_team", "away_rank", "away_rank_points"]],
+        on=date_col,
+        by="away_team",
+        direction="backward",
+    )
+
+    # ------------------------------------------------------------------
+    # Fill nulls with global medians
+    # ------------------------------------------------------------------
+    df["home_rank"] = df["home_rank"].fillna(median_rank)
+    df["away_rank"] = df["away_rank"].fillna(median_rank)
+    df["home_rank_points"] = df["home_rank_points"].fillna(median_points)
+    df["away_rank_points"] = df["away_rank_points"].fillna(median_points)
+
+    # ------------------------------------------------------------------
+    # Derived features
+    # ------------------------------------------------------------------
+    df["rank_diff"] = df["home_rank"] - df["away_rank"]
+    away_pts_safe = df["away_rank_points"].clip(lower=1e-6)
+    df["rank_points_ratio"] = (df["home_rank_points"] / away_pts_safe).clip(0.1, 10.0)
+
+    return df
+
+
 # ---------------------------------------------------------------------------
 # Script entry point — quick smoke test
 # ---------------------------------------------------------------------------
@@ -193,4 +305,37 @@ if __name__ == "__main__":
             f"{row['home_team']} vs {row['away_team']}  "
             f"recency_weight = {row['recency_weight']:.6f}"
         )
+
+    # ------------------------------------------------------------------
+    # Subphase 3.3 verification
+    # ------------------------------------------------------------------
+    print()
+    print("=" * 55)
+    print("merge_rankings() — Subphase 3.3 verification")
+    print("=" * 55)
+
+    ranked = merge_rankings(cleaned, rankings)
+
+    ranking_cols = ["home_rank", "away_rank", "home_rank_points", "away_rank_points"]
+    print("\nNull counts for ranking columns (must all be 0):")
+    for col in ranking_cols:
+        print(f"  {col}: {ranked[col].isna().sum()}")
+
+    print(f"\nrank_diff       min: {ranked['rank_diff'].min():.2f}   max: {ranked['rank_diff'].max():.2f}")
+    print(f"rank_points_ratio min: {ranked['rank_points_ratio'].min():.4f}   max: {ranked['rank_points_ratio'].max():.4f}")
+
+    print("\nSpot check — France vs Croatia, WC 2018 Final (2018-07-15):")
+    wc2018_final = ranked[
+        (ranked["date"].dt.date == pd.Timestamp("2018-07-15").date())
+        & (ranked["home_team"] == "France")
+        & (ranked["away_team"] == "Croatia")
+    ]
+    if not wc2018_final.empty:
+        row = wc2018_final.iloc[0]
+        print(f"  home_rank (France): {row['home_rank']:.0f}   away_rank (Croatia): {row['away_rank']:.0f}")
+        print(f"  home_rank_points:   {row['home_rank_points']:.1f}   away_rank_points: {row['away_rank_points']:.1f}")
+        print(f"  rank_diff:          {row['rank_diff']:.0f}")
+        print(f"  rank_points_ratio:  {row['rank_points_ratio']:.4f}")
+    else:
+        print("  Match not found — check team names.")
 

@@ -467,7 +467,7 @@ All of the following must be true before starting Phase 3:
 ### Subphase 3.3 — Rankings Merge
 
 **Tasks**
-- [ ] In `src/data/preprocess.py`, implement a `merge_rankings(matches_df, rankings_df)` function that:
+- [✅] In `src/data/preprocess.py`, implement a `merge_rankings(matches_df, rankings_df)` function that:
   - For each row in `matches_df`, looks up the most recent ranking for the home team on or before `match_date`.
   - Looks up the most recent ranking for the away team on or before `match_date`.
   - Adds columns: `home_rank`, `away_rank`, `home_rank_points`, `away_rank_points`.
@@ -475,14 +475,14 @@ All of the following must be true before starting Phase 3:
   - Adds `rank_diff` = `home_rank − away_rank`.
   - Adds `rank_points_ratio` = `home_rank_points / away_rank_points`, capped between 0.1 and 10.
   - Returns the enriched DataFrame.
-- [ ] Call `merge_rankings()` in the `__main__` block and print null counts for all 4 ranking columns and min/max of `rank_points_ratio`.
-- [ ] Run `python src/data/preprocess.py`.
+- [✅] Call `merge_rankings()` in the `__main__` block and print null counts for all 4 ranking columns and min/max of `rank_points_ratio`.
+- [✅] Run `python src/data/preprocess.py`.
 
 **Verification Checklist**
-- [ ] All 4 ranking columns exist with zero nulls after the fill step (printed).
-- [ ] `rank_diff` spans both positive and negative values (printed min/max).
-- [ ] `rank_points_ratio` min is ≥ 0.1 and max is ≤ 10 (printed).
-- [ ] Spot check: for one known WC 2018 match, the printed rankings are plausible for that era.
+- [✅] All 4 ranking columns exist with zero nulls after the fill step (printed). *(home_rank: 0, away_rank: 0, home_rank_points: 0, away_rank_points: 0)*
+- [✅] `rank_diff` spans both positive and negative values (printed min/max). *(min: −209, max: +210)*
+- [✅] `rank_points_ratio` min is ≥ 0.1 and max is ≤ 10 (printed). *(min: 0.1000, max: 10.0000)*
+- [✅] Spot check: for one known WC 2018 match, the printed rankings are plausible for that era. *(France vs Croatia 2018 Final: France rank 2 / 2164 pts, Croatia rank 12 / 2036 pts — correct for that era)*
 
 ---
 
