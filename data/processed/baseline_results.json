@@ -1,0 +1,39 @@
+{
+  "LR_val": {
+    "log_loss": 1.0682924566958418,
+    "accuracy": 0.484375,
+    "brier_score": 0.6344954250077457
+  },
+  "LR_test": {
+    "log_loss": 1.0205632372463014,
+    "accuracy": 0.515625,
+    "brier_score": 0.6124499322721713
+  },
+  "RF_val": {
+    "log_loss": 1.0344966290201207,
+    "accuracy": 0.53125,
+    "brier_score": 0.6115906249999999
+  },
+  "RF_test": {
+    "log_loss": 1.0533306957804704,
+    "accuracy": 0.46875,
+    "brier_score": 0.6352187499999999
+  },
+  "XGB_val": {
+    "log_loss": 1.1591068678528242,
+    "accuracy": 0.421875,
+    "brier_score": 0.657150516725904
+  },
+  "XGB_test": {
+    "log_loss": 1.157503685598316,
+    "accuracy": 0.453125,
+    "brier_score": 0.6941911199122207
+  },
+  "goals_val": {
+    "mae_home": 1.1274049256351792,
+    "rmse_home": 1.5416993572304085,
+    "mae_away": 0.838093318971314,
+    "rmse_away": 1.0225393656439468,
+    "scoreline_accuracy": 0.078125
+  }
+}
