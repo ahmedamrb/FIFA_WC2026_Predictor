@@ -590,18 +590,18 @@ All of the following must be true before starting Phase 3:
 ### Subphase 3.8 — Preprocessing Unit Tests
 
 **Tasks**
-- [ ] Open `tests/test_preprocess.py`.
-- [ ] Write a test `test_clean_results_no_early_matches()` that creates a small synthetic DataFrame with dates before and after 1990 and asserts that `clean_results()` removes all rows before 1990.
-- [ ] Write a test `test_clean_results_outcome_values()` that asserts `outcome` contains only 0, 1, 2 with no nulls after cleaning.
-- [ ] Write a test `test_rankings_merge_no_nulls()` that creates synthetic match and rankings data and asserts that `merge_rankings()` produces no nulls in the 4 ranking columns.
-- [ ] Write a test `test_rank_points_ratio_capped()` that asserts `rank_points_ratio` is always between 0.1 and 10.
-- [ ] Write a test `test_form_wins_in_range()` that asserts `home_form_wins_5` is always between 0 and 5.
-- [ ] Write a test `test_h2h_win_rate_in_range()` that asserts `h2h_home_win_rate` is always between 0.0 and 1.0.
-- [ ] Run `python -m pytest tests/test_preprocess.py -v`.
+- [✅] Open `tests/test_preprocess.py`.
+- [✅] Write a test `test_clean_results_no_early_matches()` that creates a small synthetic DataFrame with dates before and after 1990 and asserts that `clean_results()` removes all rows before 1990.
+- [✅] Write a test `test_clean_results_outcome_values()` that asserts `outcome` contains only 0, 1, 2 with no nulls after cleaning.
+- [✅] Write a test `test_rankings_merge_no_nulls()` that creates synthetic match and rankings data and asserts that `merge_rankings()` produces no nulls in the 4 ranking columns.
+- [✅] Write a test `test_rank_points_ratio_capped()` that asserts `rank_points_ratio` is always between 0.1 and 10.
+- [✅] Write a test `test_form_wins_in_range()` that asserts `home_form_wins_5` is always between 0 and 5.
+- [✅] Write a test `test_h2h_win_rate_in_range()` that asserts `h2h_home_win_rate` is always between 0.0 and 1.0.
+- [✅] Run `python -m pytest tests/test_preprocess.py -v`.
 
 **Verification Checklist**
-- [ ] All 6 tests pass with no errors or failures.
-- [ ] `pytest` output shows `6 passed` in the summary line.
+- [✅] All 6 tests pass with no errors or failures.
+- [✅] `pytest` output shows `6 passed` in the summary line.
 
 ---
 
@@ -609,12 +609,14 @@ All of the following must be true before starting Phase 3:
 
 All of the following must be true before starting Phase 4:
 
-- [ ] `python scripts/run_feature_engineering.py` runs without errors.
-- [ ] `data/processed/features_train.parquet`: ≥ 5,000 rows, ≥ 30 feature columns, zero nulls.
-- [ ] `data/processed/features_predict.parquet`: ≥ 104 rows, identical feature columns, zero nulls.
-- [ ] All 6 unit tests in `tests/test_preprocess.py` pass.
-- [ ] Manual spot checks on form, h2h, and rankings features completed and confirmed correct.
+- [✅] `python scripts/run_feature_engineering.py` runs without errors.
+- [✅] `data/processed/features_train.parquet`: ≥ 5,000 rows, ≥ 30 feature columns, zero nulls.
+- [✅] `data/processed/features_predict.parquet`: ≥ 104 rows, identical feature columns, zero nulls.
+- [✅] All 6 unit tests in `tests/test_preprocess.py` pass.
+- [✅] Manual spot checks on form, h2h, and rankings features completed and confirmed correct.
 - [ ] All source files and processed data files committed.
+
+> **Verified 2026-05-18** — train: (26694, 38), predict: (104, 33), 6 unit tests passed, FEATURE_COLUMNS: 33 entries.
 
 ---
 
