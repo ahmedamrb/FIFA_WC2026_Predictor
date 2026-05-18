@@ -732,7 +732,7 @@ All of the following must be true before starting Phase 4:
 ### Subphase 4.6 — Baseline Results Export
 
 **Tasks**
-- [x] Create `scripts/run_baseline_models.py` with a `main()` function that:
+- [✅] Create `scripts/run_baseline_models.py` with a `main()` function that:
   - Imports and calls `load_splits()`.
   - Trains LR, RF, and XGB outcome models.
   - Trains Poisson goals models.
@@ -740,14 +740,16 @@ All of the following must be true before starting Phase 4:
   - Calls `evaluate_goals_model` on `X_val`.
   - Prints a consolidated comparison table of all 3 outcome models showing: validation log-loss, validation accuracy, validation Brier score, test log-loss, test accuracy.
   - Saves the full metrics dict to `data/processed/baseline_results.json`.
-- [x] Run `python scripts/run_baseline_models.py`.
+- [✅] Run `python scripts/run_baseline_models.py`.
 
 **Verification Checklist**
-- [x] Script runs end-to-end without errors.
-- [x] Comparison table printed with 3 model rows × 5 metric columns.
-- [x] `data/processed/baseline_results.json` exists and loads without errors.
-- [x] All metric values in the JSON are finite positive numbers.
-- [x] At least one outcome model achieves validation log-loss < 1.20 (printed).
+- [✅] Script runs end-to-end without errors.
+- [✅] Comparison table printed with 3 model rows × 5 metric columns.
+- [✅] `data/processed/baseline_results.json` exists and loads without errors.
+- [✅] All metric values in the JSON are finite positive numbers.
+- [✅] At least one outcome model achieves validation log-loss < 1.20 (printed).
+
+> **Verified 2026-05-18** — `scripts/run_baseline_models.py` implemented and executed successfully. Trains LR, RF, and XGB outcome models plus Poisson goals models; prints 3-model × 5-metric comparison table; saves `data/processed/baseline_results.json`. Results: LR val log-loss=1.0683, acc=48.4%, brier=0.6345; RF val log-loss=1.0345, acc=53.1%, brier=0.6116; XGB val log-loss=1.1591, acc=42.2%, brier=0.6572. RF is best baseline (val log-loss 1.03, well under 1.20 target). Goals model (val WC 2022): MAE home=1.1274, MAE away=0.8381. All JSON values finite and positive. Exit code 0.
 
 ---
 
@@ -772,10 +774,10 @@ All of the following must be true before starting Phase 4:
 
 All of the following must be true before starting Phase 5:
 
-- [x] `python scripts/run_baseline_models.py` runs without errors.
-- [x] At least one outcome model achieves validation log-loss < 1.20.
-- [x] `data/processed/baseline_results.json` exists with all metrics.
-- [x] No data leakage confirmed (scaler fit on train only, no val/test rows in training data).
+- [✅] `python scripts/run_baseline_models.py` runs without errors.
+- [✅] At least one outcome model achieves validation log-loss < 1.20.
+- [✅] `data/processed/baseline_results.json` exists with all metrics.
+- [✅] No data leakage confirmed (scaler fit on train only, no val/test rows in training data).
 - [ ] All 5 model unit tests pass.
 - [ ] All source files and `baseline_results.json` committed.
 
