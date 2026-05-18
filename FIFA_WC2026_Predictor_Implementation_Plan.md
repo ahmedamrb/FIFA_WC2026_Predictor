@@ -672,18 +672,20 @@ All of the following must be true before starting Phase 4:
 ### Subphase 4.3 — Baseline Random Forest
 
 **Tasks**
-- [ ] In `src/models/outcome_model.py`, implement `train_random_forest(X_train, y_train)` that trains a `RandomForestClassifier` with default parameters and returns the fitted model.
-- [ ] In the `__main__` block, train the RF model and call `evaluate_model` on `X_val` and `X_test`.
-- [ ] Print a feature importance table (top 15 features, formatted as a DataFrame).
-- [ ] Add RF metrics to the results dict.
-- [ ] Run `python src/models/outcome_model.py`.
+- [✅] In `src/models/outcome_model.py`, implement `train_random_forest(X_train, y_train)` that trains a `RandomForestClassifier` with default parameters and returns the fitted model.
+- [✅] In the `__main__` block, train the RF model and call `evaluate_model` on `X_val` and `X_test`.
+- [✅] Print a feature importance table (top 15 features, formatted as a DataFrame).
+- [✅] Add RF metrics to the results dict.
+- [✅] Run `python src/models/outcome_model.py`.
 
 **Verification Checklist**
-- [ ] Model trains without errors.
-- [ ] Predicted probabilities sum to 1.0 per row.
-- [ ] Feature importance table printed with exactly 15 rows.
-- [ ] At least one ranking-related feature appears in the top 10.
-- [ ] Metrics added to results dict.
+- [✅] Model trains without errors.
+- [✅] Predicted probabilities sum to 1.0 per row.
+- [✅] Feature importance table printed with exactly 15 rows.
+- [✅] At least one ranking-related feature appears in the top 10.
+- [✅] Metrics added to results dict.
+
+> **Verified 2026-05-18** — RF val log-loss=1.0345, acc=0.5312, Brier=0.6116 | RF test log-loss=1.0533, acc=0.4688, Brier=0.6352. Top feature: `rank_diff` (importance=0.0820); ranking-related features dominate the top 10 — `rank_diff` (1), `rank_points_ratio` (2), `away_rank` (3), `home_rank` (4), `away_rank_points` (5), `home_rank_points` (7). All 4 results-dict keys (`LR_val`, `LR_test`, `RF_val`, `RF_test`) present.
 
 ---
 

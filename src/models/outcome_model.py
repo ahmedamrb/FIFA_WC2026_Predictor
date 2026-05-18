@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, log_loss
 from sklearn.pipeline import Pipeline
@@ -81,6 +82,23 @@ def train_logistic_regression(X_train, y_train):
     return pipeline
 
 
+def train_random_forest(X_train, y_train):
+    """Fit a RandomForestClassifier with default parameters on training data.
+
+    No scaling is applied — tree-based models are scale-invariant.
+
+    Args:
+        X_train: Training feature DataFrame.
+        y_train: Training outcome Series (0/1/2).
+
+    Returns:
+        Fitted RandomForestClassifier.
+    """
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+    return model
+
+
 def evaluate_model(model, X, y, label):
     """Evaluate a fitted classifier and print key metrics.
 
@@ -127,6 +145,27 @@ if __name__ == "__main__":
     test_metrics = evaluate_model(lr_model, X_test, y_test, "LR — Test (WC 2018)")
 
     results_dict = {"LR_val": val_metrics, "LR_test": test_metrics}
+
+    # --- Random Forest ---
+    print("\n=== Training Random Forest ===")
+    rf_model = train_random_forest(X_train, y_train)
+
+    rf_val_metrics = evaluate_model(rf_model, X_val, y_val, "RF — Val (WC 2022)")
+    rf_test_metrics = evaluate_model(rf_model, X_test, y_test, "RF — Test (WC 2018)")
+
+    # Feature importance table — top 15
+    importance_df = (
+        pd.DataFrame({"feature": FEATURE_COLUMNS, "importance": rf_model.feature_importances_})
+        .sort_values("importance", ascending=False)
+        .head(15)
+        .reset_index(drop=True)
+    )
+    importance_df.index += 1  # 1-based rank
+    print("\n=== RF Feature Importances (Top 15) ===")
+    print(importance_df.to_string())
+
+    results_dict["RF_val"] = rf_val_metrics
+    results_dict["RF_test"] = rf_test_metrics
 
     print("\n=== Results Dict ===")
     print(results_dict)
