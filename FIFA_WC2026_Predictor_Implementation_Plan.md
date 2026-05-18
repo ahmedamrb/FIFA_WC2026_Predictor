@@ -756,17 +756,19 @@ All of the following must be true before starting Phase 4:
 ### Subphase 4.7 — Model Unit Tests
 
 **Tasks**
-- [ ] Open `tests/test_models.py`.
-- [ ] Write `test_lr_probabilities_sum_to_one()`: trains LR on a small synthetic dataset and asserts that all predicted probability rows sum to 1.0 within tolerance.
-- [ ] Write `test_rf_probabilities_sum_to_one()`: same for RF.
-- [ ] Write `test_xgb_probabilities_sum_to_one()`: same for XGB.
-- [ ] Write `test_poisson_no_negative_predictions()`: asserts all Poisson regressor predictions are ≥ 0.
-- [ ] Write `test_evaluate_model_returns_dict()`: asserts `evaluate_model` returns a dict with keys `log_loss`, `accuracy`, `brier_score`.
-- [ ] Run `python -m pytest tests/test_models.py -v`.
+- [✅] Open `tests/test_models.py`.
+- [✅] Write `test_lr_probabilities_sum_to_one()`: trains LR on a small synthetic dataset and asserts that all predicted probability rows sum to 1.0 within tolerance.
+- [✅] Write `test_rf_probabilities_sum_to_one()`: same for RF.
+- [✅] Write `test_xgb_probabilities_sum_to_one()`: same for XGB.
+- [✅] Write `test_poisson_no_negative_predictions()`: asserts all Poisson regressor predictions are ≥ 0.
+- [✅] Write `test_evaluate_model_returns_dict()`: asserts `evaluate_model` returns a dict with keys `log_loss`, `accuracy`, `brier_score`.
+- [✅] Run `python -m pytest tests/test_models.py -v`.
 
 **Verification Checklist**
-- [ ] All 5 tests pass with no errors.
-- [ ] `pytest` output shows `5 passed`.
+- [✅] All 5 tests pass with no errors.
+- [✅] `pytest` output shows `5 passed`.
+
+> **Verified 2026-05-18** — `tests/test_models.py` created with 5 tests using synthetic data (90-row DataFrames, `FEATURE_COLUMNS`-aligned). All 3 probability tests use `np.allclose(..., atol=1e-6)` on `predict_proba` row sums. Poisson non-negativity holds by log-link construction. `evaluate_model` dict keys verified as `{"log_loss", "accuracy", "brier_score"}`. pytest output: `5 passed in 3.98s`. Exit code 0.
 
 ---
 
@@ -778,8 +780,8 @@ All of the following must be true before starting Phase 5:
 - [✅] At least one outcome model achieves validation log-loss < 1.20.
 - [✅] `data/processed/baseline_results.json` exists with all metrics.
 - [✅] No data leakage confirmed (scaler fit on train only, no val/test rows in training data).
-- [ ] All 5 model unit tests pass.
-- [ ] All source files and `baseline_results.json` committed.
+- [✅] All 5 model unit tests pass.
+- [✅] All source files and `baseline_results.json` committed.
 
 ---
 
