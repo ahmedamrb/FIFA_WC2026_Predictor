@@ -692,17 +692,19 @@ All of the following must be true before starting Phase 4:
 ### Subphase 4.4 — Baseline XGBoost
 
 **Tasks**
-- [ ] In `src/models/outcome_model.py`, implement `train_xgboost(X_train, y_train)` that trains an `XGBClassifier(objective='multi:softprob', num_class=3, use_label_encoder=False, eval_metric='mlogloss')` with default parameters and returns the fitted model.
-- [ ] In the `__main__` block, train the XGB model and call `evaluate_model` on `X_val` and `X_test`.
-- [ ] Print XGB feature importance (top 15 features).
-- [ ] Add XGB metrics to the results dict.
-- [ ] Run `python src/models/outcome_model.py`.
+- [✅] In `src/models/outcome_model.py`, implement `train_xgboost(X_train, y_train)` that trains an `XGBClassifier(objective='multi:softprob', num_class=3, use_label_encoder=False, eval_metric='mlogloss')` with default parameters and returns the fitted model.
+- [✅] In the `__main__` block, train the XGB model and call `evaluate_model` on `X_val` and `X_test`.
+- [✅] Print XGB feature importance (top 15 features).
+- [✅] Add XGB metrics to the results dict.
+- [✅] Run `python src/models/outcome_model.py`.
 
 **Verification Checklist**
-- [ ] Model trains without errors.
-- [ ] Predicted probabilities sum to 1.0 per row.
-- [ ] Feature importance table printed with 15 rows.
-- [ ] Metrics added to results dict.
+- [✅] Model trains without errors.
+- [✅] Predicted probabilities sum to 1.0 per row.
+- [✅] Feature importance table printed with 15 rows.
+- [✅] Metrics added to results dict.
+
+> **Verified 2026-05-18** — XGB val log-loss=1.1485, acc=0.4688, Brier=0.6600 | XGB test log-loss=1.1477, acc=0.4531, Brier=0.6974. `use_label_encoder=False` omitted (XGBoost ≥ 1.6). All 4 verification criteria passed.
 
 ---
 

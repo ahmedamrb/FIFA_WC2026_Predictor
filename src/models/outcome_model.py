@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, log_loss
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from xgboost import XGBClassifier
 
 from src.data.preprocess import FEATURE_COLUMNS
 
@@ -99,6 +100,30 @@ def train_random_forest(X_train, y_train):
     return model
 
 
+def train_xgboost(X_train, y_train):
+    """Fit an XGBClassifier with default parameters on training data.
+
+    Uses multi:softprob objective for 3-class probability output.
+    No scaling applied — gradient boosting is scale-invariant.
+
+    Args:
+        X_train: Training feature DataFrame.
+        y_train: Training outcome Series (0/1/2).
+
+    Returns:
+        Fitted XGBClassifier.
+    """
+    model = XGBClassifier(
+        objective="multi:softprob",
+        num_class=3,
+        eval_metric="mlogloss",
+        n_estimators=100,
+        random_state=42,
+    )
+    model.fit(X_train, y_train)
+    return model
+
+
 def evaluate_model(model, X, y, label):
     """Evaluate a fitted classifier and print key metrics.
 
@@ -166,6 +191,27 @@ if __name__ == "__main__":
 
     results_dict["RF_val"] = rf_val_metrics
     results_dict["RF_test"] = rf_test_metrics
+
+    # --- XGBoost ---
+    print("\n=== Training XGBoost ===")
+    xgb_model = train_xgboost(X_train, y_train)
+
+    xgb_val_metrics = evaluate_model(xgb_model, X_val, y_val, "XGB — Val (WC 2022)")
+    xgb_test_metrics = evaluate_model(xgb_model, X_test, y_test, "XGB — Test (WC 2018)")
+
+    # Feature importance table — top 15
+    xgb_importance_df = (
+        pd.DataFrame({"feature": FEATURE_COLUMNS, "importance": xgb_model.feature_importances_})
+        .sort_values("importance", ascending=False)
+        .head(15)
+        .reset_index(drop=True)
+    )
+    xgb_importance_df.index += 1  # 1-based rank
+    print("\n=== XGB Feature Importances (Top 15) ===")
+    print(xgb_importance_df.to_string())
+
+    results_dict["XGB_val"] = xgb_val_metrics
+    results_dict["XGB_test"] = xgb_test_metrics
 
     print("\n=== Results Dict ===")
     print(results_dict)
