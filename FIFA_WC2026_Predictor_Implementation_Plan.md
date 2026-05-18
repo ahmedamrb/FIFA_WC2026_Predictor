@@ -614,7 +614,7 @@ All of the following must be true before starting Phase 4:
 - [✅] `data/processed/features_predict.parquet`: ≥ 104 rows, identical feature columns, zero nulls.
 - [✅] All 6 unit tests in `tests/test_preprocess.py` pass.
 - [✅] Manual spot checks on form, h2h, and rankings features completed and confirmed correct.
-- [ ] All source files and processed data files committed.
+- [✅] All source files and processed data files committed.
 
 > **Verified 2026-05-18** — train: (26694, 38), predict: (104, 33), 6 unit tests passed, FEATURE_COLUMNS: 33 entries.
 
@@ -627,22 +627,24 @@ All of the following must be true before starting Phase 4:
 ### Subphase 4.1 — Train/Validation/Test Split
 
 **Tasks**
-- [ ] Open `src/models/outcome_model.py`.
-- [ ] Implement `load_splits()` that:
+- [✅] Open `src/models/outcome_model.py`.
+- [✅] Implement `load_splits()` that:
   - Loads `data/processed/features_train.parquet`.
   - Defines splits: test = WC 2018 rows, validation = WC 2022 rows, train = all remaining rows from 1998.
   - Prints the row count and outcome class distribution for each split.
   - Returns `X_train, y_train, X_val, y_val, X_test, y_test` using `FEATURE_COLUMNS` from `preprocess.py`.
-- [ ] Add a `if __name__ == "__main__":` block that calls `load_splits()` and prints all 6 shapes.
-- [ ] Run `python src/models/outcome_model.py`.
+- [✅] Add a `if __name__ == "__main__":` block that calls `load_splits()` and prints all 6 shapes.
+- [✅] Run `python src/models/outcome_model.py`.
 
 **Verification Checklist**
-- [ ] Train set contains no rows from WC 2018 or WC 2022 tournament windows (printed dates confirm this).
-- [ ] Validation set is exactly 64 rows (WC 2022).
-- [ ] Test set is exactly 64 rows (WC 2018).
-- [ ] Class distribution printed for all 3 splits.
-- [ ] `X_train`, `X_val`, `X_test` have identical column counts.
-- [ ] No string or datetime columns remain in any X split.
+- [✅] Train set contains no rows from WC 2018 or WC 2022 tournament windows (printed dates confirm this).
+- [✅] Validation set is exactly 64 rows (WC 2022).
+- [✅] Test set is exactly 64 rows (WC 2018).
+- [✅] Class distribution printed for all 3 splits.
+- [✅] `X_train`, `X_val`, `X_test` have identical column counts.
+- [✅] No string or datetime columns remain in any X split.
+
+> **Verified 2026-05-18** — `load_splits()` implemented in `src/models/outcome_model.py`. Also added `"date"` and `"tournament"` to `output_cols` in `preprocess.py` and regenerated parquet. train: 26566 rows (1998-01-03 → 2026-03-31, excluding WC 2018/2022), val (WC 2022): 64 rows, test (WC 2018): 64 rows. All X splits: (N, 33) columns. Class distributions: train [0:7552, 1:6219, 2:12795], val [0:21, 1:15, 2:28], test [0:26, 1:13, 2:25].
 
 ---
 
