@@ -711,19 +711,21 @@ All of the following must be true before starting Phase 4:
 ### Subphase 4.5 — Baseline Goals Models
 
 **Tasks**
-- [ ] Open `src/models/goals_model.py`.
-- [ ] Implement `train_poisson_goals(X_train, y_home, y_away)` that trains two `PoissonRegressor` models (one for home goals, one for away goals) and returns both fitted models.
-- [ ] Implement `evaluate_goals_model(home_model, away_model, X_val, y_home_val, y_away_val)` that: generates predictions, computes and prints MAE and RMSE for both home and away goals, derives the most likely scoreline by rounding predictions to nearest integer, computes and prints exact scoreline accuracy, and returns a metrics dict.
-- [ ] Add a `if __name__ == "__main__":` block that: loads splits via `load_splits()` from `outcome_model.py`, trains the Poisson goals models, and calls `evaluate_goals_model` on the validation set.
-- [ ] Run `python src/models/goals_model.py`.
+- [✅] Open `src/models/goals_model.py`.
+- [✅] Implement `train_poisson_goals(X_train, y_home, y_away)` that trains two `PoissonRegressor` models (one for home goals, one for away goals) and returns both fitted models.
+- [✅] Implement `evaluate_goals_model(home_model, away_model, X_val, y_home_val, y_away_val)` that: generates predictions, computes and prints MAE and RMSE for both home and away goals, derives the most likely scoreline by rounding predictions to nearest integer, computes and prints exact scoreline accuracy, and returns a metrics dict.
+- [✅] Add a `if __name__ == "__main__":` block that: loads splits via `load_splits()` from `outcome_model.py`, trains the Poisson goals models, and calls `evaluate_goals_model` on the validation set.
+- [✅] Run `python src/models/goals_model.py`.
 
 **Verification Checklist**
-- [ ] Both models train without errors.
-- [ ] All predicted goal values are ≥ 0.
-- [ ] MAE for home goals is between 0.5 and 2.0 (printed).
-- [ ] MAE for away goals is between 0.5 and 2.0 (printed).
-- [ ] Exact scoreline accuracy printed (any positive percentage is acceptable).
-- [ ] Metrics recorded in dict.
+- [✅] Both models train without errors.
+- [✅] All predicted goal values are ≥ 0.
+- [✅] MAE for home goals is between 0.5 and 2.0 (printed).
+- [✅] MAE for away goals is between 0.5 and 2.0 (printed).
+- [✅] Exact scoreline accuracy printed (any positive percentage is acceptable).
+- [✅] Metrics recorded in dict.
+
+> **Verified 2026-05-18** — `train_poisson_goals` and `evaluate_goals_model` implemented in `src/models/goals_model.py`. Both PoissonRegressors wrapped in StandardScaler pipelines. MAE home=1.1274, RMSE home=1.5417, MAE away=0.8381, RMSE away=1.0225. Exact scoreline accuracy=7.8% (val WC 2022, 64 rows). All predictions ≥ 0. Exit code 0.
 
 ---
 
