@@ -651,19 +651,21 @@ All of the following must be true before starting Phase 4:
 ### Subphase 4.2 — Baseline Logistic Regression
 
 **Tasks**
-- [ ] In `src/models/outcome_model.py`, implement `train_logistic_regression(X_train, y_train)` that: fits a `StandardScaler` on `X_train` only, wraps it with `LogisticRegression(max_iter=1000, multi_class='multinomial')` in a `Pipeline`, trains on `X_train`, and returns the fitted pipeline.
-- [ ] Implement `evaluate_model(model, X, y, label)` that: generates probability predictions, computes and prints log-loss, accuracy, and Brier score, prints a confusion matrix, and returns a dict of metrics.
-- [ ] In the `__main__` block, train the LR model and call `evaluate_model` on both `X_val` and `X_test`. Print results.
-- [ ] Save metrics to an in-memory results dict.
-- [ ] Run `python src/models/outcome_model.py`.
+- [✅] In `src/models/outcome_model.py`, implement `train_logistic_regression(X_train, y_train)` that: fits a `StandardScaler` on `X_train` only, wraps it with `LogisticRegression(max_iter=1000, multi_class='multinomial')` in a `Pipeline`, trains on `X_train`, and returns the fitted pipeline.
+- [✅] Implement `evaluate_model(model, X, y, label)` that: generates probability predictions, computes and prints log-loss, accuracy, and Brier score, prints a confusion matrix, and returns a dict of metrics.
+- [✅] In the `__main__` block, train the LR model and call `evaluate_model` on both `X_val` and `X_test`. Print results.
+- [✅] Save metrics to an in-memory results dict.
+- [✅] Run `python src/models/outcome_model.py`.
 
 **Verification Checklist**
-- [ ] Model trains without errors.
-- [ ] Predicted probabilities for each row sum to 1.0 (printed check).
-- [ ] Log-loss printed as a positive finite number.
-- [ ] Accuracy printed as a number between 0 and 1.
-- [ ] Confusion matrix printed with shape 3×3.
-- [ ] Scaler was fitted only on training data (confirmed by code review).
+- [✅] Model trains without errors.
+- [✅] Predicted probabilities for each row sum to 1.0 (printed check).
+- [✅] Log-loss printed as a positive finite number.
+- [✅] Accuracy printed as a number between 0 and 1.
+- [✅] Confusion matrix printed with shape 3×3.
+- [✅] Scaler was fitted only on training data (confirmed by code review).
+
+> **Verified 2026-05-18** — LR val log-loss=1.0683, acc=0.4844, Brier=0.6345 | LR test log-loss=1.0206, acc=0.5156, Brier=0.6124. Prob sums=True (min=1.0, max=1.0). Both confusion matrices 3×3. Exit code 0. Used `solver='lbfgs'` (handles multinomial by default) to avoid sklearn deprecation warnings.
 
 ---
 

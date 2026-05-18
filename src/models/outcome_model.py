@@ -6,7 +6,12 @@ outcome prediction: 0 = away win, 1 = draw, 2 = home win.
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, log_loss
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from src.data.preprocess import FEATURE_COLUMNS
 
@@ -55,9 +60,73 @@ def load_splits():
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
+def train_logistic_regression(X_train, y_train):
+    """Fit a StandardScaler + LogisticRegression pipeline on training data.
+
+    The scaler is fitted exclusively on X_train inside the pipeline, ensuring
+    no data leakage to the validation or test sets.
+
+    Args:
+        X_train: Training feature DataFrame.
+        y_train: Training outcome Series (0/1/2).
+
+    Returns:
+        Fitted sklearn Pipeline (scaler → logistic regression).
+    """
+    pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        ("lr", LogisticRegression(max_iter=1000, solver="lbfgs", random_state=42)),
+    ])
+    pipeline.fit(X_train, y_train)
+    return pipeline
+
+
+def evaluate_model(model, X, y, label):
+    """Evaluate a fitted classifier and print key metrics.
+
+    Args:
+        model: Fitted sklearn-compatible classifier with predict_proba.
+        X: Feature DataFrame.
+        y: Ground-truth outcome Series (0/1/2).
+        label: Human-readable label for the printed output.
+
+    Returns:
+        dict with keys "log_loss", "accuracy", "brier_score".
+    """
+    probs = model.predict_proba(X)
+
+    row_sums = probs.sum(axis=1)
+    probs_sum_to_one = np.allclose(row_sums, 1.0)
+    print(f"\n=== {label} ===")
+    print(f"  Prob sums to 1.0: {probs_sum_to_one}  (min={row_sums.min():.6f}, max={row_sums.max():.6f})")
+
+    ll = log_loss(y, probs)
+    acc = accuracy_score(y, model.predict(X))
+    brier = float(np.mean(np.sum((probs - np.eye(3)[y.to_numpy()]) ** 2, axis=1)))
+
+    print(f"  Log-loss : {ll:.4f}")
+    print(f"  Accuracy : {acc:.4f}")
+    print(f"  Brier    : {brier:.4f}")
+    print("  Confusion matrix:")
+    print(confusion_matrix(y, model.predict(X)))
+
+    return {"log_loss": ll, "accuracy": acc, "brier_score": brier}
+
+
 if __name__ == "__main__":
     X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
     print("\n--- Shapes ---")
     print(f"X_train: {X_train.shape},  y_train: {y_train.shape}")
     print(f"X_val:   {X_val.shape},  y_val:   {y_val.shape}")
     print(f"X_test:  {X_test.shape},  y_test:  {y_test.shape}")
+
+    print("\n=== Training Logistic Regression ===")
+    lr_model = train_logistic_regression(X_train, y_train)
+
+    val_metrics = evaluate_model(lr_model, X_val, y_val, "LR — Val (WC 2022)")
+    test_metrics = evaluate_model(lr_model, X_test, y_test, "LR — Test (WC 2018)")
+
+    results_dict = {"LR_val": val_metrics, "LR_test": test_metrics}
+
+    print("\n=== Results Dict ===")
+    print(results_dict)
