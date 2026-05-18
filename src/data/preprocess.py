@@ -757,6 +757,179 @@ def compute_context_features(matches_df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Feature matrix builders (Subphase 3.7)
+# ---------------------------------------------------------------------------
+
+
+def build_feature_matrix(
+    matches_df: pd.DataFrame,
+    rankings_df: pd.DataFrame,
+    is_predict: bool = False,
+) -> pd.DataFrame:
+    """Build the full feature matrix from a match DataFrame and rankings.
+
+    Applies the complete feature engineering pipeline in order:
+    rankings merge → form features → h2h features → context features.
+
+    For training (``is_predict=False``) the returned DataFrame includes
+    target columns (``outcome``, ``home_score``, ``away_score``) and
+    sample-weight columns (``match_importance``, ``recency_weight``).
+    Only matches from 1998 onward are included.
+
+    For prediction (``is_predict=True``) only ``FEATURE_COLUMNS`` are
+    returned, suitable for inference.
+
+    Args:
+        matches_df: DataFrame of matches.  Must contain ``date`` or
+            ``match_date``, ``home_team``, and ``away_team``.  For the
+            training path it must also have ``home_score``, ``away_score``,
+            ``outcome``, ``match_importance``, and ``recency_weight``.
+        rankings_df: FIFA rankings DataFrame as returned by
+            ``load_raw_data()``.
+        is_predict: If ``False`` (default), returns training matrix with
+            target columns.  If ``True``, returns prediction matrix with
+            ``FEATURE_COLUMNS`` only.
+
+    Returns:
+        A DataFrame with ``FEATURE_COLUMNS`` and (for training) additional
+        target and weight columns.
+
+    Raises:
+        ValueError: If any ``FEATURE_COLUMNS`` column contains null values
+            after the full pipeline.
+    """
+    df = matches_df.copy()
+
+    # Normalise date column name so all pipeline steps use "date"
+    if "match_date" in df.columns and "date" not in df.columns:
+        df = df.rename(columns={"match_date": "date"})
+
+    ranked_df = merge_rankings(df, rankings_df, date_col="date")
+    formed_df = compute_form_features(ranked_df)
+    h2h_df = compute_h2h_features(formed_df)
+    context_df = compute_context_features(h2h_df)
+
+    if not is_predict:
+        context_df = context_df[context_df["date"].dt.year >= 1998]
+        output_cols = FEATURE_COLUMNS + [
+            "home_score", "away_score", "outcome", "match_importance", "recency_weight",
+        ]
+        result = context_df[output_cols].copy()
+    else:
+        result = context_df[FEATURE_COLUMNS].copy()
+
+    null_counts = result[FEATURE_COLUMNS].isna().sum()
+    null_total = int(null_counts.sum())
+    if null_total != 0:
+        problem_cols = null_counts[null_counts > 0].to_dict()
+        raise ValueError(
+            f"FEATURE_COLUMNS contain {null_total} nulls after full pipeline: {problem_cols}"
+        )
+
+    return result
+
+
+def export_features() -> None:
+    """Run the full feature engineering pipeline and export parquet files.
+
+    Produces two output files in ``data/processed/``:
+
+    * ``features_train.parquet`` — training matrix with ``FEATURE_COLUMNS``
+      plus target columns (``outcome``, ``home_score``, ``away_score``) and
+      sample-weight columns (``match_importance``, ``recency_weight``).
+    * ``features_predict.parquet`` — prediction matrix with ``FEATURE_COLUMNS``
+      only, containing one row per WC 2026 fixture.
+
+    The prediction matrix is built by concatenating historical results with
+    WC 2026 fixtures so that form and head-to-head histories are correctly
+    warmed up before the fixture rows are processed.
+
+    Raises:
+        ValueError: If any ``FEATURE_COLUMNS`` column contains null values.
+    """
+    _PROCESSED_DIR = Path(__file__).resolve().parents[2] / "data" / "processed"
+    _PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+
+    results_df, rankings_df, fixtures_df, _ = load_raw_data()
+    cleaned = clean_results(results_df)
+
+    # ------------------------------------------------------------------
+    # Training matrix
+    # ------------------------------------------------------------------
+    print("\n" + "=" * 60)
+    print("Building training feature matrix …")
+    print("=" * 60)
+    train_df = build_feature_matrix(cleaned, rankings_df, is_predict=False)
+    train_path = _PROCESSED_DIR / "features_train.parquet"
+    train_df.to_parquet(train_path, engine="pyarrow", index=False)
+    print(f"\nSaved: {train_path}")
+
+    # ------------------------------------------------------------------
+    # Prediction matrix
+    # Concatenate historical results with fixtures so form/h2h histories
+    # are warmed up before the fixture rows are processed.
+    # ------------------------------------------------------------------
+    print("\n" + "=" * 60)
+    print("Building prediction feature matrix …")
+    print("=" * 60)
+
+    fixtures_prep = fixtures_df.copy()
+    if "match_date" in fixtures_prep.columns and "date" not in fixtures_prep.columns:
+        fixtures_prep = fixtures_prep.rename(columns={"match_date": "date"})
+    # Ensure compute_context_features handles fixture rows correctly
+    # when combined with historical data that has tournament/neutral columns
+    fixtures_prep["tournament"] = "FIFA World Cup"
+    fixtures_prep["neutral"] = 1
+
+    combined = pd.concat([cleaned, fixtures_prep], ignore_index=True)
+
+    ranked = merge_rankings(combined, rankings_df, date_col="date")
+    formed = compute_form_features(ranked)
+    h2h = compute_h2h_features(formed)
+    context = compute_context_features(h2h)
+
+    # Fixture rows are those without completed home_score / away_score
+    predict_df = context[context["home_score"].isna()][FEATURE_COLUMNS].copy()
+
+    null_sum = int(predict_df.isna().sum().sum())
+    if null_sum != 0:
+        problem = predict_df.isna().sum()[predict_df.isna().sum() > 0].to_dict()
+        raise ValueError(
+            f"Prediction features contain {null_sum} nulls after pipeline: {problem}"
+        )
+
+    predict_path = _PROCESSED_DIR / "features_predict.parquet"
+    predict_df.to_parquet(predict_path, engine="pyarrow", index=False)
+    print(f"\nSaved: {predict_path}")
+
+    # ------------------------------------------------------------------
+    # Diagnostics
+    # ------------------------------------------------------------------
+    train_nulls = train_df[FEATURE_COLUMNS].isna().sum()
+    predict_nulls = predict_df.isna().sum()
+    train_non_zero = train_nulls[train_nulls > 0].to_dict()
+    predict_non_zero = predict_nulls[predict_nulls > 0].to_dict()
+
+    feat_identical = (
+        set(predict_df.columns) == set(FEATURE_COLUMNS)
+        and set(FEATURE_COLUMNS).issubset(set(train_df.columns))
+    )
+
+    print("\n" + "=" * 60)
+    print("--- features_train.parquet ---")
+    print(f"Shape: {train_df.shape}")
+    print(f"Columns: {train_df.columns.tolist()}")
+    print(f"Null counts: {train_non_zero if train_non_zero else 'all zero'}")
+
+    print("\n--- features_predict.parquet ---")
+    print(f"Shape: {predict_df.shape}")
+    print(f"Columns: {predict_df.columns.tolist()}")
+    print(f"Null counts: {predict_non_zero if predict_non_zero else 'all zero'}")
+
+    print(f"\nFeature columns identical: {feat_identical}")
+
+
+# ---------------------------------------------------------------------------
 # Script entry point — quick smoke test
 # ---------------------------------------------------------------------------
 

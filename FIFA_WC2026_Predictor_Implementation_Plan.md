@@ -559,31 +559,31 @@ All of the following must be true before starting Phase 3:
 ### Subphase 3.7 — Feature Matrix Export
 
 **Tasks**
-- [ ] In `src/data/preprocess.py`, implement `build_feature_matrix(matches_df)` that:
+- [✅] In `src/data/preprocess.py`, implement `build_feature_matrix(matches_df)` that:
   - Assembles all engineered columns into a final feature matrix.
   - Retains `home_score`, `away_score`, and `outcome` as target columns in the training set.
   - Populates the top-level `FEATURE_COLUMNS` constant with the final ordered list of feature column names.
   - Filters to matches from 1998 onwards for the training set.
   - Returns the feature matrix.
-- [ ] Implement `export_features()` that:
+- [✅] Implement `export_features()` that:
   - Calls `build_feature_matrix()` to create the training feature matrix.
   - Saves it to `data/processed/features_train.parquet`.
   - Builds the prediction feature matrix for WC 2026 fixtures (same features, no target columns).
   - Saves it to `data/processed/features_predict.parquet`.
   - Prints shape, column list, and null counts for both files.
-- [ ] Create `scripts/run_feature_engineering.py` with a `main()` that imports and calls `export_features()` from `src/data/preprocess`.
-- [ ] Run `python scripts/run_feature_engineering.py`.
+- [✅] Create `scripts/run_feature_engineering.py` with a `main()` that imports and calls `export_features()` from `src/data/preprocess`.
+- [✅] Run `python scripts/run_feature_engineering.py`.
 
 **Verification Checklist**
-- [ ] `data/processed/features_train.parquet` exists on disk.
-- [ ] `data/processed/features_predict.parquet` exists on disk.
-- [ ] Training set has ≥ 5,000 rows and ≥ 30 feature columns (printed).
-- [ ] Prediction set has ≥ 104 rows (printed).
-- [ ] Both files have identical feature column sets.
-- [ ] Zero nulls in any column of either file (printed).
-- [ ] `outcome`, `home_score`, `away_score` exist in training set and are absent from prediction set.
-- [ ] Both files load back without errors.
-- [ ] `FEATURE_COLUMNS` constant in `preprocess.py` is populated with the exact final list.
+- [✅] `data/processed/features_train.parquet` exists on disk.
+- [✅] `data/processed/features_predict.parquet` exists on disk.
+- [✅] Training set has ≥ 5,000 rows and ≥ 30 feature columns (printed).
+- [✅] Prediction set has ≥ 104 rows (printed).
+- [✅] Both files have identical feature column sets.
+- [✅] Zero nulls in any column of either file (printed).
+- [✅] `outcome`, `home_score`, `away_score` exist in training set and are absent from prediction set.
+- [✅] Both files load back without errors.
+- [✅] `FEATURE_COLUMNS` constant in `preprocess.py` is populated with the exact final list.
 
 ---
 
