@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss, mean_absolute_error
 from sklearn.model_selection import KFold, StratifiedKFold
-from xgboost import XGBClassifier
+from xgboost import XGBClassifier, XGBRegressor
 
 matplotlib.use("Agg")  # headless backend — must be set before any other plt calls
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -228,6 +228,92 @@ def tune_random_forest_outcome(X_train, y_train):
                 ha="center", va="center", transform=ax.transAxes, fontsize=9)
         ax.axis("off")
         fig.savefig(imp_path, bbox_inches="tight", dpi=100)
+        plt.close("all")
+
+    return study.best_params
+
+
+def tune_xgboost_goals(X_train, y_goals, label="home"):
+    """Run Optuna hyperparameter search for an XGBoost goals regressor.
+
+    Performs 5-fold cross-validation inside each trial, scoring by mean
+    absolute error. Saves an optimisation history plot to outputs/plots/.
+
+    Args:
+        X_train: Training feature DataFrame.
+        y_goals: Training goals target Series (home_score or away_score).
+        label: String identifier used in plot filenames and log messages
+            (e.g. ``"home"`` or ``"away"``).
+
+    Returns:
+        dict: Best hyperparameters found by the study.
+    """
+    _PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+    X_arr = X_train.values
+    y_arr = y_goals.values
+
+    def objective(trial):
+        params = {
+            "n_estimators": trial.suggest_int("n_estimators", 100, 1000),
+            "max_depth": trial.suggest_int("max_depth", 3, 10),
+            "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+            "subsample": trial.suggest_float("subsample", 0.5, 1.0),
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
+            "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 1.0, log=True),
+            "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 1.0, log=True),
+            "random_state": 42,
+            "n_jobs": -1,
+        }
+        cv = KFold(n_splits=5, shuffle=True, random_state=42)
+        fold_maes = []
+        for train_idx, val_idx in cv.split(X_arr):
+            X_fold_train, X_fold_val = X_arr[train_idx], X_arr[val_idx]
+            y_fold_train, y_fold_val = y_arr[train_idx], y_arr[val_idx]
+            model = XGBRegressor(**params)
+            model.fit(X_fold_train, y_fold_train, verbose=False)
+            preds = model.predict(X_fold_val)
+            fold_maes.append(mean_absolute_error(y_fold_val, preds))
+        return float(np.mean(fold_maes))
+
+    study = optuna.create_study(
+        direction="minimize",
+        pruner=optuna.pruners.MedianPruner(),
+    )
+    study.optimize(objective, n_trials=N_TRIALS_GOALS, show_progress_bar=True)
+
+    print(f"[{label}] Best trial: {study.best_trial.number}")
+    print(f"[{label}] Best CV MAE: {study.best_value:.4f}")
+    print(f"[{label}] Best hyperparameters: {study.best_params}")
+
+    # --- Optimisation history plot ---
+    hist_path = _PLOTS_DIR / f"optuna_xgb_goals_{label}_history.png"
+    try:
+        from optuna.visualization.matplotlib import plot_optimization_history
+        ax = plot_optimization_history(study)
+        ax.get_figure().savefig(hist_path, bbox_inches="tight", dpi=100)
+        plt.close("all")
+    except Exception as exc:  # noqa: BLE001
+        print(f"Optuna history plot failed ({exc}); saving manual fallback.")
+        trials = study.trials
+        best_so_far = []
+        running_best = float("inf")
+        for t in trials:
+            if t.value is not None and t.value < running_best:
+                running_best = t.value
+            best_so_far.append(running_best)
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.plot(
+            [t.number for t in trials if t.value is not None],
+            [t.value for t in trials if t.value is not None],
+            alpha=0.4,
+            label="Trial value",
+        )
+        ax.plot(range(len(best_so_far)), best_so_far, label="Best so far")
+        ax.set_xlabel("Trial")
+        ax.set_ylabel("MAE")
+        ax.set_title(f"Optuna XGB Goals ({label}) Optimisation History")
+        ax.legend()
+        fig.savefig(hist_path, bbox_inches="tight", dpi=100)
         plt.close("all")
 
     return study.best_params

@@ -14,5 +14,23 @@
     "min_samples_split": 15,
     "min_samples_leaf": 10,
     "max_depth": null
+  },
+  "xgb_home_goals": {
+    "n_estimators": 531,
+    "max_depth": 5,
+    "learning_rate": 0.013951693405214582,
+    "subsample": 0.7799132435292472,
+    "colsample_bytree": 0.8671230302525592,
+    "reg_alpha": 2.2083565382906462e-06,
+    "reg_lambda": 0.9555527075165419
+  },
+  "xgb_away_goals": {
+    "n_estimators": 554,
+    "max_depth": 4,
+    "learning_rate": 0.019724491561197918,
+    "subsample": 0.5693872725829608,
+    "colsample_bytree": 0.7901273187617591,
+    "reg_alpha": 0.00016710091505538752,
+    "reg_lambda": 0.8927612018273892
   }
 }

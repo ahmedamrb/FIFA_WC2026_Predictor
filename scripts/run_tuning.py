@@ -15,7 +15,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.models.outcome_model import load_splits
-from src.models.tune import N_TRIALS_RF, tune_random_forest_outcome, tune_xgboost_outcome
+import pandas as pd
+
+from src.models.tune import (
+    N_TRIALS_GOALS,
+    N_TRIALS_RF,
+    tune_random_forest_outcome,
+    tune_xgboost_goals,
+    tune_xgboost_outcome,
+)
 
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 
@@ -59,6 +67,36 @@ def main():
         json.dump(all_params, fh, indent=2)
 
     print(f"\nBest RF hyperparameters saved to: {hyperparams_path}")
+
+    # -----------------------------------------------------------------------
+    print("\n=== Subphase 5.4 — Optuna Tuning: Goals Models ===\n")
+
+    features_train_path = (
+        Path(__file__).resolve().parents[1] / "data" / "processed" / "features_train.parquet"
+    )
+    goals_df = pd.read_parquet(features_train_path)
+    y_home = goals_df["home_score"]
+    y_away = goals_df["away_score"]
+
+    print(f"Running Optuna search for home goals ({N_TRIALS_GOALS} trials)...\n")
+    xgb_home_goals = tune_xgboost_goals(X_train, y_home, label="home")
+
+    with hyperparams_path.open("r", encoding="utf-8") as fh:
+        all_params = json.load(fh)
+    all_params["xgb_home_goals"] = xgb_home_goals
+    with hyperparams_path.open("w", encoding="utf-8") as fh:
+        json.dump(all_params, fh, indent=2)
+    print(f"\nBest home-goals hyperparameters saved to: {hyperparams_path}")
+
+    print(f"\nRunning Optuna search for away goals ({N_TRIALS_GOALS} trials)...\n")
+    xgb_away_goals = tune_xgboost_goals(X_train, y_away, label="away")
+
+    with hyperparams_path.open("r", encoding="utf-8") as fh:
+        all_params = json.load(fh)
+    all_params["xgb_away_goals"] = xgb_away_goals
+    with hyperparams_path.open("w", encoding="utf-8") as fh:
+        json.dump(all_params, fh, indent=2)
+    print(f"\nBest away-goals hyperparameters saved to: {hyperparams_path}")
 
 
 if __name__ == "__main__":
