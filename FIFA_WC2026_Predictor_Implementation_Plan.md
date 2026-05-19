@@ -828,18 +828,20 @@ All of the following must be true before starting Phase 5:
 
 ---
 
-### Subphase 5.3 — Optuna Tuning: Random Forest Outcome Model
+### ✅ Subphase 5.3 — Optuna Tuning: Random Forest Outcome Model
 
 **Tasks**
-- [ ] In `src/models/tune.py`, implement `tune_random_forest_outcome(X_train, y_train)` with search space: `n_estimators` (100–1000), `max_features` ('sqrt', 'log2'), `min_samples_split` (2–20), `min_samples_leaf` (1–10), `max_depth` (5, 10, 20, or None). Runs `N_TRIALS_RF` trials using `StratifiedKFold(5)`.
-- [ ] Prints best results and saves `outputs/plots/optuna_rf_history.png`.
-- [ ] Returns best hyperparameters dict.
+- [✅] In `src/models/tune.py`, implement `tune_random_forest_outcome(X_train, y_train)` with search space: `n_estimators` (100–1000), `max_features` ('sqrt', 'log2'), `min_samples_split` (2–20), `min_samples_leaf` (1–10), `max_depth` (5, 10, 20, or None). Runs `N_TRIALS_RF` trials using `StratifiedKFold(5)`.
+- [✅] Prints best results and saves `outputs/plots/optuna_rf_history.png`.
+- [✅] Returns best hyperparameters dict.
 
 **Verification Checklist**
-- [ ] Study completes 50 trials without errors.
-- [ ] Best log-loss printed and lower than default RF baseline from Phase 4.
-- [ ] History plot saved.
-- [ ] Best hyperparameters returned.
+- [✅] Study completes 50 trials without errors.
+- [✅] Best log-loss printed and lower than default RF baseline from Phase 4.
+- [✅] History plot saved.
+- [✅] Best hyperparameters returned.
+
+> **Verified 2026-05-20** — `tune_random_forest_outcome` implemented in `src/models/tune.py`. Search space: `n_estimators` (100–1000), `max_features` ('sqrt', 'log2'), `min_samples_split` (2–20), `min_samples_leaf` (1–10), `max_depth` (5, 10, 20, or None). Ran 50 trials with `StratifiedKFold(5)`. Best trial: #12. Best CV log-loss: **0.9055** — improvement over Phase 4 RF baseline (1.0345). Best hyperparameters saved to `data/processed/best_hyperparams.json` under key `"rf_outcome"`: `n_estimators=981`, `max_features='sqrt'`, `min_samples_split=15`, `min_samples_leaf=10`, `max_depth=None`. History plot saved to `outputs/plots/optuna_rf_history.png`.
 
 ---
 
