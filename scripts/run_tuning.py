@@ -1,6 +1,7 @@
 """Hyperparameter tuning script.
 
-Runs Optuna hyperparameter search for the XGBoost outcome model and saves
+Runs Optuna hyperparameter search for all four models (XGBoost outcome,
+Random Forest outcome, XGBoost home goals, XGBoost away goals) and saves
 the best parameters to data/processed/best_hyperparams.json.
 
 Usage:
@@ -75,8 +76,8 @@ def main():
         Path(__file__).resolve().parents[1] / "data" / "processed" / "features_train.parquet"
     )
     goals_df = pd.read_parquet(features_train_path)
-    y_home = goals_df["home_score"]
-    y_away = goals_df["away_score"]
+    y_home = goals_df.loc[X_train.index, "home_score"]
+    y_away = goals_df.loc[X_train.index, "away_score"]
 
     print(f"Running Optuna search for home goals ({N_TRIALS_GOALS} trials)...\n")
     xgb_home_goals = tune_xgboost_goals(X_train, y_home, label="home")

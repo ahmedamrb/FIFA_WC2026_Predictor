@@ -864,17 +864,19 @@ All of the following must be true before starting Phase 5:
 ### Subphase 5.5 — Tuning Runner Script
 
 **Tasks**
-- [ ] Create `scripts/run_tuning.py` with a `main()` that:
+- [✅] Create `scripts/run_tuning.py` with a `main()` that:
   - Loads training splits via `load_splits()`.
   - Calls `tune_xgboost_outcome()`, `tune_random_forest_outcome()`, and `tune_xgboost_goals()` (x2 for home/away).
   - Saves all best hyperparameter dicts to `data/processed/best_hyperparams.json`.
-- [ ] Run `python scripts/run_tuning.py` (this will take significant wall time — expected).
+- [✅] Run `python scripts/run_tuning.py` (this will take significant wall time — expected).
 
 **Verification Checklist**
-- [ ] Script runs without errors.
-- [ ] `data/processed/best_hyperparams.json` exists with 4 keys: `xgb_outcome`, `rf_outcome`, `xgb_home_goals`, `xgb_away_goals`.
-- [ ] All 4 hyperparameter dicts are non-empty.
-- [ ] All 4 plot files saved to `outputs/plots/`.
+- [✅] Script runs without errors.
+- [✅] `data/processed/best_hyperparams.json` exists with 4 keys: `xgb_outcome`, `rf_outcome`, `xgb_home_goals`, `xgb_away_goals`.
+- [✅] All 4 hyperparameter dicts are non-empty.
+- [✅] All 4 plot files saved to `outputs/plots/`.
+
+> **Verified 2026-05-20** — `scripts/run_tuning.py` implemented and executed. `main()` loads training splits via `load_splits()`, runs all 4 Optuna studies sequentially, and merges results into `data/processed/best_hyperparams.json` with safe reload-and-merge pattern (no clobbering). Two bugs fixed during this subphase: (1) `y_home`/`y_away` were loaded from the full `features_train.parquet` instead of the training split — fixed to use `goals_df.loc[X_train.index, ...]` for correct row alignment; (2) module docstring only mentioned XGBoost outcome — corrected to describe all 4 models. Progress display also improved: replaced Optuna's `show_progress_bar=True` (which produced garbled interleaved tqdm output) with a clean `_log_progress(n_total)` callback in `src/models/tune.py` that prints one tidy `[N/total] best so far: X.XXXX` line every 10 trials. Script re-run after fixes confirmed correct behaviour. Final `best_hyperparams.json` (4 keys, all non-empty): `xgb_outcome` — `n_estimators=511`, `max_depth=5`, `learning_rate=0.01502`, `subsample=0.6933`, `colsample_bytree=0.5082`, `reg_alpha=0.9898`, `reg_lambda=0.5403`. `rf_outcome` — `n_estimators=679`, `max_features='sqrt'`, `min_samples_split=6`, `min_samples_leaf=10`, `max_depth=None`. `xgb_home_goals` — `n_estimators=509`, `max_depth=6`, `learning_rate=0.01115`, `subsample=0.8022`, `colsample_bytree=0.8970`, `reg_alpha=0.9644`, `reg_lambda=0.4014`. `xgb_away_goals` — `n_estimators=997`, `max_depth=5`, `learning_rate=0.01029`, `subsample=0.5293`, `colsample_bytree=0.6446`, `reg_alpha=0.6679`, `reg_lambda=0.000122`. All 6 Optuna plots confirmed in `outputs/plots/`: `optuna_xgb_history.png`, `optuna_xgb_param_importance.png`, `optuna_rf_history.png`, `optuna_rf_param_importance.png`, `optuna_xgb_goals_home_history.png`, `optuna_xgb_goals_away_history.png`.
 
 ---
 

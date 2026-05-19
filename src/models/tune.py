@@ -21,6 +21,15 @@ N_TRIALS_GOALS = 50
 _PLOTS_DIR = Path(__file__).resolve().parents[2] / "outputs" / "plots"
 
 
+def _log_progress(n_total: int):
+    """Return an Optuna callback that prints a tidy progress line every 10 trials."""
+    def _callback(study: optuna.Study, trial: optuna.trial.FrozenTrial) -> None:
+        completed = trial.number + 1
+        if completed % 10 == 0 or completed == n_total:
+            print(f"  [{completed}/{n_total}] best so far: {study.best_value:.4f}")
+    return _callback
+
+
 def get_cv_splits(X, y=None, n_splits=5):
     """Return a cross-validation splitter appropriate for the task type.
 
@@ -85,7 +94,7 @@ def tune_xgboost_outcome(X_train, y_train):
         direction="minimize",
         pruner=optuna.pruners.MedianPruner(),
     )
-    study.optimize(objective, n_trials=N_TRIALS_XGB, show_progress_bar=True)
+    study.optimize(objective, n_trials=N_TRIALS_XGB, callbacks=[_log_progress(N_TRIALS_XGB)])
 
     print(f"Best trial: {study.best_trial.number}")
     print(f"Best CV log-loss: {study.best_value:.4f}")
@@ -180,7 +189,7 @@ def tune_random_forest_outcome(X_train, y_train):
         direction="minimize",
         pruner=optuna.pruners.MedianPruner(),
     )
-    study.optimize(objective, n_trials=N_TRIALS_RF, show_progress_bar=True)
+    study.optimize(objective, n_trials=N_TRIALS_RF, callbacks=[_log_progress(N_TRIALS_RF)])
 
     print(f"Best trial: {study.best_trial.number}")
     print(f"Best CV log-loss: {study.best_value:.4f}")
@@ -279,7 +288,7 @@ def tune_xgboost_goals(X_train, y_goals, label="home"):
         direction="minimize",
         pruner=optuna.pruners.MedianPruner(),
     )
-    study.optimize(objective, n_trials=N_TRIALS_GOALS, show_progress_bar=True)
+    study.optimize(objective, n_trials=N_TRIALS_GOALS, callbacks=[_log_progress(N_TRIALS_GOALS)])
 
     print(f"[{label}] Best trial: {study.best_trial.number}")
     print(f"[{label}] Best CV MAE: {study.best_value:.4f}")
