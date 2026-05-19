@@ -792,14 +792,16 @@ All of the following must be true before starting Phase 5:
 ### Subphase 5.1 — Tuning Module Scaffold
 
 **Tasks**
-- [ ] Open `src/models/tune.py`.
-- [ ] Import Optuna and define a top-level constant `N_TRIALS_XGB = 100`, `N_TRIALS_RF = 50`, `N_TRIALS_GOALS = 50`.
-- [ ] Define a helper `get_cv_splits(X, y, n_splits=5)` that returns a `StratifiedKFold` splitter for outcome models and a `KFold` splitter for goals models.
-- [ ] Add a `if __name__ == "__main__": pass` guard.
-- [ ] Run `python src/models/tune.py` to verify no import errors.
+- [✅] Open `src/models/tune.py`.
+- [✅] Import Optuna and define a top-level constant `N_TRIALS_XGB = 100`, `N_TRIALS_RF = 50`, `N_TRIALS_GOALS = 50`.
+- [✅] Define a helper `get_cv_splits(X, y, n_splits=5)` that returns a `StratifiedKFold` splitter for outcome models and a `KFold` splitter for goals models.
+- [✅] Add a `if __name__ == "__main__": pass` guard.
+- [✅] Run `python src/models/tune.py` to verify no import errors.
 
 **Verification Checklist**
-- [ ] `python src/models/tune.py` exits with code 0 and no errors.
+- [✅] `python src/models/tune.py` exits with code 0 and no errors.
+
+> **Verified 2026-05-19** — `src/models/tune.py` scaffold implemented. Constants: `N_TRIALS_XGB=100`, `N_TRIALS_RF=50`, `N_TRIALS_GOALS=50`. `get_cv_splits(X, y=None, n_splits=5)` returns `StratifiedKFold(shuffle=True, random_state=42)` when `y` is provided (classification), `KFold(shuffle=True, random_state=42)` when `y=None` (regression). Optuna logging set to WARNING to suppress noise. `python src/models/tune.py` exits with code 0, no output, no errors.
 
 ---
 
