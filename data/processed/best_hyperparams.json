@@ -1,0 +1,11 @@
+{
+  "xgb_outcome": {
+    "n_estimators": 887,
+    "max_depth": 3,
+    "learning_rate": 0.013815527995393902,
+    "subsample": 0.5249141903178309,
+    "colsample_bytree": 0.8723548536842318,
+    "reg_alpha": 0.5989876131052873,
+    "reg_lambda": 0.09485469702101364
+  }
+}

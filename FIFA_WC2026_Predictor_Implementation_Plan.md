@@ -808,7 +808,7 @@ All of the following must be true before starting Phase 5:
 ### Subphase 5.2 — Optuna Tuning: XGBoost Outcome Model
 
 **Tasks**
-- [ ] In `src/models/tune.py`, implement `tune_xgboost_outcome(X_train, y_train)` that:
+- [✅] In `src/models/tune.py`, implement `tune_xgboost_outcome(X_train, y_train)` that:
   - Creates an Optuna study with `direction='minimize'` and `MedianPruner`.
   - Defines the search space: `n_estimators` (100–1000), `max_depth` (3–10), `learning_rate` (0.01–0.3, log scale), `subsample` (0.5–1.0), `colsample_bytree` (0.5–1.0), `reg_alpha` (1e-8 to 1.0, log scale), `reg_lambda` (1e-8 to 1.0, log scale).
   - Uses `StratifiedKFold(5)` cross-validation inside the objective, scoring by log-loss.
@@ -819,10 +819,12 @@ All of the following must be true before starting Phase 5:
   - Returns the best hyperparameters dict.
 
 **Verification Checklist**
-- [ ] Study runs all 100 trials without crashing.
-- [ ] Best log-loss printed and is lower than the default XGB baseline from Phase 4.
-- [ ] Both Optuna plots saved.
-- [ ] Best hyperparameters returned and printed.
+- [✅] Study runs all 100 trials without crashing.
+- [✅] Best log-loss printed and is lower than the default XGB baseline from Phase 4.
+- [✅] Both Optuna plots saved.
+- [✅] Best hyperparameters returned and printed.
+
+> **Verified 2026-05-19** — `python scripts/run_tuning.py` ran all 100 Optuna trials to completion (best trial: #63). Best CV log-loss: **0.9001** — a significant improvement over the Phase 4 XGB baseline (val: 1.1591, test: 1.1575). Best hyperparameters saved to `data/processed/best_hyperparams.json` under key `"xgb_outcome"`: `n_estimators=887`, `max_depth=3`, `learning_rate=0.01382`, `subsample=0.5249`, `colsample_bytree=0.8724`, `reg_alpha=0.5990`, `reg_lambda=0.0949`. Plots confirmed: `outputs/plots/optuna_xgb_history.png` and `outputs/plots/optuna_xgb_param_importance.png`.
 
 ---
 
