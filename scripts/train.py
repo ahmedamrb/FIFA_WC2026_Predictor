@@ -1,11 +1,8 @@
 """Full training pipeline for FIFA WC 2026 Predictor.
 
-Subphases 5.6–5.7: trains all tuned outcome and goals models, assembles
-and evaluates the soft-voting ensemble, and saves results to
-baseline_results.json.
-
-Later subphases (5.8–5.9) will extend this script with calibration and
-model serialisation.
+Subphases 5.6–5.8: trains all tuned outcome and goals models, assembles
+the soft-voting ensemble, checks calibration, applies CalibratedClassifierCV
+if it reduces val log-loss, and saves results to baseline_results.json.
 
 Usage:
     python scripts/train.py
@@ -22,6 +19,9 @@ import pandas as pd
 from src.models.goals_model import evaluate_goals_model, train_tuned_goals_models
 from src.models.outcome_model import evaluate_model, load_splits, train_tuned_models
 from src.models.ensemble import WC2026Ensemble
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.metrics import log_loss
+from src.evaluation.metrics import plot_calibration_curves
 
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 
@@ -147,7 +147,7 @@ def main():
     )
 
     # ------------------------------------------------------------------
-    # Append tuned metrics to baseline_results.json
+    # Append tuned/ensemble metrics to results dict
     # ------------------------------------------------------------------
     results["LR_tuned_val"] = lr_tuned_val
     results["LR_tuned_test"] = lr_tuned_test
@@ -161,11 +161,63 @@ def main():
     results["goals_xgb_tuned_test"] = goals_xgb_test
     results["goals_poisson_tuned_val"] = goals_poisson_val
 
+    # ------------------------------------------------------------------
+    # Subphase 5.8 — Calibration Check
+    # ------------------------------------------------------------------
+    print("\n=== Subphase 5.8 — Calibration Check ===\n")
+
+    # Plot calibration curves for best individual model (RF) and ensemble
+    plot_calibration_curves(rf_model, X_val, y_val, "rf_tuned")
+    plot_calibration_curves(ensemble, X_val, y_val, "ensemble")
+
+    # Calibrate XGBoost (most likely overconfident); use 5-fold CV on training
+    # data — cv='prefit' was removed in sklearn 1.6+.
+    cal_xgb = CalibratedClassifierCV(xgb_model, cv=5, method="isotonic")
+    cal_xgb.fit(X_train, y_train)
+
+    # Reassemble ensemble with calibrated XGBoost
+    cal_ensemble = WC2026Ensemble(lr_model, rf_model, cal_xgb)
+
+    # Evaluate calibrated ensemble
+    cal_ensemble_val = evaluate_model(
+        cal_ensemble, X_val, y_val, "Ensemble (calibrated) — Val (WC 2022)"
+    )
+    cal_ensemble_test = evaluate_model(
+        cal_ensemble, X_test, y_test, "Ensemble (calibrated) — Test (WC 2018)"
+    )
+
+    # Plot calibration curve for the calibrated ensemble
+    plot_calibration_curves(cal_ensemble, X_val, y_val, "ensemble_calibrated")
+
+    # Apply only if val log-loss does not worsen
+    pre_ll = ensemble_val["log_loss"]
+    post_ll = cal_ensemble_val["log_loss"]
+
+    if post_ll <= pre_ll:
+        print(
+            f"\n  Calibration APPLIED"
+            f"  (val log-loss {pre_ll:.4f} → {post_ll:.4f},  Δ={post_ll - pre_ll:+.4f})"
+        )
+        results["ensemble_calibrated_val"] = cal_ensemble_val
+        results["ensemble_calibrated_test"] = cal_ensemble_test
+        calibration_applied = True
+    else:
+        print(
+            f"\n  Calibration NOT applied — no improvement"
+            f"  (val log-loss {pre_ll:.4f} → {post_ll:.4f},  Δ={post_ll - pre_ll:+.4f})"
+        )
+        calibration_applied = False
+
+    results["calibration_applied"] = calibration_applied
+
+    # ------------------------------------------------------------------
+    # Persist all metrics to baseline_results.json
+    # ------------------------------------------------------------------
     with baseline_path.open("w", encoding="utf-8") as fh:
         json.dump(results, fh, indent=2)
 
     print(f"\nUpdated metrics saved to: {baseline_path}")
-    print("\n=== Subphase 5.6–5.7 complete ===")
+    print("\n=== Subphases 5.6–5.8 complete ===")
 
 
 if __name__ == "__main__":

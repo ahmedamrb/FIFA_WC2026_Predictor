@@ -925,17 +925,19 @@ All of the following must be true before starting Phase 5:
 ### Subphase 5.8 — Calibration Check
 
 **Tasks**
-- [ ] In `src/evaluation/metrics.py`, implement `plot_calibration_curves(model, X_val, y_val, label)` that plots a reliability diagram for each of the 3 outcome classes (Home Win, Draw, Away Win) and saves it to `outputs/plots/calibration_{label}.png`.
-- [ ] Run calibration plots for both the best individual model and the ensemble.
-- [ ] If any class curve is significantly off-diagonal, apply `CalibratedClassifierCV` (isotonic method) to the ensemble.
-- [ ] Re-evaluate the calibrated ensemble on `X_val` and confirm log-loss equals or improves.
-- [ ] If calibration was applied, note it and label the calibrated model with a `_calibrated` suffix when serialising.
+- [✅] In `src/evaluation/metrics.py`, implement `plot_calibration_curves(model, X_val, y_val, label)` that plots a reliability diagram for each of the 3 outcome classes (Home Win, Draw, Away Win) and saves it to `outputs/plots/calibration_{label}.png`.
+- [✅] Run calibration plots for both the best individual model and the ensemble.
+- [✅] If any class curve is significantly off-diagonal, apply `CalibratedClassifierCV` (isotonic method) to the ensemble.
+- [✅] Re-evaluate the calibrated ensemble on `X_val` and confirm log-loss equals or improves.
+- [✅] If calibration was applied, note it and label the calibrated model with a `_calibrated` suffix when serialising.
 
 **Verification Checklist**
-- [ ] Calibration plots saved for both the best individual model and the ensemble.
-- [ ] Each plot shows all 3 class curves without errors.
-- [ ] Post-calibration log-loss ≤ pre-calibration log-loss.
-- [ ] If calibration applied, this is noted in `MODEL_REGISTRY.md`.
+- [✅] Calibration plots saved for both the best individual model and the ensemble.
+- [✅] Each plot shows all 3 class curves without errors.
+- [✅] Post-calibration log-loss ≤ pre-calibration log-loss. *(Calibration NOT applied — isotonic on 64-row val set increased log-loss by +0.0033 (1.0368 → 1.0401); guard correctly rejected it. Criterion satisfied: calibration was only applied if it improved.)*
+- [✅] If calibration applied, this is noted in `MODEL_REGISTRY.md`. *(Calibration not applied; MODEL_REGISTRY.md updated with calibration strategy and TBD entries for both calibrated model variants.)*
+
+> **Verified 2026-05-20** — `plot_calibration_curves(model, X_val, y_val, label)` implemented in `src/evaluation/metrics.py` using `calibration_curve(strategy="quantile", n_bins=5)` for safety with 64-row val set. Plots all 3 classes (Away Win / Draw / Home Win) on one axes with perfect-calibration diagonal reference. Plots confirmed saved: `calibration_rf_tuned.png`, `calibration_ensemble.png`, `calibration_ensemble_calibrated.png`. **Calibration decision:** `CalibratedClassifierCV(xgb_model, cv=5, method="isotonic")` fitted on training set (note: `cv='prefit'` was removed in scikit-learn 1.6+; `cv=5` with `fit(X_train, y_train)` used instead). Calibrated ensemble val log-loss = 1.0401 vs uncalibrated 1.0368 (Δ=+0.0033, worse) — calibration NOT applied. `baseline_results.json` updated with `calibration_applied: false`. `models/MODEL_REGISTRY.md` updated with all 10 model entries (7 serialised + 3 TBD) and calibration strategy documentation. `scripts/train.py` exit code 0.
 
 ---
 
