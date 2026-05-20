@@ -12,6 +12,8 @@ import json
 import sys
 from pathlib import Path
 
+import joblib
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pandas as pd
@@ -24,6 +26,7 @@ from sklearn.metrics import log_loss
 from src.evaluation.metrics import plot_calibration_curves
 
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
+_MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 
 
 def main():
@@ -217,7 +220,36 @@ def main():
         json.dump(results, fh, indent=2)
 
     print(f"\nUpdated metrics saved to: {baseline_path}")
-    print("\n=== Subphases 5.6–5.8 complete ===")
+
+    # ------------------------------------------------------------------
+    # Subphase 5.9 — Model Serialisation
+    # ------------------------------------------------------------------
+    print("\n=== Subphase 5.9 — Model Serialisation ===")
+
+    _MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+    models_to_save = [
+        ("outcome_lr.pkl",        lr_model,     "classifier"),
+        ("outcome_rf.pkl",        rf_model,     "classifier"),
+        ("outcome_xgb.pkl",       xgb_model,    "classifier"),
+        ("home_goals_xgb.pkl",    xgb_home,     "regressor"),
+        ("away_goals_xgb.pkl",    xgb_away,     "regressor"),
+        ("home_goals_poisson.pkl", poisson_home, "regressor"),
+        ("away_goals_poisson.pkl", poisson_away, "regressor"),
+    ]
+
+    for filename, model, kind in models_to_save:
+        dest = _MODELS_DIR / filename
+        joblib.dump(model, dest)
+        loaded = joblib.load(dest)
+        sample = X_val.iloc[:1]
+        if kind == "classifier":
+            loaded.predict_proba(sample)
+        else:
+            loaded.predict(sample)
+        print(f"  Saved & verified: models/{filename}")
+
+    print("\n=== Subphases 5.6–5.9 complete ===")
 
 
 if __name__ == "__main__":

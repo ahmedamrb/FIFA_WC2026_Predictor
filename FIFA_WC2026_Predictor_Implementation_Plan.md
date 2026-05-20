@@ -944,7 +944,7 @@ All of the following must be true before starting Phase 5:
 ### Subphase 5.9 — Model Serialisation
 
 **Tasks**
-- [ ] Create `scripts/train.py` as the canonical full-training-run entry point that:
+- [✅] Create `scripts/train.py` as the canonical full-training-run entry point that:
   - Loads splits.
   - Loads `data/processed/best_hyperparams.json`.
   - Trains all tuned models.
@@ -953,16 +953,18 @@ All of the following must be true before starting Phase 5:
   - Serialises to `models/` using `joblib.dump`: `outcome_xgb.pkl`, `outcome_rf.pkl`, `outcome_lr.pkl`, `home_goals_xgb.pkl`, `away_goals_xgb.pkl`, `home_goals_poisson.pkl`, `away_goals_poisson.pkl`.
   - Loads each file back immediately and runs a single prediction to confirm.
   - Prints confirmation for each model.
-- [ ] Create `models/MODEL_REGISTRY.md` documenting each model: filename, type, tuned hyperparameters, validation log-loss or MAE, date trained.
-- [ ] Run `python scripts/train.py`.
+- [✅] Create `models/MODEL_REGISTRY.md` documenting each model: filename, type, tuned hyperparameters, validation log-loss or MAE, date trained.
+- [✅] Run `python scripts/train.py`.
 
 **Verification Checklist**
-- [ ] All 7 `.pkl` files exist under `models/`.
-- [ ] Each model loads and runs a single prediction without errors (printed confirmation).
-- [ ] Outcome models return probability arrays of shape `(n, 3)`.
-- [ ] Goals models return 1D arrays with no negative values.
-- [ ] `models/MODEL_REGISTRY.md` exists with all 7 entries.
-- [ ] `models/*.pkl` files do NOT appear in `git status` (confirmed gitignored).
+- [✅] All 7 `.pkl` files exist under `models/`.
+- [✅] Each model loads and runs a single prediction without errors (printed confirmation).
+- [✅] Outcome models return probability arrays of shape `(n, 3)`.
+- [✅] Goals models return 1D arrays with no negative values.
+- [✅] `models/MODEL_REGISTRY.md` exists with all 7 entries.
+- [✅] `models/*.pkl` files do NOT appear in `git status` (confirmed gitignored).
+
+> **Verified 2026-05-20** — `scripts/train.py` extended with Subphase 5.9 serialisation block: added `import joblib`, `_MODELS_DIR` constant, and a save/verify loop for all 7 models. All 7 `.pkl` files serialised to `models/` using `joblib.dump` and immediately round-trip verified by loading back and running a single prediction on `X_val.iloc[:1]`. **Outcome models** (`outcome_lr.pkl`, `outcome_rf.pkl`, `outcome_xgb.pkl`): each returns `predict_proba` shape `(1, 3)` with row sum exactly 1.0000. **Goals models** (`home_goals_xgb.pkl`, `away_goals_xgb.pkl`, `home_goals_poisson.pkl`, `away_goals_poisson.pkl`): all predictions ≥ 0 confirmed. `.gitignore` updated with `models/*.pkl`, `data/raw/`, `data/processed/`, `outputs/plots/` — `.pkl` files confirmed absent from `git status`. `models/MODEL_REGISTRY.md` updated: both calibrated-model rows (`outcome_xgb_calibrated.pkl`, `outcome_ensemble_calibrated.pkl`) marked as not serialised with `N/A` date and `—` metrics (isotonic calibration was rejected in Subphase 5.8). `scripts/train.py` exit code 0.
 
 ---
 
@@ -983,12 +985,12 @@ All of the following must be true before starting Phase 5:
 
 All of the following must be true before starting Phase 6:
 
-- [ ] `python scripts/train.py` runs without errors.
+- [✅] `python scripts/train.py` runs without errors.
 - [ ] Ensemble validation log-loss < 0.95 (PRD target).
 - [ ] Ensemble validation accuracy > 52% (PRD target).
-- [ ] All 7 model `.pkl` files exist and load correctly.
-- [ ] `models/MODEL_REGISTRY.md` is complete.
-- [ ] `data/processed/best_hyperparams.json` exists.
+- [✅] All 7 model `.pkl` files exist and load correctly.
+- [✅] `models/MODEL_REGISTRY.md` is complete.
+- [✅] `data/processed/best_hyperparams.json` exists.
 - [ ] 7 model unit tests pass.
 - [ ] All source files and processed JSON files committed. Models excluded.
 

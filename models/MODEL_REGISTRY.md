@@ -16,8 +16,8 @@ Tracks trained model versions, hyperparameters, and performance metrics.
 | `outcome_rf.pkl` | 2026-05-20 | Random Forest (tuned) | 1.0209 | 0.5313 | 0.6032 | Best individual model on val set; tuned via Optuna (50 trials) |
 | `outcome_xgb.pkl` | 2026-05-20 | XGBoost (tuned) | 1.0333 | 0.5469 | 0.6080 | Highest val accuracy individual model; tuned via Optuna (100 trials) |
 | `outcome_ensemble.pkl` | 2026-05-20 | Soft-voting Ensemble | 1.0368 | 0.5313 | 0.6124 | Averages LR + RF + XGB predict_proba; best test-set model (LL=1.0137) |
-| `outcome_xgb_calibrated.pkl` | TBD | XGB + Isotonic Calibration | TBD | TBD | TBD | Calibrated with CalibratedClassifierCV(cv='prefit', method='isotonic') on 64-row WC 2022 val set; serialised in Subphase 5.9 |
-| `outcome_ensemble_calibrated.pkl` | TBD | Calibrated Ensemble | TBD | TBD | TBD | LR + RF + calibrated XGB; applied only if val log-loss improves; serialised in Subphase 5.9 |
+| `outcome_xgb_calibrated.pkl` | N/A | XGB + Isotonic Calibration | — | — | — | Not serialised — isotonic calibration degraded val log-loss (post > pre); Subphase 5.8 decision. |
+| `outcome_ensemble_calibrated.pkl` | N/A | Calibrated Ensemble | — | — | — | Not serialised — isotonic calibration degraded val log-loss (post > pre); Subphase 5.8 decision. |
 | `home_goals_xgb.pkl` | 2026-05-20 | XGBRegressor (tuned) | — | — | — | Val MAE=1.0777; tuned via Optuna (50 trials) |
 | `away_goals_xgb.pkl` | 2026-05-20 | XGBRegressor (tuned) | — | — | — | Val MAE=0.8464; tuned via Optuna (50 trials) |
 | `home_goals_poisson.pkl` | 2026-05-20 | Poisson Regressor | — | — | — | Fallback; val MAE=1.1274 |
