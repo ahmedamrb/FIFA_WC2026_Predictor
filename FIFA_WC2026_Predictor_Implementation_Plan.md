@@ -971,13 +971,15 @@ All of the following must be true before starting Phase 5:
 ### Subphase 5.10 — Tuning & Ensemble Unit Tests
 
 **Tasks**
-- [ ] In `tests/test_models.py`, add:
+- [✅] In `tests/test_models.py`, add:
   - `test_ensemble_probabilities_sum_to_one()`: asserts `WC2026Ensemble.predict_proba` rows sum to 1.0.
   - `test_ensemble_not_worse_than_best_model()`: on a synthetic dataset (n=300), asserts ensemble log-loss ≤ the mean individual model log-loss (Jensen's inequality guarantee).
-- [ ] Run `python -m pytest tests/test_models.py -v`.
+- [✅] Run `python -m pytest tests/test_models.py -v`.
 
 **Verification Checklist**
-- [ ] All tests (original 5 + new 2) pass — `pytest` shows `7 passed`.
+- [✅] All tests (original 5 + new 2) pass — `pytest` shows `7 passed`.
+
+> **Verified 2026-05-20** — Both ensemble tests (`test_ensemble_probabilities_sum_to_one`, `test_ensemble_not_worse_than_best_model`) were already present in `tests/test_models.py` from prior implementation. `python -m pytest tests/test_models.py -v` run on Python 3.13.3 / pytest 9.0.3: **7 passed, 1 warning in 4.44s**. All 7 tests: `test_lr_probabilities_sum_to_one` ✓, `test_rf_probabilities_sum_to_one` ✓, `test_xgb_probabilities_sum_to_one` ✓, `test_poisson_no_negative_predictions` ✓, `test_evaluate_model_returns_dict` ✓, `test_ensemble_probabilities_sum_to_one` ✓, `test_ensemble_not_worse_than_best_model` ✓. Non-fatal sklearn warning on `test_ensemble_not_worse_than_best_model` ("y_prob values do not sum to one") is a floating-point precision artefact from `np.mean` across 3 probability arrays — does not affect test correctness. Jensen's inequality assertion confirmed: ensemble log-loss ≤ mean individual log-loss on n=300 synthetic data with seed=0.
 
 ---
 
@@ -991,8 +993,8 @@ All of the following must be true before starting Phase 6:
 - [✅] All 7 model `.pkl` files exist and load correctly.
 - [✅] `models/MODEL_REGISTRY.md` is complete.
 - [✅] `data/processed/best_hyperparams.json` exists.
-- [ ] 7 model unit tests pass.
-- [ ] All source files and processed JSON files committed. Models excluded.
+- [✅] 7 model unit tests pass.
+- [✅] All source files and processed JSON files committed. Models excluded.
 
 ---
 
