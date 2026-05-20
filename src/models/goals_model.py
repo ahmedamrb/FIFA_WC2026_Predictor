@@ -1,7 +1,8 @@
 """Goals scored regression model for FIFA WC 2026 Predictor.
 
 Trains two PoissonRegressor models — one for home goals, one for away goals —
-and evaluates them on the WC 2022 validation set.
+and two XGBRegressor models using tuned hyperparameters, evaluated on the
+WC 2022 validation set.
 """
 
 from pathlib import Path
@@ -12,6 +13,7 @@ from sklearn.linear_model import PoissonRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from xgboost import XGBRegressor
 
 from src.data.preprocess import FEATURE_COLUMNS
 
@@ -87,6 +89,56 @@ def evaluate_goals_model(home_model, away_model, X_val, y_home_val, y_away_val):
         "rmse_away": rmse_away,
         "scoreline_accuracy": scoreline_acc,
     }
+
+
+def train_tuned_goals_models(X_train, y_home, y_away, best_params):
+    """Retrain XGBoost and Poisson goals models with tuned hyperparameters.
+
+    Trains two XGBRegressor models using tuned params from best_params, and
+    two PoissonRegressor pipelines as a fallback.
+
+    Args:
+        X_train: Training feature DataFrame.
+        y_home: Target home goals series.
+        y_away: Target away goals series.
+        best_params: Dict loaded from best_hyperparams.json. Must contain
+            'xgb_home_goals' and 'xgb_away_goals' keys.
+
+    Returns:
+        Tuple of (xgb_home, xgb_away, poisson_home, poisson_away).
+    """
+    print("\n=== Training Tuned XGBoost Home Goals ===")
+    hp = best_params["xgb_home_goals"]
+    xgb_home = XGBRegressor(
+        n_estimators=hp["n_estimators"],
+        max_depth=hp["max_depth"],
+        learning_rate=hp["learning_rate"],
+        subsample=hp["subsample"],
+        colsample_bytree=hp["colsample_bytree"],
+        reg_alpha=hp["reg_alpha"],
+        reg_lambda=hp["reg_lambda"],
+        random_state=42,
+    )
+    xgb_home.fit(X_train, y_home)
+
+    print("\n=== Training Tuned XGBoost Away Goals ===")
+    ap = best_params["xgb_away_goals"]
+    xgb_away = XGBRegressor(
+        n_estimators=ap["n_estimators"],
+        max_depth=ap["max_depth"],
+        learning_rate=ap["learning_rate"],
+        subsample=ap["subsample"],
+        colsample_bytree=ap["colsample_bytree"],
+        reg_alpha=ap["reg_alpha"],
+        reg_lambda=ap["reg_lambda"],
+        random_state=42,
+    )
+    xgb_away.fit(X_train, y_away)
+
+    print("\n=== Training Poisson Fallback Goals Models ===")
+    poisson_home, poisson_away = train_poisson_goals(X_train, y_home, y_away)
+
+    return xgb_home, xgb_away, poisson_home, poisson_away
 
 
 if __name__ == "__main__":

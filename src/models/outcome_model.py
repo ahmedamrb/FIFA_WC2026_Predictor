@@ -156,6 +156,56 @@ def evaluate_model(model, X, y, label):
     return {"log_loss": ll, "accuracy": acc, "brier_score": brier}
 
 
+def train_tuned_models(X_train, y_train, best_params):
+    """Retrain LR, RF, and XGBoost on the full training set using tuned hyperparameters.
+
+    LR is retrained with default parameters (no tuning was performed for LR).
+    RF and XGBoost use their respective entries from best_params.
+
+    Args:
+        X_train: Training feature DataFrame.
+        y_train: Training outcome Series (0/1/2).
+        best_params: Dict loaded from best_hyperparams.json. Must contain
+            'xgb_outcome' and 'rf_outcome' keys.
+
+    Returns:
+        Tuple of (lr_model, rf_model, xgb_model).
+    """
+    print("\n=== Training Tuned Logistic Regression ===")
+    lr_model = train_logistic_regression(X_train, y_train)
+
+    print("\n=== Training Tuned Random Forest ===")
+    rp = best_params["rf_outcome"]
+    rf_model = RandomForestClassifier(
+        n_estimators=rp["n_estimators"],
+        max_features=rp["max_features"],
+        min_samples_split=rp["min_samples_split"],
+        min_samples_leaf=rp["min_samples_leaf"],
+        max_depth=rp["max_depth"],
+        random_state=42,
+    )
+    rf_model.fit(X_train, y_train)
+
+    print("\n=== Training Tuned XGBoost ===")
+    xp = best_params["xgb_outcome"]
+    xgb_model = XGBClassifier(
+        objective="multi:softprob",
+        num_class=3,
+        eval_metric="mlogloss",
+        n_estimators=xp["n_estimators"],
+        max_depth=xp["max_depth"],
+        learning_rate=xp["learning_rate"],
+        subsample=xp["subsample"],
+        colsample_bytree=xp["colsample_bytree"],
+        reg_alpha=xp["reg_alpha"],
+        reg_lambda=xp["reg_lambda"],
+        random_state=42,
+    )
+    xgb_model.fit(X_train, y_train)
+
+    return lr_model, rf_model, xgb_model
+
+
 if __name__ == "__main__":
     X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
     print("\n--- Shapes ---")
