@@ -1,10 +1,11 @@
 """Full training pipeline for FIFA WC 2026 Predictor.
 
-Subphase 5.6: trains all tuned outcome and goals models, evaluates them
-against baseline metrics, and saves results to baseline_results.json.
+Subphases 5.6–5.7: trains all tuned outcome and goals models, assembles
+and evaluates the soft-voting ensemble, and saves results to
+baseline_results.json.
 
-Later subphases (5.7–5.9) will extend this script with ensemble assembly,
-calibration, and model serialisation.
+Later subphases (5.8–5.9) will extend this script with calibration and
+model serialisation.
 
 Usage:
     python scripts/train.py
@@ -20,6 +21,7 @@ import pandas as pd
 
 from src.models.goals_model import evaluate_goals_model, train_tuned_goals_models
 from src.models.outcome_model import evaluate_model, load_splits, train_tuned_models
+from src.models.ensemble import WC2026Ensemble
 
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 
@@ -71,6 +73,14 @@ def main():
     xgb_tuned_test = evaluate_model(xgb_model, X_test, y_test, "XGB (tuned) — Test (WC 2018)")
 
     # ------------------------------------------------------------------
+    # Subphase 5.7 — Assemble and evaluate soft-voting ensemble
+    # ------------------------------------------------------------------
+    print("\n--- Ensemble Evaluation ---")
+    ensemble = WC2026Ensemble(lr_model, rf_model, xgb_model)
+    ensemble_val = evaluate_model(ensemble, X_val, y_val, "Ensemble — Val (WC 2022)")
+    ensemble_test = evaluate_model(ensemble, X_test, y_test, "Ensemble — Test (WC 2018)")
+
+    # ------------------------------------------------------------------
     # Print baseline vs tuned comparison
     # ------------------------------------------------------------------
     baseline_path = _PROCESSED_DIR / "baseline_results.json"
@@ -88,6 +98,28 @@ def main():
         tuned_ll = tuned_metrics["log_loss"]
         tag = "↓ IMPROVED" if tuned_ll < baseline_ll else "↑ WORSE"
         print(f"  {name:5s}: baseline={baseline_ll:.4f}  tuned={tuned_ll:.4f}  {tag}")
+
+    # ------------------------------------------------------------------
+    # Full comparison table: LR / RF / XGB / Ensemble
+    # ------------------------------------------------------------------
+    print("\n=== Subphase 5.7 — Final Model Comparison ===")
+    header = (
+        f"{'Model':<12}{'Val LL':>10}{'Val Acc':>10}{'Val Brier':>11}"
+        f"{'Test LL':>10}{'Test Acc':>10}"
+    )
+    print(header)
+    print("-" * len(header))
+    table_rows = [
+        ("LR",       lr_tuned_val,   lr_tuned_test),
+        ("RF",       rf_tuned_val,   rf_tuned_test),
+        ("XGB",      xgb_tuned_val,  xgb_tuned_test),
+        ("Ensemble", ensemble_val,   ensemble_test),
+    ]
+    for name, v, t in table_rows:
+        print(
+            f"{name:<12}{v['log_loss']:>10.4f}{v['accuracy']:>10.4f}"
+            f"{v['brier_score']:>11.4f}{t['log_loss']:>10.4f}{t['accuracy']:>10.4f}"
+        )
 
     # ------------------------------------------------------------------
     # Train tuned goals models
@@ -123,6 +155,8 @@ def main():
     results["RF_tuned_test"] = rf_tuned_test
     results["XGB_tuned_val"] = xgb_tuned_val
     results["XGB_tuned_test"] = xgb_tuned_test
+    results["ensemble_val"] = ensemble_val
+    results["ensemble_test"] = ensemble_test
     results["goals_xgb_tuned_val"] = goals_xgb_val
     results["goals_xgb_tuned_test"] = goals_xgb_test
     results["goals_poisson_tuned_val"] = goals_poisson_val
@@ -131,7 +165,7 @@ def main():
         json.dump(results, fh, indent=2)
 
     print(f"\nUpdated metrics saved to: {baseline_path}")
-    print("\n=== Subphase 5.6 complete ===")
+    print("\n=== Subphase 5.6–5.7 complete ===")
 
 
 if __name__ == "__main__":

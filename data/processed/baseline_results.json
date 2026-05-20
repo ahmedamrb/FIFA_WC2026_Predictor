@@ -86,5 +86,15 @@
     "mae_away": 0.838093318971314,
     "rmse_away": 1.0225393656439468,
     "scoreline_accuracy": 0.078125
+  },
+  "ensemble_val": {
+    "log_loss": 1.0368346335397374,
+    "accuracy": 0.53125,
+    "brier_score": 0.6123908352120864
+  },
+  "ensemble_test": {
+    "log_loss": 1.0137154784457756,
+    "accuracy": 0.5,
+    "brier_score": 0.6071076549691273
   }
 }
