@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 import joblib
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -20,13 +21,88 @@ import pandas as pd
 
 from src.models.goals_model import evaluate_goals_model, train_tuned_goals_models
 from src.models.outcome_model import evaluate_model, load_splits, train_tuned_models
-from src.models.ensemble import WC2026Ensemble
+from src.models.ensemble import WC2026Ensemble, optimize_ensemble_weights
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import log_loss
 from src.evaluation.metrics import plot_calibration_curves
 
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 _MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
+
+
+def _generate_oof_preds(X_train, y_train, w_train, best_params, n_splits=5):
+    """Generate out-of-fold predictions for LR, RF, and XGBoost.
+
+    Args:
+        X_train: Training feature DataFrame.
+        y_train: Training outcome Series.
+        w_train: numpy array of per-sample training weights.
+        best_params: Dict with 'rf_outcome' and 'xgb_outcome' keys.
+        n_splits: Number of stratified CV folds.
+
+    Returns:
+        List of 3 numpy arrays, each (n_train, 3), for [LR, RF, XGB].
+    """
+    from sklearn.model_selection import StratifiedKFold
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.ensemble import RandomForestClassifier
+    from xgboost import XGBClassifier
+
+    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+    n = len(X_train)
+    oof = [np.zeros((n, 3)) for _ in range(3)]  # [lr, rf, xgb]
+    X_arr = X_train.values
+    y_arr = y_train.to_numpy()
+    rp = best_params["rf_outcome"]
+    xp = best_params["xgb_outcome"]
+
+    for fold_num, (tr_idx, va_idx) in enumerate(cv.split(X_arr, y_arr), 1):
+        X_tr, X_va = X_arr[tr_idx], X_arr[va_idx]
+        y_tr = y_arr[tr_idx]
+        w_tr = w_train[tr_idx]
+
+        # LR
+        lr_fold = Pipeline([
+            ("scaler", StandardScaler()),
+            ("lr", LogisticRegression(max_iter=1000, solver="lbfgs", random_state=42)),
+        ])
+        lr_fold.fit(X_tr, y_tr, lr__sample_weight=w_tr)
+        oof[0][va_idx] = lr_fold.predict_proba(X_va)
+
+        # RF
+        rf_fold = RandomForestClassifier(
+            n_estimators=rp["n_estimators"],
+            max_features=rp["max_features"],
+            min_samples_split=rp["min_samples_split"],
+            min_samples_leaf=rp["min_samples_leaf"],
+            max_depth=rp["max_depth"],
+            random_state=42,
+        )
+        rf_fold.fit(X_tr, y_tr, sample_weight=w_tr)
+        oof[1][va_idx] = rf_fold.predict_proba(X_va)
+
+        # XGB
+        xgb_fold = XGBClassifier(
+            objective="multi:softprob",
+            num_class=3,
+            eval_metric="mlogloss",
+            n_estimators=xp["n_estimators"],
+            max_depth=xp["max_depth"],
+            learning_rate=xp["learning_rate"],
+            subsample=xp["subsample"],
+            colsample_bytree=xp["colsample_bytree"],
+            reg_alpha=xp["reg_alpha"],
+            reg_lambda=xp["reg_lambda"],
+            random_state=42,
+        )
+        xgb_fold.fit(X_tr, y_tr, sample_weight=w_tr, verbose=False)
+        oof[2][va_idx] = xgb_fold.predict_proba(X_va)
+
+        print(f"  OOF fold {fold_num}/{n_splits} done")
+
+    return oof
 
 
 def main():
@@ -36,7 +112,7 @@ def main():
     # ------------------------------------------------------------------
     # Load data splits
     # ------------------------------------------------------------------
-    X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
 
     # ------------------------------------------------------------------
     # Load tuned hyperparameters
@@ -60,9 +136,11 @@ def main():
     y_away_test = goals_df.loc[X_test.index, "away_score"]
 
     # ------------------------------------------------------------------
-    # Train tuned outcome models
+    # Train tuned outcome models (with sample weights)
     # ------------------------------------------------------------------
-    lr_model, rf_model, xgb_model = train_tuned_models(X_train, y_train, best_params)
+    lr_model, rf_model, xgb_model = train_tuned_models(
+        X_train, y_train, best_params, sample_weight=w_train
+    )
 
     # ------------------------------------------------------------------
     # Evaluate tuned outcome models on val and test
@@ -76,10 +154,22 @@ def main():
     xgb_tuned_test = evaluate_model(xgb_model, X_test, y_test, "XGB (tuned) — Test (WC 2018)")
 
     # ------------------------------------------------------------------
-    # Subphase 5.7 — Assemble and evaluate soft-voting ensemble
+    # Subphase 5.7 — Learn ensemble weights from OOF predictions
+    # ------------------------------------------------------------------
+    print("\n=== Subphase 5.7 — Learning Ensemble Weights from OOF Predictions ===")
+    print("  Generating 5-fold OOF predictions (takes ~1–2 min) ...")
+    oof_preds = _generate_oof_preds(X_train, y_train, w_train, best_params)
+    learned_weights = optimize_ensemble_weights(oof_preds, y_train)
+    print(
+        f"  Learned weights: LR={learned_weights[0]:.4f}, "
+        f"RF={learned_weights[1]:.4f}, XGB={learned_weights[2]:.4f}"
+    )
+
+    # ------------------------------------------------------------------
+    # Assemble and evaluate soft-voting ensemble with learned weights
     # ------------------------------------------------------------------
     print("\n--- Ensemble Evaluation ---")
-    ensemble = WC2026Ensemble(lr_model, rf_model, xgb_model)
+    ensemble = WC2026Ensemble(lr_model, rf_model, xgb_model, weights=learned_weights)
     ensemble_val = evaluate_model(ensemble, X_val, y_val, "Ensemble — Val (WC 2022)")
     ensemble_test = evaluate_model(ensemble, X_test, y_test, "Ensemble — Test (WC 2018)")
 
@@ -178,8 +268,8 @@ def main():
     cal_xgb = CalibratedClassifierCV(xgb_model, cv=5, method="isotonic")
     cal_xgb.fit(X_train, y_train)
 
-    # Reassemble ensemble with calibrated XGBoost
-    cal_ensemble = WC2026Ensemble(lr_model, rf_model, cal_xgb)
+    # Reassemble ensemble with calibrated XGBoost and same learned weights
+    cal_ensemble = WC2026Ensemble(lr_model, rf_model, cal_xgb, weights=learned_weights)
 
     # Evaluate calibrated ensemble
     cal_ensemble_val = evaluate_model(

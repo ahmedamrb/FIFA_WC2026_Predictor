@@ -25,6 +25,7 @@ FEATURE_COLUMNS: list[str] = [
     "away_rank_points",
     "rank_diff",
     "rank_points_ratio",
+    "rank_points_diff",
     # --- Form 5-match window (Subphase 3.4) ---
     "home_form_wins_5",
     "home_form_goals_scored_5",
@@ -44,6 +45,8 @@ FEATURE_COLUMNS: list[str] = [
     "away_form_goals_conceded_10",
     "away_form_wdl_points_10",
     "form_diff_wdl_5",
+    "home_goal_efficiency_5",
+    "away_goal_efficiency_5",
     # --- Head-to-Head (Subphase 3.5) ---
     "h2h_home_win_rate",
     "h2h_matches_count",
@@ -56,6 +59,7 @@ FEATURE_COLUMNS: list[str] = [
     "host_nation_advantage",
     "home_days_rest",
     "away_days_rest",
+    "rest_diff",
 ]
 
 _RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
@@ -302,6 +306,7 @@ def merge_rankings(
     # Derived features
     # ------------------------------------------------------------------
     df["rank_diff"] = df["home_rank"] - df["away_rank"]
+    df["rank_points_diff"] = df["home_rank_points"] - df["away_rank_points"]
     away_pts_safe = df["away_rank_points"].clip(lower=1e-6)
     df["rank_points_ratio"] = (df["home_rank_points"] / away_pts_safe).clip(0.1, 10.0)
 
@@ -402,8 +407,18 @@ def compute_form_features(matches_df: pd.DataFrame) -> pd.DataFrame:
     df["form_diff_wdl_5"] = (
         df["home_form_wdl_points_5"] - df["away_form_wdl_points_5"]
     )
+    df["home_goal_efficiency_5"] = (
+        df["home_form_goals_scored_5"] / (df["home_form_goals_conceded_5"] + 0.1)
+    )
+    df["away_goal_efficiency_5"] = (
+        df["away_form_goals_scored_5"] / (df["away_form_goals_conceded_5"] + 0.1)
+    )
 
-    all_form_cols = list(feature_data.keys()) + ["form_diff_wdl_5"]
+    all_form_cols = list(feature_data.keys()) + [
+        "form_diff_wdl_5",
+        "home_goal_efficiency_5",
+        "away_goal_efficiency_5",
+    ]
 
     # Report null statistics before fill
     null_rows = df[all_form_cols].isna().any(axis=1).sum()
@@ -734,6 +749,7 @@ def compute_context_features(matches_df: pd.DataFrame) -> pd.DataFrame:
 
     df["home_days_rest"] = home_rest
     df["away_days_rest"] = away_rest
+    df["rest_diff"] = df["home_days_rest"] - df["away_days_rest"]
 
     # ------------------------------------------------------------------
     # Diagnostics
@@ -754,6 +770,104 @@ def compute_context_features(matches_df: pd.DataFrame) -> pd.DataFrame:
     )
 
     return df
+
+
+def compute_elo_ratings(
+    matches_df: pd.DataFrame,
+    starting_elo: float = 1500.0,
+) -> tuple[pd.DataFrame, dict[str, float]]:
+    """Compute Elo ratings for each team at the time of each match.
+
+    Processes matches in chronological order.  For each match the function
+    records the pre-match Elo for both teams and then updates Elo using the
+    standard formula weighted by a K-factor derived from ``match_importance``.
+    Rows without a completed outcome (NaN) are assigned the current Elo but
+    do not trigger an update, so the function handles prediction fixtures
+    naturally.
+
+    K-factor mapping:
+        - WC (importance >= 3.0): K=60
+        - Qualifier (importance >= 1.5): K=50
+        - Friendly (importance <= 0.5): K=20
+        - Other competitive (default): K=40
+
+    Args:
+        matches_df: Match DataFrame with ``date``, ``home_team``, and
+            ``away_team`` columns.  When present, ``outcome`` and
+            ``match_importance`` are used to update Elo after each match.
+        starting_elo: Initial Elo rating assigned to teams on first appearance.
+
+    Returns:
+        A 2-tuple ``(df_with_elo, final_elo)`` where ``df_with_elo`` is a
+        copy of ``matches_df`` with ``home_elo``, ``away_elo``, and
+        ``elo_diff`` columns appended, and ``final_elo`` is a dict mapping
+        each team to their rating after the last completed match.
+    """
+    date_col = "date" if "date" in matches_df.columns else "match_date"
+    df = matches_df.copy().sort_values(date_col).reset_index(drop=True)
+
+    elo: dict[str, float] = {}
+    home_elo_list: list[float] = []
+    away_elo_list: list[float] = []
+
+    has_outcome = "outcome" in df.columns
+    has_importance = "match_importance" in df.columns
+
+    for row in df.itertuples(index=False):
+        home: str = row.home_team
+        away: str = row.away_team
+
+        r_home = elo.get(home, starting_elo)
+        r_away = elo.get(away, starting_elo)
+
+        home_elo_list.append(r_home)
+        away_elo_list.append(r_away)
+
+        # Only update Elo for rows with a completed outcome
+        outcome_val = getattr(row, "outcome", None) if has_outcome else None
+        if outcome_val is not None and not (isinstance(outcome_val, float) and np.isnan(outcome_val)):
+            importance = (
+                float(getattr(row, "match_importance", 1.0)) if has_importance else 1.0
+            )
+            if np.isnan(importance):
+                importance = 1.0
+
+            if importance >= 3.0:
+                k = 60.0
+            elif importance >= 1.5:
+                k = 50.0
+            elif importance <= 0.5:
+                k = 20.0
+            else:
+                k = 40.0
+
+            e_home = 1.0 / (1.0 + 10.0 ** ((r_away - r_home) / 400.0))
+            e_away = 1.0 - e_home
+
+            outcome = int(outcome_val)
+            if outcome == 2:
+                s_home = 1.0
+            elif outcome == 1:
+                s_home = 0.5
+            else:
+                s_home = 0.0
+            s_away = 1.0 - s_home
+
+            elo[home] = r_home + k * (s_home - e_home)
+            elo[away] = r_away + k * (s_away - e_away)
+
+    df["home_elo"] = home_elo_list
+    df["away_elo"] = away_elo_list
+    df["elo_diff"] = df["home_elo"] - df["away_elo"]
+
+    if elo:
+        elo_vals = list(elo.values())
+        print(
+            f"\nElo ratings: {len(elo)} teams, "
+            f"range {min(elo_vals):.0f}\u2013{max(elo_vals):.0f}"
+        )
+
+    return df, dict(elo)
 
 
 # ---------------------------------------------------------------------------

@@ -144,7 +144,7 @@ def train_tuned_goals_models(X_train, y_home, y_away, best_params):
 if __name__ == "__main__":
     from src.models.outcome_model import load_splits
 
-    X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
 
     df = pd.read_parquet(_PROCESSED_DIR / "features_train.parquet")
     y_home_train = df.loc[X_train.index, "home_score"]

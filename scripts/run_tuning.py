@@ -32,10 +32,10 @@ _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 def main():
     """Load training data, run XGBoost tuning, and persist best hyperparameters."""
     print("=== Subphase 5.2 — Optuna Tuning: XGBoost Outcome Model ===\n")
-    X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
 
     print(f"\nRunning Optuna search ({100} trials)...\n")
-    best_params = tune_xgboost_outcome(X_train, y_train)
+    best_params = tune_xgboost_outcome(X_train, y_train, sample_weight=w_train)
 
     # Load existing params file (if any) so we don't clobber other keys
     hyperparams_path = _PROCESSED_DIR / "best_hyperparams.json"
@@ -56,7 +56,7 @@ def main():
     # -----------------------------------------------------------------------
     print("\n=== Subphase 5.3 — Optuna Tuning: Random Forest Outcome Model ===\n")
     print(f"Running Optuna search ({N_TRIALS_RF} trials)...\n")
-    best_rf_params = tune_random_forest_outcome(X_train, y_train)
+    best_rf_params = tune_random_forest_outcome(X_train, y_train, sample_weight=w_train)
 
     # Reload params file to merge RF results without clobbering XGB results
     with hyperparams_path.open("r", encoding="utf-8") as fh:

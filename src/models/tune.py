@@ -47,7 +47,7 @@ def get_cv_splits(X, y=None, n_splits=5):
     return KFold(n_splits=n_splits, shuffle=True, random_state=42)
 
 
-def tune_xgboost_outcome(X_train, y_train):
+def tune_xgboost_outcome(X_train, y_train, sample_weight=None):
     """Run Optuna hyperparameter search for the XGBoost outcome classifier.
 
     Performs 5-fold stratified cross-validation inside each trial. Saves
@@ -56,6 +56,7 @@ def tune_xgboost_outcome(X_train, y_train):
     Args:
         X_train: Training feature DataFrame.
         y_train: Training outcome Series (0/1/2).
+        sample_weight: Optional numpy array of per-sample training weights.
 
     Returns:
         dict: Best hyperparameters found by the study.
@@ -63,6 +64,7 @@ def tune_xgboost_outcome(X_train, y_train):
     _PLOTS_DIR.mkdir(parents=True, exist_ok=True)
     X_arr = X_train.values
     y_arr = y_train.values
+    w_arr = np.asarray(sample_weight) if sample_weight is not None else None
 
     def objective(trial):
         params = {
@@ -84,8 +86,9 @@ def tune_xgboost_outcome(X_train, y_train):
         for train_idx, val_idx in cv.split(X_arr, y_arr):
             X_fold_train, X_fold_val = X_arr[train_idx], X_arr[val_idx]
             y_fold_train, y_fold_val = y_arr[train_idx], y_arr[val_idx]
+            w_fold = w_arr[train_idx] if w_arr is not None else None
             model = XGBClassifier(**params)
-            model.fit(X_fold_train, y_fold_train, verbose=False)
+            model.fit(X_fold_train, y_fold_train, sample_weight=w_fold, verbose=False)
             proba = model.predict_proba(X_fold_val)
             fold_losses.append(log_loss(y_fold_val, proba))
         return float(np.mean(fold_losses))
@@ -147,7 +150,7 @@ def tune_xgboost_outcome(X_train, y_train):
     return study.best_params
 
 
-def tune_random_forest_outcome(X_train, y_train):
+def tune_random_forest_outcome(X_train, y_train, sample_weight=None):
     """Run Optuna hyperparameter search for the Random Forest outcome classifier.
 
     Performs 5-fold stratified cross-validation inside each trial. Saves
@@ -156,6 +159,7 @@ def tune_random_forest_outcome(X_train, y_train):
     Args:
         X_train: Training feature DataFrame.
         y_train: Training outcome Series (0/1/2).
+        sample_weight: Optional numpy array of per-sample training weights.
 
     Returns:
         dict: Best hyperparameters found by the study.
@@ -163,6 +167,7 @@ def tune_random_forest_outcome(X_train, y_train):
     _PLOTS_DIR.mkdir(parents=True, exist_ok=True)
     X_arr = X_train.values
     y_arr = y_train.values
+    w_arr = np.asarray(sample_weight) if sample_weight is not None else None
 
     def objective(trial):
         params = {
@@ -179,8 +184,9 @@ def tune_random_forest_outcome(X_train, y_train):
         for train_idx, val_idx in cv.split(X_arr, y_arr):
             X_fold_train, X_fold_val = X_arr[train_idx], X_arr[val_idx]
             y_fold_train, y_fold_val = y_arr[train_idx], y_arr[val_idx]
+            w_fold = w_arr[train_idx] if w_arr is not None else None
             model = RandomForestClassifier(**params)
-            model.fit(X_fold_train, y_fold_train)
+            model.fit(X_fold_train, y_fold_train, sample_weight=w_fold)
             proba = model.predict_proba(X_fold_val)
             fold_losses.append(log_loss(y_fold_val, proba, labels=[0, 1, 2]))
         return float(np.mean(fold_losses))
@@ -336,8 +342,8 @@ if __name__ == "__main__":
 
     from src.models.outcome_model import evaluate_model, load_splits
 
-    X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
-    best_params = tune_xgboost_outcome(X_train, y_train)
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
+    best_params = tune_xgboost_outcome(X_train, y_train, sample_weight=w_train)
 
     # Retrain on full training set with best params and evaluate on val
     tuned_model = XGBClassifier(

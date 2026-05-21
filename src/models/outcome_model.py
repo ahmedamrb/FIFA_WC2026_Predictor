@@ -29,7 +29,8 @@ def load_splits():
         - train : all remaining rows (1998+, no WC 2018 or WC 2022)
 
     Returns:
-        X_train, y_train, X_val, y_val, X_test, y_test as pandas DataFrames/Series.
+        X_train, y_train, w_train, X_val, y_val, X_test, y_test.
+        w_train is a numpy array of sample weights (match_importance * recency_weight).
     """
     df = pd.read_parquet(_PROCESSED_DIR / "features_train.parquet")
     df["date"] = pd.to_datetime(df["date"])
@@ -54,15 +55,16 @@ def load_splits():
 
     X_train = train_df[FEATURE_COLUMNS]
     y_train = train_df["outcome"]
+    w_train = (train_df["match_importance"] * train_df["recency_weight"]).to_numpy()
     X_val = val_df[FEATURE_COLUMNS]
     y_val = val_df["outcome"]
     X_test = test_df[FEATURE_COLUMNS]
     y_test = test_df["outcome"]
 
-    return X_train, y_train, X_val, y_val, X_test, y_test
+    return X_train, y_train, w_train, X_val, y_val, X_test, y_test
 
 
-def train_logistic_regression(X_train, y_train):
+def train_logistic_regression(X_train, y_train, sample_weight=None):
     """Fit a StandardScaler + LogisticRegression pipeline on training data.
 
     The scaler is fitted exclusively on X_train inside the pipeline, ensuring
@@ -71,6 +73,7 @@ def train_logistic_regression(X_train, y_train):
     Args:
         X_train: Training feature DataFrame.
         y_train: Training outcome Series (0/1/2).
+        sample_weight: Optional array of per-sample weights.
 
     Returns:
         Fitted sklearn Pipeline (scaler → logistic regression).
@@ -79,11 +82,12 @@ def train_logistic_regression(X_train, y_train):
         ("scaler", StandardScaler()),
         ("lr", LogisticRegression(max_iter=1000, solver="lbfgs", random_state=42)),
     ])
-    pipeline.fit(X_train, y_train)
+    fit_params = {"lr__sample_weight": sample_weight} if sample_weight is not None else {}
+    pipeline.fit(X_train, y_train, **fit_params)
     return pipeline
 
 
-def train_random_forest(X_train, y_train):
+def train_random_forest(X_train, y_train, sample_weight=None):
     """Fit a RandomForestClassifier with default parameters on training data.
 
     No scaling is applied — tree-based models are scale-invariant.
@@ -91,16 +95,17 @@ def train_random_forest(X_train, y_train):
     Args:
         X_train: Training feature DataFrame.
         y_train: Training outcome Series (0/1/2).
+        sample_weight: Optional array of per-sample weights.
 
     Returns:
         Fitted RandomForestClassifier.
     """
     model = RandomForestClassifier(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
+    model.fit(X_train, y_train, sample_weight=sample_weight)
     return model
 
 
-def train_xgboost(X_train, y_train):
+def train_xgboost(X_train, y_train, sample_weight=None):
     """Fit an XGBClassifier with default parameters on training data.
 
     Uses multi:softprob objective for 3-class probability output.
@@ -109,6 +114,7 @@ def train_xgboost(X_train, y_train):
     Args:
         X_train: Training feature DataFrame.
         y_train: Training outcome Series (0/1/2).
+        sample_weight: Optional array of per-sample weights.
 
     Returns:
         Fitted XGBClassifier.
@@ -120,7 +126,7 @@ def train_xgboost(X_train, y_train):
         n_estimators=100,
         random_state=42,
     )
-    model.fit(X_train, y_train)
+    model.fit(X_train, y_train, sample_weight=sample_weight)
     return model
 
 
@@ -156,7 +162,7 @@ def evaluate_model(model, X, y, label):
     return {"log_loss": ll, "accuracy": acc, "brier_score": brier}
 
 
-def train_tuned_models(X_train, y_train, best_params):
+def train_tuned_models(X_train, y_train, best_params, sample_weight=None):
     """Retrain LR, RF, and XGBoost on the full training set using tuned hyperparameters.
 
     LR is retrained with default parameters (no tuning was performed for LR).
@@ -167,12 +173,13 @@ def train_tuned_models(X_train, y_train, best_params):
         y_train: Training outcome Series (0/1/2).
         best_params: Dict loaded from best_hyperparams.json. Must contain
             'xgb_outcome' and 'rf_outcome' keys.
+        sample_weight: Optional array of per-sample weights.
 
     Returns:
         Tuple of (lr_model, rf_model, xgb_model).
     """
     print("\n=== Training Tuned Logistic Regression ===")
-    lr_model = train_logistic_regression(X_train, y_train)
+    lr_model = train_logistic_regression(X_train, y_train, sample_weight=sample_weight)
 
     print("\n=== Training Tuned Random Forest ===")
     rp = best_params["rf_outcome"]
@@ -184,7 +191,7 @@ def train_tuned_models(X_train, y_train, best_params):
         max_depth=rp["max_depth"],
         random_state=42,
     )
-    rf_model.fit(X_train, y_train)
+    rf_model.fit(X_train, y_train, sample_weight=sample_weight)
 
     print("\n=== Training Tuned XGBoost ===")
     xp = best_params["xgb_outcome"]
@@ -201,13 +208,13 @@ def train_tuned_models(X_train, y_train, best_params):
         reg_lambda=xp["reg_lambda"],
         random_state=42,
     )
-    xgb_model.fit(X_train, y_train)
+    xgb_model.fit(X_train, y_train, sample_weight=sample_weight)
 
     return lr_model, rf_model, xgb_model
 
 
 if __name__ == "__main__":
-    X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
     print("\n--- Shapes ---")
     print(f"X_train: {X_train.shape},  y_train: {y_train.shape}")
     print(f"X_val:   {X_val.shape},  y_val:   {y_val.shape}")

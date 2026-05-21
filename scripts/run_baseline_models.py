@@ -61,7 +61,7 @@ def main() -> None:
     print("=" * 70)
     print("STEP 1 — Loading feature splits")
     print("=" * 70)
-    X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
 
     # ------------------------------------------------------------------
     # 2. Extract goal targets aligned to split indices
@@ -86,13 +86,13 @@ def main() -> None:
     print("=" * 70)
 
     print("\n--- Logistic Regression ---")
-    lr_model = train_logistic_regression(X_train, y_train)
+    lr_model = train_logistic_regression(X_train, y_train, sample_weight=w_train)
 
     print("\n--- Random Forest ---")
-    rf_model = train_random_forest(X_train, y_train)
+    rf_model = train_random_forest(X_train, y_train, sample_weight=w_train)
 
     print("\n--- XGBoost ---")
-    xgb_model = train_xgboost(X_train, y_train)
+    xgb_model = train_xgboost(X_train, y_train, sample_weight=w_train)
 
     # ------------------------------------------------------------------
     # 4. Train Poisson goals models

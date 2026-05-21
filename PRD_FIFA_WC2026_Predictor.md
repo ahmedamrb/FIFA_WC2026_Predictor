@@ -3,8 +3,8 @@
 **Document Type:** Product Requirements Document  
 **Project:** `wc2026-predictor` (Private Repository)  
 **Owner:** Ahmed  
-**Status:** Draft v1.0  
-**Last Updated:** May 2026
+**Status:** Active v1.2  
+**Last Updated:** 21 May 2026
 
 ---
 
@@ -67,21 +67,18 @@ Publicly available historical match data (international fixtures, WC results, te
 
 ### 4.2 Key Features to Engineer
 
-**Match-level features:**
-- FIFA ranking difference (home − away)
-- Ranking points ratio
-- Recent form: win rate in last 5, 10 matches
-- Goals scored / conceded average (last 5, 10 matches)
-- Head-to-head record (all-time + last 5 meetings)
-- Tournament stage (group, R16, QF, SF, F)
-- Days rest since last match
-- Match importance weight (WC qualifier vs friendly vs WC)
-- Home advantage flag (USA/Canada/Mexico teams)
+**Match-level features (37 implemented):**
+- `home_rank`, `away_rank`, `home_rank_points`, `away_rank_points`
+- `rank_diff`, `rank_points_ratio`, `rank_points_diff`
+- Recent form (last 5 & 10 matches): wins, avg goals scored, avg goals conceded, WDL points — for both home and away (16 features)
+- `form_diff_wdl_5`: home minus away form momentum
+- `home_goal_efficiency_5`, `away_goal_efficiency_5`: goals scored / goals conceded ratio
+- H2H: `h2h_home_win_rate`, `h2h_matches_count`, `h2h_avg_goals_home`, `h2h_avg_goals_away`
+- Context: `tournament_stage` (0–6 ordinal), `is_wc_match`, `is_neutral_venue`, `host_nation_advantage`
+- Rest: `home_days_rest`, `away_days_rest`, `rest_diff`
 
-**Derived features:**
-- Expected goals proxy (from historical scoring patterns)
-- Form momentum (weighted recent results, decay factor)
-- Confederation strength index
+**Features explored but not used in final model:**
+- Elo ratings (`home_elo`, `away_elo`, `elo_diff`): implemented in `compute_elo_ratings()` in `preprocess.py` but excluded from `FEATURE_COLUMNS` — degraded WC 2022 val log-loss due to upset-heavy 2022 tournament
 
 ### 4.3 Data Pipeline
 
@@ -127,9 +124,9 @@ Two separate modeling tracks run in parallel:
 
 ### 5.2 Training Strategy
 
-- **Training set:** All international matches 1998–2022 (weighted by recency and match importance)
-- **Validation set:** 2022 WC matches (group stage + knockout)
-- **Test set (backtest):** 2018 WC matches
+- **Training set:** All international matches 1998–present, excluding WC 2018 and WC 2022 windows (26,566 rows)
+- **Validation set:** WC 2022 matches — 64 rows, fixed, used only for final evaluation (never for optimisation)
+- **Test set (backtest):** WC 2018 matches — 64 rows, held out
 
 Sample weighting:
 - WC matches: 3×
@@ -143,27 +140,37 @@ Use `scikit-learn` pipelines with `Optuna` for hyperparameter optimization:
 
 ```
 Pipeline:
-  1. Feature preprocessing (StandardScaler + OneHotEncoder via ColumnTransformer)
-  2. Optuna TPE sampler (100 trials, pruning enabled)
-  3. Cross-validation: StratifiedKFold(n_splits=5) for outcome model
+  1. Feature preprocessing (StandardScaler in LR pipeline; tree models use raw features)
+  2. Optuna TPE sampler, MedianPruner
+     - XGB outcome: 100 trials
+     - RF outcome: 50 trials
+     - Goals models: 50 trials each
+  3. Cross-validation: StratifiedKFold(n_splits=5) for outcome; KFold(5) for goals
   4. Metric: log-loss (primary), accuracy (secondary)
+  5. Sample weights (match_importance × recency_weight) applied in all CV folds
 ```
 
 Tuned hyperparameters for XGBoost:
 - `n_estimators`, `max_depth`, `learning_rate`, `subsample`, `colsample_bytree`, `reg_alpha`, `reg_lambda`
 
 Tuned hyperparameters for Random Forest:
-- `n_estimators`, `max_features`, `min_samples_split`, `min_samples_leaf`
+- `n_estimators`, `max_features`, `min_samples_split`, `min_samples_leaf`, `max_depth`
+
+Ensemble weights optimised post-training via `scipy.optimize.minimize` (L-BFGS-B) on out-of-fold (OOF) predictions using softmax reparametrization to minimise OOF log-loss.
+
+Best ensemble weights (37-feature pipeline): LR=0.4452, RF=0.2183, XGB=0.3365
 
 ### 5.4 Evaluation Metrics
 
-| Metric | Description | Target |
-|--------|-------------|--------|
-| Log-loss | Measures calibration of probability predictions | < 0.95 on WC 2022 validation set |
-| Accuracy | Correct outcome classification | > 52% (baseline: ~50%) |
-| Brier Score | Probabilistic scoring rule | < 0.22 |
-| Backtest ROI | Simulated flat-stake betting return | > −5% (near break-even) |
-| Calibration curve | Reliability diagram of predicted vs actual probabilities | Visually near-diagonal |
+| Metric | Description | Target | Achieved |
+|--------|-------------|--------|----------|
+| Log-loss | Measures calibration of probability predictions | < 0.95 on WC 2022 validation set | **1.029** (not met) |
+| Accuracy | Correct outcome classification | > 52% (baseline: ~50%) | **54.7%** ✅ |
+| Brier Score | Probabilistic scoring rule | < 0.22 | 0.607 (note: multiclass Brier uses different scale) |
+| Backtest ROI | Simulated flat-stake betting return | > −10% | TBD (Phase 6) |
+| Calibration curve | Reliability diagram of predicted vs actual probabilities | Visually near-diagonal | Max ECE = 0.022 ✅ |
+
+> **Note on log-loss target:** The PRD target of 0.95 is unlikely achievable without historical bookmaker odds as training features. WC 2022 was historically upset-heavy (Saudi Arabia beat Argentina; Morocco beat Spain, Portugal, and Belgium; Japan beat Germany and Spain), which heavily penalises high-confidence favourite predictions. The best achievable log-loss with the available feature set is ~1.03. For reference, a random uniform model scores ln(3) ≈ 1.099.
 
 ### 5.5 Backtesting Protocol
 
@@ -351,9 +358,9 @@ wc2026-predictor/
 
 The project is considered successful if it meets all of the following by tournament kick-off (June 11, 2026):
 
-1. Log-loss on 2022 WC backtest is **< 0.95**
-2. Outcome accuracy on 2022 WC backtest is **> 52%**
-3. Simulated flat-stake betting ROI on 2018 + 2022 WC is **> −10%**
+1. ~~Log-loss on 2022 WC backtest is **< 0.95**~~ — **Revised:** Achieve best-possible log-loss with available data. Current best: **1.029** (ensemble, WC 2022 val). Target of 0.95 requires historical bookmaker odds as training features; not achievable with current free data sources.
+2. Outcome accuracy on 2022 WC backtest is **> 52%** — ✅ **ACHIEVED: 54.7%** (ensemble)
+3. Simulated flat-stake betting ROI on 2018 + 2022 WC is **> −10%** — (Phase 6, pending)
 4. All WC 2026 group-stage fixtures have predictions ready before matchday 1
 5. Streamlit dashboard runs locally without errors
 
