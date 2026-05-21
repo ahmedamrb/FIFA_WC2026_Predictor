@@ -927,6 +927,7 @@ def build_feature_matrix(
         context_df = context_df[context_df["date"].dt.year >= 1998]
         output_cols = FEATURE_COLUMNS + [
             "date", "tournament",
+            "home_team", "away_team",
             "home_score", "away_score", "outcome", "match_importance", "recency_weight",
         ]
         result = context_df[output_cols].copy()

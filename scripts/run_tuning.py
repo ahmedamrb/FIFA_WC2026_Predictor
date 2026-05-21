@@ -32,7 +32,7 @@ _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 def main():
     """Load training data, run XGBoost tuning, and persist best hyperparameters."""
     print("=== Subphase 5.2 — Optuna Tuning: XGBoost Outcome Model ===\n")
-    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test, *_ = load_splits()
 
     print(f"\nRunning Optuna search ({100} trials)...\n")
     best_params = tune_xgboost_outcome(X_train, y_train, sample_weight=w_train)

@@ -37,14 +37,14 @@
     "scoreline_accuracy": 0.078125
   },
   "LR_tuned_val": {
-    "log_loss": 1.040098349047355,
+    "log_loss": 1.0400983492305174,
     "accuracy": 0.515625,
-    "brier_score": 0.6139938689532436
+    "brier_score": 0.6139938690242082
   },
   "LR_tuned_test": {
-    "log_loss": 1.0094052700522531,
+    "log_loss": 1.0094052708671384,
     "accuracy": 0.53125,
-    "brier_score": 0.6024265983379323
+    "brier_score": 0.6024265988620785
   },
   "RF_tuned_val": {
     "log_loss": 1.0180408935426644,
@@ -57,24 +57,24 @@
     "brier_score": 0.6079697851518933
   },
   "XGB_tuned_val": {
-    "log_loss": 1.0351920786829636,
-    "accuracy": 0.515625,
-    "brier_score": 0.6128144652079396
+    "log_loss": 1.0354933870047587,
+    "accuracy": 0.53125,
+    "brier_score": 0.6131873288052332
   },
   "XGB_tuned_test": {
-    "log_loss": 1.0222410145417071,
+    "log_loss": 1.0194789137877283,
     "accuracy": 0.515625,
-    "brier_score": 0.6128731235721829
+    "brier_score": 0.6108004873061583
   },
   "ensemble_val": {
-    "log_loss": 1.0289680441249054,
+    "log_loss": 1.02903955998634,
     "accuracy": 0.546875,
-    "brier_score": 0.6074249489256709
+    "brier_score": 0.6075205140685496
   },
   "ensemble_test": {
-    "log_loss": 1.0078149681806878,
+    "log_loss": 1.0068961614595826,
     "accuracy": 0.484375,
-    "brier_score": 0.6030507083835577
+    "brier_score": 0.6023598633672409
   },
   "goals_xgb_tuned_val": {
     "mae_home": 1.0849904008209705,

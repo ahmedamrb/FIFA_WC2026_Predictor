@@ -11,7 +11,7 @@ from src.models.tune import tune_random_forest_outcome
 
 
 def main():
-    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test, *_ = load_splits()
     print(f"X_train shape: {X_train.shape}")
 
     print("\n=== Subphase 5.3 — Optuna Tuning: Random Forest Outcome Model ===\n")

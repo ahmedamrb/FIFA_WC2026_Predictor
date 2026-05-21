@@ -29,8 +29,10 @@ def load_splits():
         - train : all remaining rows (1998+, no WC 2018 or WC 2022)
 
     Returns:
-        X_train, y_train, w_train, X_val, y_val, X_test, y_test.
+        X_train, y_train, w_train, X_val, y_val, X_test, y_test, val_df, test_df.
         w_train is a numpy array of sample weights (match_importance * recency_weight).
+        val_df and test_df are the full parquet DataFrames for those splits,
+        containing all columns (date, home_team, away_team, scores, etc.).
     """
     df = pd.read_parquet(_PROCESSED_DIR / "features_train.parquet")
     df["date"] = pd.to_datetime(df["date"])
@@ -45,7 +47,7 @@ def load_splits():
 
     for label, split in [("train", train_df), ("val (WC 2022)", val_df), ("test (WC 2018)", test_df)]:
         print(f"\n--- {label} split: {len(split)} rows ---")
-        print(f"  Date range: {split['date'].min().date()} → {split['date'].max().date()}")
+        print(f"  Date range: {split['date'].min().date()} to {split['date'].max().date()}")
         print(f"  Outcome distribution:\n{split['outcome'].value_counts().sort_index().to_string()}")
 
     if len(val_df) != 64:
@@ -61,7 +63,7 @@ def load_splits():
     X_test = test_df[FEATURE_COLUMNS]
     y_test = test_df["outcome"]
 
-    return X_train, y_train, w_train, X_val, y_val, X_test, y_test
+    return X_train, y_train, w_train, X_val, y_val, X_test, y_test, val_df, test_df
 
 
 def train_logistic_regression(X_train, y_train, sample_weight=None):
@@ -214,7 +216,7 @@ def train_tuned_models(X_train, y_train, best_params, sample_weight=None):
 
 
 if __name__ == "__main__":
-    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test, *_ = load_splits()
     print("\n--- Shapes ---")
     print(f"X_train: {X_train.shape},  y_train: {y_train.shape}")
     print(f"X_val:   {X_val.shape},  y_val:   {y_val.shape}")

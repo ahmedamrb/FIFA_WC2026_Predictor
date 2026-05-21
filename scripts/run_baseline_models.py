@@ -61,7 +61,7 @@ def main() -> None:
     print("=" * 70)
     print("STEP 1 — Loading feature splits")
     print("=" * 70)
-    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test, *_ = load_splits()
 
     # ------------------------------------------------------------------
     # 2. Extract goal targets aligned to split indices

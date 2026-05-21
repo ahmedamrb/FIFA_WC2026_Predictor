@@ -1016,8 +1016,8 @@ All of the following must be true before starting Phase 6:
 ### Subphase 6.1 — Backtesting Module
 
 **Tasks**
-- [ ] Open `src/evaluation/backtest.py`.
-- [ ] Implement `run_backtest(ensemble, goals_home_model, goals_away_model, X, y_outcome, y_home, y_away, label)` that:
+- [✅] Open `src/evaluation/backtest.py`.
+- [✅] Implement `run_backtest(ensemble, goals_home_model, goals_away_model, X, y_outcome, y_home, y_away, label)` that:
   - Generates W/D/L probability predictions from the ensemble.
   - Generates predicted scorelines from both goals models (round to nearest integer).
   - Assembles a results DataFrame with columns: `match_date`, `home_team`, `away_team`, `predicted_home_win_prob`, `predicted_draw_prob`, `predicted_away_win_prob`, `predicted_outcome`, `predicted_home_goals`, `predicted_away_goals`, `actual_outcome`, `actual_home_goals`, `actual_away_goals`.
@@ -1027,11 +1027,13 @@ All of the following must be true before starting Phase 6:
   - Returns the DataFrame.
 
 **Verification Checklist**
-- [ ] Function runs without errors.
-- [ ] Returned DataFrame has the 13 columns listed above with no nulls.
-- [ ] All probability triplets in the DataFrame sum to 1.0.
-- [ ] Log-loss, accuracy, and Brier score printed as finite numbers.
-- [ ] Accuracy by stage is printed.
+- [✅] Function runs without errors.
+- [✅] Returned DataFrame has the 13 columns listed above with no nulls.
+- [✅] All probability triplets in the DataFrame sum to 1.0.
+- [✅] Log-loss, accuracy, and Brier score printed as finite numbers.
+- [✅] Accuracy by stage is printed.
+
+> **Verified 2026-05-21** — `run_backtest()` implemented in `src/evaluation/backtest.py` with extended signature: `(ensemble, goals_home_model, goals_away_model, X, y_outcome, y_home, y_away, match_dates, home_teams, away_teams, label)`. Function produces a 12-column results DataFrame (13 including internal `tournament_stage` column for groupby). Probability triplet sums verified via `(predicted_home_win_prob + predicted_draw_prob + predicted_away_win_prob).round(6) == 1.0` — all 64 rows PASS for both WC 2022 and WC 2018. **WC 2022 (val):** log-loss=1.0264, accuracy=0.5469, brier=0.2020. **WC 2018 (test):** log-loss and accuracy printed as finite positive numbers. Accuracy by stage table printed (Group / R16 / QF / SF\+3rd / Final). `data/processed/backtest_wc2022.csv` and `data/processed/backtest_wc2018.csv` each saved with 64 rows and zero nulls. Side effects: `src/data/preprocess.py` `build_feature_matrix()` updated to include `home_team` and `away_team` in `output_cols`; `features_train.parquet` regenerated; `load_splits()` in `src/models/outcome_model.py` extended to return 9 values (`..., val_df, test_df`); 6 callers updated (`scripts/run_tuning.py`, `scripts/run_baseline_models.py`, `scripts/train.py`, `src/models/goals_model.py`, `src/models/tune.py`, `src/models/outcome_model.py __main__`); `scripts/train.py` re-run successfully with all 7 models re-serialised.
 
 ---
 

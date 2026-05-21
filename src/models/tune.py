@@ -342,7 +342,7 @@ if __name__ == "__main__":
 
     from src.models.outcome_model import evaluate_model, load_splits
 
-    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test, *_ = load_splits()
     best_params = tune_xgboost_outcome(X_train, y_train, sample_weight=w_train)
 
     # Retrain on full training set with best params and evaluate on val

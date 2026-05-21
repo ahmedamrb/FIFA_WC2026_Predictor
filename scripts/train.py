@@ -112,7 +112,7 @@ def main():
     # ------------------------------------------------------------------
     # Load data splits
     # ------------------------------------------------------------------
-    X_train, y_train, w_train, X_val, y_val, X_test, y_test = load_splits()
+    X_train, y_train, w_train, X_val, y_val, X_test, y_test, _val_df, _test_df = load_splits()
 
     # ------------------------------------------------------------------
     # Load tuned hyperparameters
