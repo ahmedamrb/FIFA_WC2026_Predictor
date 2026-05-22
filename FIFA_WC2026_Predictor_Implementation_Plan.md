@@ -1172,19 +1172,21 @@ All of the following must be true before starting Phase 7:
 ### Subphase 7.1 — App Structure & Shared Resource Loading
 
 **Tasks**
-- [ ] Open `app/dashboard.py`.
-- [ ] Add page configuration: `st.set_page_config(page_title="WC 2026 Predictor", layout="wide")`.
-- [ ] Add a sidebar with a `st.selectbox` or `st.radio` for page navigation: "Match Predictions", "Tournament Bracket", "Model Performance", "Data & Model Info".
-- [ ] Implement `load_resources()` decorated with `@st.cache_resource` that loads: all 7 model `.pkl` files, `data/processed/features_predict.parquet`, `data/raw/wc2026_fixtures_flat.csv`, `data/bookmaker_odds.csv`, `data/processed/final_backtest_metrics.json`, `data/processed/backtest_wc2018.csv`, `data/processed/backtest_wc2022.csv`.
-- [ ] Render a simple "Loading…" message if resources are not ready.
-- [ ] Run `streamlit run app/dashboard.py` and confirm the sidebar appears with 4 navigation options.
+- [✅] Open `app/dashboard.py`.
+- [✅] Add page configuration: `st.set_page_config(page_title="WC 2026 Predictor", layout="wide")`.
+- [✅] Add a sidebar with a `st.selectbox` or `st.radio` for page navigation: "Match Predictions", "Tournament Bracket", "Model Performance", "Data & Model Info".
+- [✅] Implement `load_resources()` decorated with `@st.cache_resource` that loads: all 7 model `.pkl` files, `data/processed/features_predict.parquet`, `data/raw/wc2026_fixtures_flat.csv`, `data/bookmaker_odds.csv`, `data/processed/final_backtest_metrics.json`, `data/processed/backtest_wc2018.csv`, `data/processed/backtest_wc2022.csv`.
+- [✅] Render a simple "Loading…" message if resources are not ready.
+- [✅] Run `streamlit run app/dashboard.py` and confirm the sidebar appears with 4 navigation options.
 
 **Verification Checklist**
-- [ ] App starts without errors.
-- [ ] Sidebar with 4 navigation options renders.
-- [ ] No import errors from any `app/components/` module.
-- [ ] Resource loading completes without errors on app start.
-- [ ] Navigating between pages shows a placeholder for each.
+- [✅] App starts without errors.
+- [✅] Sidebar with 4 navigation options renders.
+- [✅] No import errors from any `app/components/` module.
+- [✅] Resource loading completes without errors on app start.
+- [✅] Navigating between pages shows a placeholder for each.
+
+> **Verified 2026-05-23** — `app/dashboard.py` implemented from scratch (was a one-line docstring stub). `st.set_page_config(page_title="WC 2026 Predictor", layout="wide")` placed as the first Streamlit call. `load_resources()` decorated with `@st.cache_resource` loads all 7 `.pkl` model files via `joblib`, assembles `WC2026Ensemble(lr, rf, xgb)` at runtime, loads all 7 data files (CSV/parquet/JSON), and handles the `features_predict.parquet` absence gracefully (returns `None`). Sidebar renders with `st.radio` and 4 options. Four-page routing stubs render "Coming soon…" per page. `sys.path.insert(0, str(_REPO_ROOT))` ensures `src/` is importable without modifying `PYTHONPATH`. All paths resolved via `pathlib.Path(__file__).resolve().parents[1]`. **Verification run:** Python syntax check PASSED; `WC2026Ensemble`, `streamlit`, `joblib` imports all OK; all 7 `.pkl` files confirmed on disk; all 6 data files confirmed on disk; all `app/components/` modules syntax-clean; `load_resources()` simulation loaded all 14 resources successfully — `features_predict` shape=(104, 37), fixtures shape=(104, 6), odds shape=(72, 8), backtest_metrics keys=['wc2018', 'wc2022'], backtest_wc2018 shape=(64, 24), backtest_wc2022 shape=(64, 24). Exit code 0 on all checks.
 
 ---
 
