@@ -1136,16 +1136,18 @@ All of the following must be true before starting Phase 6:
 ### Subphase 6.6 — Backtesting & Edge Unit Tests
 
 **Tasks**
-- [ ] Open `tests/test_backtest.py`.
-- [ ] Write `test_backtest_df_no_nulls()`: loads a saved backtest CSV and asserts zero nulls.
-- [ ] Write `test_probabilities_sum_to_one()`: asserts all probability triplet rows in the backtest CSV sum to 1.0 within tolerance.
-- [ ] Open `tests/test_edge.py`.
-- [ ] Write `test_edge_recommendation_valid_values()`: asserts `bet_recommendation` contains only the 3 valid strings.
-- [ ] Write `test_implied_prob_in_range()`: asserts all implied probability values are between 0 and 1.
-- [ ] Run `python -m pytest tests/ -v`.
+- [✅] Open `tests/test_backtest.py`.
+- [✅] Write `test_backtest_df_no_nulls()`: loads a saved backtest CSV and asserts zero nulls.
+- [✅] Write `test_probabilities_sum_to_one()`: asserts all probability triplet rows in the backtest CSV sum to 1.0 within tolerance.
+- [✅] Open `tests/test_edge.py`.
+- [✅] Write `test_edge_recommendation_valid_values()`: asserts `bet_recommendation` contains only the 3 valid strings.
+- [✅] Write `test_implied_prob_in_range()`: asserts all implied probability values are between 0 and 1.
+- [✅] Run `python -m pytest tests/ -v`.
 
 **Verification Checklist**
-- [ ] All tests across all test files pass — `pytest` shows `11 passed` (7 from Phase 4/5 + 4 new).
+- [✅] All tests across all test files pass — `pytest` shows `17 passed` (6 preprocess + 7 models + 4 new backtest/edge).
+
+> **Verified 2026-05-23** — `tests/test_backtest.py` created with `test_backtest_df_no_nulls()` (loads `backtest_wc2022.csv`, asserts zero nulls across all columns) and `test_probabilities_sum_to_one()` (asserts `predicted_home_win_prob + predicted_draw_prob + predicted_away_win_prob == 1.0` within `atol=1e-6` for all 64 rows). `tests/test_edge.py` created with `test_edge_recommendation_valid_values()` (asserts `bet_recommendation` column contains only `{"Value", "Neutral", "Avoid"}` with no nulls) and `test_implied_prob_in_range()` (asserts all three implied-probability columns are strictly > 0 and ≤ 1.0). Both files use `pathlib.Path(__file__).resolve().parents[1]` to locate the repo root. `python -m pytest tests/ -v` run on Python 3.13.3 / pytest 9.0.3: **17 passed, 1 warning in 3.86s**. Full test breakdown: `test_preprocess.py` 6 ✓, `test_models.py` 7 ✓, `test_backtest.py` 2 ✓, `test_edge.py` 2 ✓. Non-fatal sklearn warning on `test_ensemble_not_worse_than_best_model` (floating-point precision artefact from `np.mean` across probability arrays) — does not affect correctness.
 
 ---
 
@@ -1153,12 +1155,12 @@ All of the following must be true before starting Phase 6:
 
 All of the following must be true before starting Phase 7:
 
-- [ ] `python scripts/run_backtest.py` runs without errors.
-- [ ] Both backtest CSVs exist with 64 rows, no nulls, all edge and recommendation columns populated.
-- [ ] Combined flat-stake ROI across WC 2018 + 2022 is > −10%.
-- [ ] `data/processed/final_backtest_metrics.json` is complete.
-- [ ] At least 10 "Value" bet flags across both backtests.
-- [ ] 11 total unit tests pass.
+- [✅] `python scripts/run_backtest.py` runs without errors.
+- [✅] Both backtest CSVs exist with 64 rows, no nulls, all edge and recommendation columns populated.
+- [✅] Combined flat-stake ROI across WC 2018 + 2022 is > −10%.
+- [✅] `data/processed/final_backtest_metrics.json` is complete.
+- [✅] At least 10 "Value" bet flags across both backtests.
+- [✅] 17 total unit tests pass.
 - [ ] All source files and processed CSVs committed.
 
 ---
