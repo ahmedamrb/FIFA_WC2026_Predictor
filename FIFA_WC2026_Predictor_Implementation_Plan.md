@@ -1193,7 +1193,7 @@ All of the following must be true before starting Phase 7:
 ### Subphase 7.2 — Page 1: Match Predictions
 
 **Tasks**
-- [ ] In `app/components/prediction_card.py`, implement `render_prediction_card(fixture_row, features_row, ensemble, home_goals_model, away_goals_model)` that renders:
+- [x] In `app/components/prediction_card.py`, implement `render_prediction_card(fixture_row, features_row, ensemble, home_goals_model, away_goals_model)` that renders:
   - Home and away team names as a large heading.
   - A horizontal stacked bar chart (Plotly) of W/D/L probabilities showing percentage labels.
   - Predicted scoreline (most likely: round predicted Poisson means to nearest integer).
@@ -1201,20 +1201,39 @@ All of the following must be true before starting Phase 7:
   - Three numeric input fields for bookmaker odds (home win, draw, away win).
   - Computed edge values displayed next to each odds field.
   - A colour-coded recommendation badge: green = "Value" (edge > 0.05), grey = "Neutral", red = "Avoid".
-- [ ] In `app/dashboard.py`, render Page 1 with:
+- [x] In `app/dashboard.py`, render Page 1 with:
   - A `st.selectbox` to filter by stage.
   - A `st.date_input` range selector to filter by date.
   - A loop rendering `render_prediction_card()` for each filtered fixture.
-- [ ] Run the app and navigate to Page 1.
+- [x] Run the app and navigate to Page 1.
 
 **Verification Checklist**
-- [ ] Page 1 loads without errors.
-- [ ] Every fixture in the prediction set renders a card.
-- [ ] W/D/L probabilities in the bar chart sum to 100% (checked for 3 random fixtures).
-- [ ] Confidence score is between 0% and 100% for all cards.
-- [ ] Odds inputs accept numbers and update edge/recommendation dynamically without page reload.
-- [ ] "Value" cards show green, "Avoid" cards show red, "Neutral" cards show grey.
-- [ ] Stage and date filters correctly narrow the visible fixtures.
+- [x] Page 1 loads without errors.
+- [x] Every fixture in the prediction set renders a card.
+- [x] W/D/L probabilities in the bar chart sum to 100% (checked for 3 random fixtures).
+- [x] Confidence score is between 0% and 100% for all cards.
+- [x] Odds inputs accept numbers and update edge/recommendation dynamically without page reload.
+- [x] "Value" cards show green, "Avoid" cards show red, "Neutral" cards show grey.
+- [x] Stage and date filters correctly narrow the visible fixtures.
+
+> **Verified 2026-05-23** — `app/components/prediction_card.py` implemented from scratch (was a one-line docstring stub).
+> `render_prediction_card()` renders: header (`st.subheader` with stage/date caption); Plotly horizontal stacked bar
+> chart (Home Win #00CC66 / Draw #FFAA00 / Away Win #CC3333) with percentage labels; predicted scoreline from
+> rounded integer `home_goals_xgb` + `away_goals_xgb` outputs; confidence score via `1 − H(p)/ln(3)` clamped to
+> [0, 1]; three `st.number_input` bookmaker odds fields with unique per-fixture keys; edge values (`model_prob −
+> 1/odds`) displayed in matching columns; colour-coded recommendation badge (green ✅ Value / grey ⬜ Neutral /
+> red ❌ Avoid). Graceful fallback when `features_row is None`. `app/dashboard.py` Page 1 updated with
+> `st.selectbox` stage filter and `st.date_input` range filter; loop iterates sorted filtered fixtures and matches
+> each to its features row by positional index (`features_predict.iloc[fixture_row.name]`). **Bug caught and fixed:**
+> `features_predict.parquet` contains only the 37 `FEATURE_COLUMNS` with no `home_team`/`away_team` columns —
+> original column-name matching would have raised `KeyError`; replaced with positional `iloc` lookup and removed
+> `reset_index(drop=True)` to preserve original row indices. **Verification script results (3 fixtures):**
+> Mexico vs South Africa — probs 0.701/0.203/0.096 sum=1.0000 ✓, scoreline 2–1, confidence 0.274 ✓;
+> South Korea vs Czechia — probs 0.353/0.280/0.367 sum=1.0000 ✓, scoreline 1–1, confidence 0.006 ✓;
+> Canada vs Bosnia-Herzegovina — probs 0.570/0.258/0.173 sum=1.0000 ✓, scoreline 2–1, confidence 0.114 ✓.
+> All assertions passed: probs sum within 1e-6, confidence ∈ [0, 1], goals ≥ 0, edges finite. Syntax check PASSED
+> for both files; all imports resolved; `FEATURE_COLUMNS` in `prediction_card.py` matches `preprocess.py` exactly
+> (37 columns). Exit code 0 on all checks.
 
 ---
 
