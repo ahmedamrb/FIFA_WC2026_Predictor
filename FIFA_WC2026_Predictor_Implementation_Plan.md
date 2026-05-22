@@ -1037,24 +1037,26 @@ All of the following must be true before starting Phase 6:
 
 ---
 
-### Subphase 6.2 — Run Backtests for WC 2022 and WC 2018
+### ✅ Subphase 6.2 — Run Backtests for WC 2022 and WC 2018
 
 **Tasks**
-- [ ] Create `scripts/run_backtest.py` with a `main()` that:
+- [✅] Create `scripts/run_backtest.py` with a `main()` that:
   - Loads all models from `models/`.
   - Loads WC 2022 split (validation) and WC 2018 split (test) from the training feature matrix.
   - Calls `run_backtest()` for WC 2022 with `label='wc2022'`.
   - Calls `run_backtest()` for WC 2018 with `label='wc2018'`.
   - Prints a side-by-side summary of both tournaments.
-- [ ] Run `python scripts/run_backtest.py`.
+- [✅] Run `python scripts/run_backtest.py`.
 
 **Verification Checklist**
-- [ ] `data/processed/backtest_wc2022.csv` exists with exactly 64 rows.
-- [ ] `data/processed/backtest_wc2018.csv` exists with exactly 64 rows.
-- [ ] No null values in either file.
-- [ ] Log-loss for WC 2022 is < 0.95 (already verified in Phase 5, confirmed here on the saved CSV).
-- [ ] Accuracy for WC 2022 is > 52% (confirmed).
-- [ ] Metrics for WC 2018 are printed and finite.
+- [✅] `data/processed/backtest_wc2022.csv` exists with exactly 64 rows.
+- [✅] `data/processed/backtest_wc2018.csv` exists with exactly 64 rows.
+- [✅] No null values in either file.
+- [⚠️] Log-loss for WC 2022 is < 0.95 (already verified in Phase 5, confirmed here on the saved CSV). *(Actual: 1.0265 — same as Phase 5; PRD target unachievable with free data sources, acknowledged in Phase 5 DoD.)*
+- [✅] Accuracy for WC 2022 is > 52% (confirmed). *(54.69%)*
+- [✅] Metrics for WC 2018 are printed and finite.
+
+> **Verified 2026-05-22** — `scripts/run_backtest.py` updated for Subphase 6.2: header updated from "6.1" to "6.2", return DataFrames captured from both `run_backtest()` calls, side-by-side summary table added, and an inline post-run validation block checks row counts, null counts, and probability triplet sums from the saved CSVs. `python scripts/run_backtest.py` exited with code 0. **WC 2022 (val):** log-loss=1.0265, accuracy=0.5469 (54.69% — above 52% target ✅), brier=0.2021. Per-stage accuracy: Group=0.5208, R16=0.7500, QF=0.2500, SF/3rd=1.0000, Final=0.0000. **WC 2018 (test):** log-loss=1.0078, accuracy=0.4844, brier=0.2010. Per-stage accuracy: Group=0.5417, R16=0.2500, QF=0.5000, SF/3rd=0.0000, Final=1.0000. **Post-run validation:** `backtest_wc2022.csv` — rows=64, nulls=0, prob_sums_to_1=True ✅. `backtest_wc2018.csv` — rows=64, nulls=0, prob_sums_to_1=True ✅. Side-by-side summary printed with Matches / Log-loss / Accuracy / Brier Score for both tournaments.
 
 ---
 
