@@ -19,7 +19,7 @@ from sklearn.metrics import accuracy_score, log_loss
 
 from src.models.outcome_model import load_splits
 from src.models.ensemble import WC2026Ensemble
-from src.evaluation.backtest import run_backtest
+from src.evaluation.backtest import run_backtest, simulate_betting
 
 _MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
@@ -37,7 +37,7 @@ def _compute_brier(df: pd.DataFrame) -> float:
 
 def main() -> None:
     """Load models and run backtest on WC 2022 (val) and WC 2018 (test)."""
-    print("=== Subphase 6.2 — Run Backtests for WC 2022 and WC 2018 ===\n")
+    print("=== Subphase 6.2 / 6.3 — Backtests & Betting Simulation ===\n")
 
     # ------------------------------------------------------------------
     # Load splits (9-tuple)
@@ -142,8 +142,24 @@ def main() -> None:
             f"prob_sums_to_1={all_sum_to_one}"
         )
 
-    print("\n=== Subphase 6.2 complete ===")
+    # ------------------------------------------------------------------
+    # Simulated betting
+    # ------------------------------------------------------------------
+    print("\n--- Simulated Betting ---")
+    wc2022_bet_df = simulate_betting(wc2022_df, label="wc2022")
+    wc2018_bet_df = simulate_betting(wc2018_df, label="wc2018")
 
+    # Combined ROI across both tournaments
+    combined_profit = wc2022_bet_df["profit"].sum() + wc2018_bet_df["profit"].sum()
+    combined_stake = len(wc2022_bet_df) + len(wc2018_bet_df)
+    combined_roi = combined_profit / combined_stake * 100.0
+    print(f"\n  Combined ROI (WC 2022 + WC 2018): {combined_roi:+.2f}%")
+    print(
+        f"  (profit={combined_profit:+.2f} over {combined_stake} matches "
+        f"@ 1 unit/match)"
+    )
+
+    print("\n=== Subphase 6.2 complete ===")
 
 if __name__ == "__main__":
     main()
