@@ -20,9 +20,11 @@ from sklearn.metrics import accuracy_score, log_loss
 from src.models.outcome_model import load_splits
 from src.models.ensemble import WC2026Ensemble
 from src.evaluation.backtest import run_backtest, simulate_betting
+from src.betting.edge import compute_edge
 
 _MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
+_ODDS_PATH = Path(__file__).resolve().parents[1] / "data" / "bookmaker_odds.csv"
 
 
 def _compute_brier(df: pd.DataFrame) -> float:
@@ -37,7 +39,7 @@ def _compute_brier(df: pd.DataFrame) -> float:
 
 def main() -> None:
     """Load models and run backtest on WC 2022 (val) and WC 2018 (test)."""
-    print("=== Subphase 6.2 / 6.3 — Backtests & Betting Simulation ===\n")
+    print("=== Subphase 6.2 / 6.3 / 6.4 — Backtests, Betting Simulation & Edge ===\n")
 
     # ------------------------------------------------------------------
     # Load splits (9-tuple)
@@ -159,7 +161,59 @@ def main() -> None:
         f"@ 1 unit/match)"
     )
 
-    print("\n=== Subphase 6.2 complete ===")
+    # ------------------------------------------------------------------
+    # Betting edge
+    # ------------------------------------------------------------------
+    print("\n--- Betting Edge (Subphase 6.4) ---")
+    odds_df = pd.read_csv(_ODDS_PATH)
+
+    wc2022_edge_df = compute_edge(wc2022_bet_df, odds_df)
+    wc2018_edge_df = compute_edge(wc2018_bet_df, odds_df)
+
+    # Re-save enriched CSVs
+    wc2022_edge_df.to_csv(_PROCESSED_DIR / "backtest_wc2022.csv", index=False)
+    wc2018_edge_df.to_csv(_PROCESSED_DIR / "backtest_wc2018.csv", index=False)
+    print("  Enriched backtest CSVs re-saved.")
+
+    # Print recommendation counts
+    for label, df in [("WC 2022", wc2022_edge_df), ("WC 2018", wc2018_edge_df)]:
+        counts = df["bet_recommendation"].value_counts().to_dict()
+        value_n = counts.get("Value", 0)
+        neutral_n = counts.get("Neutral", 0)
+        avoid_n = counts.get("Avoid", 0)
+        print(
+            f"  [{label}] Value={value_n} | Neutral={neutral_n} | Avoid={avoid_n}"
+        )
+
+    # Combined recommendation counts
+    combined_edge_df = pd.concat([wc2022_edge_df, wc2018_edge_df], ignore_index=True)
+    total_value = (combined_edge_df["bet_recommendation"] == "Value").sum()
+    print(f"\n  Total 'Value' flags (both tournaments): {total_value}")
+
+    # Value-bet ROI
+    value_df = combined_edge_df[combined_edge_df["bet_recommendation"] == "Value"]
+    if len(value_df) > 0:
+        value_profit = value_df["profit"].sum()
+        value_roi = value_profit / len(value_df) * 100.0
+        print(
+            f"  Value-bet ROI: {value_roi:+.2f}%  "
+            f"(profit={value_profit:+.2f} over {len(value_df)} matches)"
+        )
+    else:
+        print("  Value-bet ROI: N/A (no Value-flagged matches)")
+
+    # Edge column validation
+    edge_cols = ["home_win_edge", "draw_edge", "away_win_edge", "best_edge"]
+    for label, df in [("WC 2022", wc2022_edge_df), ("WC 2018", wc2018_edge_df)]:
+        all_finite = all(df[c].apply(lambda x: pd.notna(x) and abs(x) < 2.0).all() for c in edge_cols)
+        rec_valid = df["bet_recommendation"].isin(["Value", "Neutral", "Avoid"]).all()
+        rec_no_null = df["bet_recommendation"].notna().all()
+        print(
+            f"  [{label}] edge_cols_finite={all_finite} | "
+            f"rec_valid={rec_valid} | rec_no_null={rec_no_null}"
+        )
+
+    print("\n=== Subphase 6.4 complete ===")
 
 if __name__ == "__main__":
     main()
