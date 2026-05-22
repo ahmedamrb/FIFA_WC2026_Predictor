@@ -21,6 +21,7 @@ from src.models.outcome_model import load_splits
 from src.models.ensemble import WC2026Ensemble
 from src.evaluation.backtest import run_backtest, simulate_betting
 from src.betting.edge import compute_edge
+from src.evaluation.metrics import compile_final_metrics
 
 _MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 _PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
@@ -39,7 +40,7 @@ def _compute_brier(df: pd.DataFrame) -> float:
 
 def main() -> None:
     """Load models and run backtest on WC 2022 (val) and WC 2018 (test)."""
-    print("=== Subphase 6.2 / 6.3 / 6.4 — Backtests, Betting Simulation & Edge ===\n")
+    print("=== Subphase 6.2 / 6.3 / 6.4 / 6.5 — Backtests, Simulation, Edge & Metrics ===\n")
 
     # ------------------------------------------------------------------
     # Load splits (9-tuple)
@@ -213,7 +214,13 @@ def main() -> None:
             f"rec_valid={rec_valid} | rec_no_null={rec_no_null}"
         )
 
-    print("\n=== Subphase 6.4 complete ===")
+    # ------------------------------------------------------------------
+    # Final metrics summary
+    # ------------------------------------------------------------------
+    print("\n--- Final Metrics Summary (Subphase 6.5) ---")
+    compile_final_metrics(wc2018_edge_df, wc2022_edge_df)
+
+    print("\n=== Subphase 6.5 complete ===")
 
 if __name__ == "__main__":
     main()

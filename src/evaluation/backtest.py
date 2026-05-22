@@ -151,7 +151,7 @@ def run_backtest(
     _PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     csv_path = _PROCESSED_DIR / f"backtest_{label}.csv"
     results_df[output_cols].to_csv(csv_path, index=False)
-    print(f"  Saved → data/processed/backtest_{label}.csv")
+    print(f"  Saved -> data/processed/backtest_{label}.csv")
 
     return results_df
 
@@ -259,7 +259,7 @@ def simulate_betting(
     plot_path = _PLOTS_DIR / f"cumulative_profit_{label}.png"
     fig.savefig(plot_path, bbox_inches="tight", dpi=150)
     plt.close(fig)
-    print(f"  [{label}] Chart saved → outputs/plots/cumulative_profit_{label}.png")
+    print(f"  [{label}] Chart saved -> outputs/plots/cumulative_profit_{label}.png")
 
     # Drop the raw odds columns (keep only the derived ones)
     df.drop(

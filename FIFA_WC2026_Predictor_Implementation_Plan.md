@@ -1117,17 +1117,19 @@ All of the following must be true before starting Phase 6:
 ### Subphase 6.5 — Final Metrics Summary
 
 **Tasks**
-- [ ] In `src/evaluation/metrics.py`, implement `compile_final_metrics(wc2018_df, wc2022_df)` that assembles a summary dict with keys for each tournament covering: log-loss, accuracy, Brier score, flat-stake ROI, value-bet ROI.
-- [ ] Saves the dict to `data/processed/final_backtest_metrics.json`.
-- [ ] Prints the summary as a formatted table.
-- [ ] Call this from `scripts/run_backtest.py`.
-- [ ] Run `python scripts/run_backtest.py` end-to-end.
+- [✅] In `src/evaluation/metrics.py`, implement `compile_final_metrics(wc2018_df, wc2022_df)` that assembles a summary dict with keys for each tournament covering: log-loss, accuracy, Brier score, flat-stake ROI, value-bet ROI.
+- [✅] Saves the dict to `data/processed/final_backtest_metrics.json`.
+- [✅] Prints the summary as a formatted table.
+- [✅] Call this from `scripts/run_backtest.py`.
+- [✅] Run `python scripts/run_backtest.py` end-to-end.
 
 **Verification Checklist**
-- [ ] `data/processed/final_backtest_metrics.json` exists and loads without errors.
-- [ ] JSON has keys for both `wc2018` and `wc2022`, each with the 5 metrics.
-- [ ] All values are finite numbers.
-- [ ] Summary table printed to stdout clearly.
+- [✅] `data/processed/final_backtest_metrics.json` exists and loads without errors.
+- [✅] JSON has keys for both `wc2018` and `wc2022`, each with the 5 metrics.
+- [✅] All values are finite numbers.
+- [✅] Summary table printed to stdout clearly.
+
+> **Verified 2026-05-23** — `compile_final_metrics(wc2018_df, wc2022_df)` implemented in `src/evaluation/metrics.py`. Function iterates over both tournament DataFrames; computes log-loss via `sklearn.metrics.log_loss` (labels=[0,1,2]), accuracy via `accuracy_score`, Brier score via one-hot MSE formula, flat-stake ROI as `profit.sum()/len(df)*100`, and value-bet ROI filtered to `bet_recommendation == "Value"` rows (`None` when no Value bets). Saves dict to `data/processed/final_backtest_metrics.json` (indent=2). Prints formatted two-column summary table. `scripts/run_backtest.py` updated: imports `compile_final_metrics`, adds `# Final metrics summary` block calling `compile_final_metrics(wc2018_edge_df, wc2022_edge_df)`, header updated to include 6.5. `python scripts/run_backtest.py` exited with code 0. **JSON contents:** `wc2018` — log_loss=1.007779, accuracy=0.484375, brier_score=0.201011, flat_stake_roi=−3.1250, value_bet_roi=+8.3333; `wc2022` — log_loss=1.026481, accuracy=0.546875, brier_score=0.202060, flat_stake_roi=+9.3750, value_bet_roi=+44.4444. All 10 values finite ✅. Printed table verified — Log-loss / Accuracy / Brier Score / Flat-stake ROI / Value-bet ROI rows clearly formatted for both tournaments ✅. Side-fix: `→` replaced with `->` in print strings in `metrics.py` and `backtest.py` to avoid Windows cp1252 encoding crash.
 
 ---
 
