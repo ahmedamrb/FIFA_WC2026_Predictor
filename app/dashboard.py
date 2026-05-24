@@ -140,7 +140,8 @@ if page == "Match Predictions":
             )
 elif page == "Tournament Bracket":
     st.title("Tournament Bracket")
-    st.write("Coming soon…")
+    from app.components.bracket import render_bracket
+    render_bracket(resources["fixtures"], resources["features_predict"], resources["ensemble"])
 elif page == "Model Performance":
     st.title("Model Performance")
     st.write("Coming soon…")
