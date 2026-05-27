@@ -389,6 +389,15 @@ def _prob_to_border_color(win_prob: float) -> str:
     return f"rgb({r},{g},{b})"
 
 
+def _loser_fill_color(win_prob: float) -> str:
+    """Darker muted fill for the loser band of a match box."""
+    t = (win_prob - 0.50) / 0.47
+    r = int(8 * (1 - t))
+    g = int(20 + 20 * t)
+    b = int(10 * (1 - t))
+    return f"rgb({r},{g},{b})"
+
+
 def _y_positions(n: int) -> list[float]:
     """Return N evenly-spaced Y coordinates in [Y_MIN, Y_MAX]."""
     return [Y_MIN + (i + 0.5) * (Y_MAX - Y_MIN) / n for i in range(n)]
@@ -448,7 +457,7 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
         go.Scatter(
             x=connector_x, y=connector_y,
             mode="lines",
-            line=dict(color="#5a6a7a", width=1.5),
+            line=dict(color="#4a5a6a", width=2),
             hoverinfo="skip",
         )
     )
@@ -466,25 +475,71 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
             font=dict(size=13, color="#e8e8e8"), showarrow=False,
             xref="x", yref="paper", align="center",
         )
+        fig.add_shape(
+            type="line",
+            x0=x, x1=x + BOX_W, y0=0.985, y1=0.985,
+            xref="x", yref="paper",
+            line=dict(color="#4a4a6a", width=1),
+        )
 
         for match, y in zip(matches, y_positions):
             y_top = y + BOX_H_HALF * 0.42
             y_bot = y - BOX_H_HALF * 0.42
-            fig.add_shape(
-                type="rect",
-                x0=x, x1=x + BOX_W, y0=y - BOX_H_HALF, y1=y + BOX_H_HALF,
-                xref="x", yref="y",
+            # Winner band (top half) — scatter trace so layout images render above it
+            fig.add_trace(go.Scatter(
+                x=[x, x + BOX_W, x + BOX_W, x, x],
+                y=[y, y, y + BOX_H_HALF, y + BOX_H_HALF, y],
+                fill="toself",
                 fillcolor=_prob_to_color(match["win_prob"]),
+                line=dict(color="rgba(0,0,0,0)", width=0),
+                mode="lines",
+                hoverinfo="skip",
+                showlegend=False,
+            ))
+            # Loser band (bottom half)
+            fig.add_trace(go.Scatter(
+                x=[x, x + BOX_W, x + BOX_W, x, x],
+                y=[y - BOX_H_HALF, y - BOX_H_HALF, y, y, y - BOX_H_HALF],
+                fill="toself",
+                fillcolor=_loser_fill_color(match["win_prob"]),
+                line=dict(color="rgba(0,0,0,0)", width=0),
+                mode="lines",
+                hoverinfo="skip",
+                showlegend=False,
+            ))
+            # Border overlay (full box, transparent fill)
+            fig.add_trace(go.Scatter(
+                x=[x, x + BOX_W, x + BOX_W, x, x],
+                y=[y - BOX_H_HALF, y - BOX_H_HALF, y + BOX_H_HALF, y + BOX_H_HALF, y - BOX_H_HALF],
+                fill="toself",
+                fillcolor="rgba(0,0,0,0)",
                 line=dict(color=_prob_to_border_color(match["win_prob"]), width=2),
-            )
+                mode="lines",
+                hoverinfo="skip",
+                showlegend=False,
+            ))
             _add_team_row(
                 fig, x, y_top, match["winner"],
                 match["winner"], font_size=11, font_color="#ffffff", bold=True,
             )
+            fig.add_annotation(
+                x=x + BOX_W - 0.004,
+                y=y_top,
+                text=f"<b>{match['win_prob']:.0%}</b>",
+                font=dict(size=9, color="#00e642"),
+                showarrow=False,
+                xref="x", yref="y",
+                align="right",
+                xanchor="right",
+                bgcolor="rgba(0,30,10,0.85)",
+                bordercolor="#00e642",
+                borderwidth=1,
+                borderpad=2,
+            )
             _add_team_row(
                 fig, x, y_bot, match["loser"],
-                f"{match['loser']}  {match['win_prob']:.0%}",
-                font_size=10, font_color="#d0d0d0",
+                match["loser"],
+                font_size=10, font_color="#9a9aaa",
             )
 
     # --- Third Place match box (bottom of FINAL column, inside yaxis range) ---
@@ -492,21 +547,58 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
     x_tp = ROUND_X["FINAL"]
     y_tp = 0.02  # Y_MIN — inside yaxis range
 
-    fig.add_shape(
-        type="rect",
-        x0=x_tp, x1=x_tp + BOX_W, y0=y_tp - BOX_H_HALF, y1=y_tp + BOX_H_HALF,
-        xref="x", yref="y",
+    fig.add_trace(go.Scatter(
+        x=[x_tp, x_tp + BOX_W, x_tp + BOX_W, x_tp, x_tp],
+        y=[y_tp, y_tp, y_tp + BOX_H_HALF, y_tp + BOX_H_HALF, y_tp],
+        fill="toself",
         fillcolor=_prob_to_color(tp["win_prob"]),
+        line=dict(color="rgba(0,0,0,0)", width=0),
+        mode="lines",
+        hoverinfo="skip",
+        showlegend=False,
+    ))
+    fig.add_trace(go.Scatter(
+        x=[x_tp, x_tp + BOX_W, x_tp + BOX_W, x_tp, x_tp],
+        y=[y_tp - BOX_H_HALF, y_tp - BOX_H_HALF, y_tp, y_tp, y_tp - BOX_H_HALF],
+        fill="toself",
+        fillcolor=_loser_fill_color(tp["win_prob"]),
+        line=dict(color="rgba(0,0,0,0)", width=0),
+        mode="lines",
+        hoverinfo="skip",
+        showlegend=False,
+    ))
+    fig.add_trace(go.Scatter(
+        x=[x_tp, x_tp + BOX_W, x_tp + BOX_W, x_tp, x_tp],
+        y=[y_tp - BOX_H_HALF, y_tp - BOX_H_HALF, y_tp + BOX_H_HALF, y_tp + BOX_H_HALF, y_tp - BOX_H_HALF],
+        fill="toself",
+        fillcolor="rgba(0,0,0,0)",
         line=dict(color=_prob_to_border_color(tp["win_prob"]), width=2),
-    )
+        mode="lines",
+        hoverinfo="skip",
+        showlegend=False,
+    ))
     _add_team_row(
         fig, x_tp, y_tp + BOX_H_HALF * 0.42, tp["winner"],
         tp["winner"], font_size=11, font_color="#ffffff", bold=True,
     )
+    fig.add_annotation(
+        x=x_tp + BOX_W - 0.004,
+        y=y_tp + BOX_H_HALF * 0.42,
+        text=f"<b>{tp['win_prob']:.0%}</b>",
+        font=dict(size=9, color="#00e642"),
+        showarrow=False,
+        xref="x", yref="y",
+        align="right",
+        xanchor="right",
+        bgcolor="rgba(0,30,10,0.85)",
+        bordercolor="#00e642",
+        borderwidth=1,
+        borderpad=2,
+    )
     _add_team_row(
         fig, x_tp, y_tp - BOX_H_HALF * 0.42, tp["loser"],
-        f"{tp['loser']}  {tp['win_prob']:.0%}",
-        font_size=10, font_color="#d0d0d0",
+        tp["loser"],
+        font_size=10, font_color="#9a9aaa",
     )
     fig.add_annotation(
         x=x_tp + BOX_W / 2, y=y_tp + BOX_H_HALF + 0.025,
@@ -550,25 +642,135 @@ def render_bracket(fixtures_df: pd.DataFrame, features_predict_df, ensemble) -> 
         "Top 2 per group + best 8 third-placed teams advance."
     )
 
+    # Inject CSS once (outside the loop)
+    st.markdown("""
+<style>
+.group-card {
+    background: #1a1f2e;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+}
+.group-header {
+    color: #e8c84a;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #3a3f5a;
+}
+.team-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 4px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    font-size: 0.82rem;
+}
+.team-row .pos {
+    color: #6a7a9a;
+    width: 14px;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+}
+.team-row img {
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+.team-row .flag-fallback {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.team-row .name {
+    flex: 1;
+    color: #d8e0f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.team-row .pts {
+    color: #a0b0c0;
+    font-size: 0.78rem;
+    width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.team-row .rank {
+    color: #5a6a8a;
+    font-size: 0.72rem;
+    width: 34px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.team-row.qualifier {
+    background: rgba(0, 200, 100, 0.10);
+}
+.team-row.maybe {
+    background: rgba(200, 200, 0, 0.06);
+}
+.team-row.eliminated {
+    opacity: 0.45;
+}
+</style>
+""", unsafe_allow_html=True)
+
     labels = sorted(group_standings.keys())
+    _row_classes = ["qualifier", "qualifier", "maybe", "eliminated"]
     for row_start in range(0, 12, 4):
         cols = st.columns(4)
         for col_i, label in enumerate(labels[row_start:row_start + 4]):
             df = group_standings[label]
-            display = df[["team", "expected_pts", "rank"]].copy()
-            display["team"] = display["team"].apply(lambda t: f"{_flag(t)} {t}")
-            display.columns = ["Team", "Exp. Pts", "FIFA Rank"]
-            display["Exp. Pts"] = display["Exp. Pts"].round(1)
+            rows_html = ""
+            for i, row in df.iterrows():
+                team = row["team"]
+                pts = round(float(row["expected_pts"]), 1)
+                rank = int(row["rank"])
+                url = _flag_url(team)
+                flag_html = (
+                    f'<img src="{url}" width="20" height="15" alt="">'
+                    if url else
+                    '<span class="flag-fallback">🏴</span>'
+                )
+                css_class = _row_classes[i] if i < 4 else "eliminated"
+                rows_html += (
+                    f'<div class="team-row {css_class}">'
+                    f'<span class="pos">{i + 1}</span>'
+                    f'{flag_html}'
+                    f'<span class="name">{team}</span>'
+                    f'<span class="pts">{pts}</span>'
+                    f'<span class="rank">#{rank}</span>'
+                    f'</div>'
+                )
+            col_header = (
+                '<div style="display:flex;align-items:center;gap:6px;'
+                'padding:0 4px 4px 4px;margin-bottom:2px;'
+                'border-bottom:1px solid #2a2f3a;">'
+                '<span style="width:14px;flex-shrink:0;"></span>'
+                '<span style="width:20px;flex-shrink:0;"></span>'
+                '<span style="flex:1;color:#6a7a9a;font-size:0.72rem;">Team</span>'
+                '<span style="width:36px;flex-shrink:0;text-align:right;'
+                'color:#6a7a9a;font-size:0.72rem;">xPts</span>'
+                '<span style="width:34px;flex-shrink:0;text-align:right;'
+                'color:#6a7a9a;font-size:0.72rem;">Rank</span>'
+                '</div>'
+            )
+            card_html = (
+                f'<div class="group-card">'
+                f'<div class="group-header">Group {label}</div>'
+                f'{col_header}'
+                f'{rows_html}'
+                f'</div>'
+            )
             with cols[col_i]:
-                st.markdown(f"**Group {label}**")
-                st.dataframe(display, hide_index=True, width='stretch')
+                st.markdown(card_html, unsafe_allow_html=True)
 
     st.divider()
 
     # --- Knockout Bracket ---
     st.subheader("Knockout Stage — Predicted Bracket (Simulated)")
     fig = _draw_bracket_figure(bracket_tree)
-    st.plotly_chart(fig, width='stretch')
+    st.plotly_chart(fig, use_container_width=True)
 
     tp = bracket_tree["THIRD_PLACE"][0]
     st.caption(
