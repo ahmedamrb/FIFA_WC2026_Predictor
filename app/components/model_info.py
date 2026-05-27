@@ -61,6 +61,7 @@ def render_training_summary(features_train_df: pd.DataFrame) -> None:
         rows.append((f"  {tournament}", count))
 
     summary_df = pd.DataFrame(rows, columns=["Metric", "Value"])
+    summary_df["Value"] = summary_df["Value"].astype(str)
     st.dataframe(summary_df, width='stretch', hide_index=True)
 
 
