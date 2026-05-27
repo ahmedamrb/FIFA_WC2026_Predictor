@@ -144,7 +144,40 @@ elif page == "Tournament Bracket":
     render_bracket(resources["fixtures"], resources["features_predict"], resources["ensemble"])
 elif page == "Model Performance":
     st.title("Model Performance")
-    st.write("Coming soon…")
+
+    from app.components.performance_charts import (
+        render_calibration_chart,
+        render_cumulative_profit_chart,
+        render_metrics_bar_chart,
+    )
+
+    metrics = resources["backtest_metrics"]
+    wc2018_df = resources["backtest_wc2018"]
+    wc2022_df = resources["backtest_wc2022"]
+
+    # --- Summary metric row ---
+    combined_log_loss = (metrics["wc2018"]["log_loss"] + metrics["wc2022"]["log_loss"]) / 2
+    combined_accuracy = (metrics["wc2018"]["accuracy"] + metrics["wc2022"]["accuracy"]) / 2
+    combined_roi = (
+        metrics["wc2018"]["flat_stake_roi"] + metrics["wc2022"]["flat_stake_roi"]
+    ) / 2
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Combined Log-loss", f"{combined_log_loss:.4f}")
+    col2.metric("Combined Accuracy", f"{combined_accuracy:.1%}")
+    col3.metric("Combined Flat-stake ROI", f"{combined_roi:.2f}%")
+
+    st.divider()
+
+    # --- Charts ---
+    st.subheader("Metrics by Tournament")
+    render_metrics_bar_chart(metrics)
+
+    st.subheader("Cumulative Profit")
+    render_cumulative_profit_chart(wc2018_df, wc2022_df)
+
+    st.subheader("Model Calibration")
+    render_calibration_chart()
 elif page == "Data & Model Info":
     st.title("Data & Model Info")
     st.write("Coming soon…")
