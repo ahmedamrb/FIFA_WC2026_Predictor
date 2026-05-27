@@ -39,6 +39,9 @@ def load_resources() -> dict:
     fp = _PROCESSED / "features_predict.parquet"
     features_predict = pd.read_parquet(fp) if fp.exists() else None
 
+    ft = _PROCESSED / "features_train.parquet"
+    features_train = pd.read_parquet(ft) if ft.exists() else None
+
     fixtures = pd.read_csv(_RAW / "wc2026_fixtures_flat.csv", parse_dates=["match_date"])
     odds = pd.read_csv(_REPO_ROOT / "data" / "bookmaker_odds.csv")
 
@@ -63,6 +66,7 @@ def load_resources() -> dict:
         "backtest_metrics": backtest_metrics,
         "backtest_wc2018": backtest_wc2018,
         "backtest_wc2022": backtest_wc2022,
+        "features_train": features_train,
     }
 
 
@@ -180,4 +184,41 @@ elif page == "Model Performance":
     render_calibration_chart()
 elif page == "Data & Model Info":
     st.title("Data & Model Info")
-    st.write("Coming soon…")
+
+    from app.components.model_info import (
+        render_feature_importance,
+        render_model_registry,
+        render_training_summary,
+    )
+
+    # --- Last Retrained metric (read from MODEL_REGISTRY.md) ---
+    _registry_path = _REPO_ROOT / "models" / "MODEL_REGISTRY.md"
+    last_retrained = "Unknown"
+    if _registry_path.exists():
+        import re
+        _registry_text = _registry_path.read_text(encoding="utf-8")
+        _dates = re.findall(r"\|\s*(\d{4}-\d{2}-\d{2})\s*\|", _registry_text)
+        if _dates:
+            last_retrained = max(_dates)
+
+    st.metric("Last Retrained", last_retrained)
+    st.divider()
+
+    # --- Feature Importance ---
+    st.subheader("Feature Importance")
+    render_feature_importance(resources["outcome_xgb"])
+
+    st.divider()
+
+    # --- Training Data Summary ---
+    st.subheader("Training Data Summary")
+    if resources.get("features_train") is not None:
+        render_training_summary(resources["features_train"])
+    else:
+        st.warning("features_train.parquet not found.")
+
+    st.divider()
+
+    # --- Model Registry ---
+    st.subheader("Model Registry")
+    render_model_registry()
