@@ -31,8 +31,8 @@ FEATURE_COLUMNS = [
 ]
 
 # Bracket figure constants
-BOX_W = 0.175
-BOX_H_HALF = 0.022
+BOX_W = 0.195
+BOX_H_HALF = 0.028
 Y_MIN, Y_MAX = 0.02, 0.98
 
 ROUND_ORDER = ["LAST_32", "LAST_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"]
@@ -50,6 +50,129 @@ ROUND_LABELS = {
     "SEMI_FINALS":    "Semi Finals",
     "FINAL":          "Final",
 }
+
+# ISO-3166-1 alpha-2 based flag emoji for every WC 2026 participant
+FLAG_EMOJI: dict[str, str] = {
+    "Algeria": "🇩🇿",
+    "Argentina": "🇦🇷",
+    "Australia": "🇦🇺",
+    "Austria": "🇦🇹",
+    "Belgium": "🇧🇪",
+    "Bosnia-Herzegovina": "🇧🇦",
+    "Brazil": "🇧🇷",
+    "Canada": "🇨🇦",
+    "Cape Verde Islands": "🇨🇻",
+    "Colombia": "🇨🇴",
+    "Congo DR": "🇨🇩",
+    "Croatia": "🇭🇷",
+    "Curaçao": "🇨🇼",
+    "Czechia": "🇨🇿",
+    "Ecuador": "🇪🇨",
+    "Egypt": "🇪🇬",
+    "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    "France": "🇫🇷",
+    "Germany": "🇩🇪",
+    "Ghana": "🇬🇭",
+    "Haiti": "🇭🇹",
+    "Iran": "🇮🇷",
+    "Iraq": "🇮🇶",
+    "Ivory Coast": "🇨🇮",
+    "Japan": "🇯🇵",
+    "Jordan": "🇯🇴",
+    "Mexico": "🇲🇽",
+    "Morocco": "🇲🇦",
+    "Netherlands": "🇳🇱",
+    "New Zealand": "🇳🇿",
+    "Norway": "🇳🇴",
+    "Panama": "🇵🇦",
+    "Paraguay": "🇵🇾",
+    "Portugal": "🇵🇹",
+    "Qatar": "🇶🇦",
+    "Saudi Arabia": "🇸🇦",
+    "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+    "Senegal": "🇸🇳",
+    "South Africa": "🇿🇦",
+    "South Korea": "🇰🇷",
+    "Spain": "🇪🇸",
+    "Sweden": "🇸🇪",
+    "Switzerland": "🇨🇭",
+    "Tunisia": "🇹🇳",
+    "Turkey": "🇹🇷",
+    "United States": "🇺🇸",
+    "Uruguay": "🇺🇾",
+    "Uzbekistan": "🇺🇿",
+}
+
+
+def _flag(team: str) -> str:
+    """Return the flag emoji for a team name (used in Streamlit HTML tables)."""
+    return FLAG_EMOJI.get(team, "")
+
+
+# Lowercase ISO-3166-1 alpha-2 codes for flagcdn.com image URLs (used in Plotly figures)
+TEAM_ISO_CODES: dict[str, str] = {
+    "Algeria": "dz", "Argentina": "ar", "Australia": "au", "Austria": "at",
+    "Belgium": "be", "Bosnia-Herzegovina": "ba", "Brazil": "br", "Canada": "ca",
+    "Cape Verde Islands": "cv", "Colombia": "co", "Congo DR": "cd", "Croatia": "hr",
+    "Cura\u00e7ao": "cw", "Czechia": "cz", "Ecuador": "ec", "Egypt": "eg",
+    "England": "gb-eng", "France": "fr", "Germany": "de", "Ghana": "gh",
+    "Haiti": "ht", "Iran": "ir", "Iraq": "iq", "Ivory Coast": "ci",
+    "Japan": "jp", "Jordan": "jo", "Mexico": "mx", "Morocco": "ma",
+    "Netherlands": "nl", "New Zealand": "nz", "Norway": "no", "Panama": "pa",
+    "Paraguay": "py", "Portugal": "pt", "Qatar": "qa", "Saudi Arabia": "sa",
+    "Scotland": "gb-sct", "Senegal": "sn", "South Africa": "za", "South Korea": "kr",
+    "Spain": "es", "Sweden": "se", "Switzerland": "ch", "Tunisia": "tn",
+    "Turkey": "tr", "United States": "us", "Uruguay": "uy", "Uzbekistan": "uz",
+}
+
+
+def _flag_url(team: str) -> str:
+    """Return a flagcdn.com 20x15 PNG URL for the team, or empty string if unknown."""
+    code = TEAM_ISO_CODES.get(team, "")
+    return f"https://flagcdn.com/20x15/{code}.png" if code else ""
+
+
+_FLAG_SZ_X = 0.021   # flag image width in x-axis units
+_FLAG_SZ_Y = 0.022   # flag image height in y-axis units
+_FLAG_OFF  = 0.005   # gap from box left edge to flag left edge
+_TEXT_OFF  = 0.030   # gap from box left edge to text start
+
+
+def _add_team_row(
+    fig: go.Figure,
+    x_box: float,
+    y_row: float,
+    team: str,
+    text: str,
+    font_size: int,
+    font_color: str,
+    bold: bool = False,
+) -> None:
+    """Add a flag image + team name annotation as one row inside a match box."""
+    url = _flag_url(team)
+    if url:
+        fig.add_layout_image(
+            source=url,
+            x=x_box + _FLAG_OFF,
+            y=y_row,
+            xref="x", yref="y",
+            sizex=_FLAG_SZ_X,
+            sizey=_FLAG_SZ_Y,
+            xanchor="left",
+            yanchor="middle",
+            layer="above",
+        )
+    label = f"<b>{text}</b>" if bold else text
+    fig.add_annotation(
+        x=x_box + _TEXT_OFF,
+        y=y_row,
+        text=label,
+        font=dict(size=font_size, color=font_color),
+        showarrow=False,
+        xref="x", yref="y",
+        align="left",
+        xanchor="left",
+    )
 
 
 def _build_rank_lookup() -> dict[str, int]:
@@ -245,14 +368,24 @@ def _build_bracket_tree(
 
 
 def _prob_to_color(win_prob: float) -> str:
-    """Map win probability to a green shade.
+    """Map win probability to a dark green background for match boxes.
 
-    rgb(144,238,144) (light green) at 50% → rgb(0,100,0) (dark green) at 97%.
+    Dark forest (#0d2b14) at 50% → rich green (#0a5c1e) at 97%.
+    Dark backgrounds ensure strong contrast with white/light text.
     """
     t = (win_prob - 0.50) / 0.47
-    r = int(144 * (1 - t))
-    g = int(100 + 138 * (1 - t))
-    b = int(144 * (1 - t))
+    r = int(13 * (1 - t))
+    g = int(43 + 49 * t)
+    b = int(20 * (1 - t))
+    return f"rgb({r},{g},{b})"
+
+
+def _prob_to_border_color(win_prob: float) -> str:
+    """Bright accent border: muted green (#39a84a) at 50% → vivid green (#00e642) at 97%."""
+    t = (win_prob - 0.50) / 0.47
+    r = int(57 * (1 - t))
+    g = int(168 + 62 * t)
+    b = int(74 * (1 - t))
     return f"rgb({r},{g},{b})"
 
 
@@ -270,16 +403,16 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
     """
     fig = go.Figure()
     fig.update_layout(
-        height=700,
+        height=900,
         paper_bgcolor="#0e1117",
         plot_bgcolor="#0e1117",
         showlegend=False,
-        margin=dict(l=5, r=5, t=40, b=5),
+        margin=dict(l=5, r=5, t=50, b=5),
         xaxis=dict(range=[0, 1.05], visible=False, fixedrange=True),
         yaxis=dict(range=[-0.05, 1.05], visible=False, fixedrange=True),
         title=dict(
-            text="Predicted Tournament Bracket (FIFA Ranking Simulation)",
-            font=dict(color="white", size=14),
+            text="🏆 Predicted Tournament Bracket (FIFA Ranking Simulation)",
+            font=dict(color="#f0f0f0", size=17),
             x=0.5,
         ),
     )
@@ -315,7 +448,7 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
         go.Scatter(
             x=connector_x, y=connector_y,
             mode="lines",
-            line=dict(color="#555555", width=1),
+            line=dict(color="#5a6a7a", width=1.5),
             hoverinfo="skip",
         )
     )
@@ -329,30 +462,29 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
         # Round label above the column (paper y-reference so it sits above plot area)
         fig.add_annotation(
             x=x + BOX_W / 2, y=1.01,
-            text=ROUND_LABELS[rnd],
-            font=dict(size=10, color="#cccccc"), showarrow=False,
+            text=f"<b>{ROUND_LABELS[rnd]}</b>",
+            font=dict(size=13, color="#e8e8e8"), showarrow=False,
             xref="x", yref="paper", align="center",
         )
 
         for match, y in zip(matches, y_positions):
+            y_top = y + BOX_H_HALF * 0.42
+            y_bot = y - BOX_H_HALF * 0.42
             fig.add_shape(
                 type="rect",
                 x0=x, x1=x + BOX_W, y0=y - BOX_H_HALF, y1=y + BOX_H_HALF,
                 xref="x", yref="y",
                 fillcolor=_prob_to_color(match["win_prob"]),
-                line=dict(color="#555555", width=1),
+                line=dict(color=_prob_to_border_color(match["win_prob"]), width=2),
             )
-            fig.add_annotation(
-                x=x + BOX_W / 2, y=y + BOX_H_HALF * 0.45,
-                text=f"<b>{match['winner']}</b> {match['win_prob']:.0%}",
-                font=dict(size=8, color="white"), showarrow=False,
-                xref="x", yref="y", align="center",
+            _add_team_row(
+                fig, x, y_top, match["winner"],
+                match["winner"], font_size=11, font_color="#ffffff", bold=True,
             )
-            fig.add_annotation(
-                x=x + BOX_W / 2, y=y - BOX_H_HALF * 0.45,
-                text=match["loser"],
-                font=dict(size=8, color="#aaaaaa"), showarrow=False,
-                xref="x", yref="y", align="center",
+            _add_team_row(
+                fig, x, y_bot, match["loser"],
+                f"{match['loser']}  {match['win_prob']:.0%}",
+                font_size=10, font_color="#d0d0d0",
             )
 
     # --- Third Place match box (bottom of FINAL column, inside yaxis range) ---
@@ -365,24 +497,21 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
         x0=x_tp, x1=x_tp + BOX_W, y0=y_tp - BOX_H_HALF, y1=y_tp + BOX_H_HALF,
         xref="x", yref="y",
         fillcolor=_prob_to_color(tp["win_prob"]),
-        line=dict(color="#888888", width=1),
+        line=dict(color=_prob_to_border_color(tp["win_prob"]), width=2),
+    )
+    _add_team_row(
+        fig, x_tp, y_tp + BOX_H_HALF * 0.42, tp["winner"],
+        tp["winner"], font_size=11, font_color="#ffffff", bold=True,
+    )
+    _add_team_row(
+        fig, x_tp, y_tp - BOX_H_HALF * 0.42, tp["loser"],
+        f"{tp['loser']}  {tp['win_prob']:.0%}",
+        font_size=10, font_color="#d0d0d0",
     )
     fig.add_annotation(
-        x=x_tp + BOX_W / 2, y=y_tp + BOX_H_HALF * 0.45,
-        text=f"<b>{tp['winner']}</b> {tp['win_prob']:.0%}",
-        font=dict(size=8, color="white"), showarrow=False,
-        xref="x", yref="y", align="center",
-    )
-    fig.add_annotation(
-        x=x_tp + BOX_W / 2, y=y_tp - BOX_H_HALF * 0.45,
-        text=tp["loser"],
-        font=dict(size=8, color="#aaaaaa"), showarrow=False,
-        xref="x", yref="y", align="center",
-    )
-    fig.add_annotation(
-        x=x_tp + BOX_W / 2, y=y_tp + BOX_H_HALF + 0.02,
-        text="3rd Place",
-        font=dict(size=9, color="#cccccc"), showarrow=False,
+        x=x_tp + BOX_W / 2, y=y_tp + BOX_H_HALF + 0.025,
+        text="<b>🥉 3rd Place</b>",
+        font=dict(size=11, color="#e8c84a"), showarrow=False,
         xref="x", yref="y", align="center",
     )
 
@@ -427,6 +556,7 @@ def render_bracket(fixtures_df: pd.DataFrame, features_predict_df, ensemble) -> 
         for col_i, label in enumerate(labels[row_start:row_start + 4]):
             df = group_standings[label]
             display = df[["team", "expected_pts", "rank"]].copy()
+            display["team"] = display["team"].apply(lambda t: f"{_flag(t)} {t}")
             display.columns = ["Team", "Exp. Pts", "FIFA Rank"]
             display["Exp. Pts"] = display["Exp. Pts"].round(1)
             with cols[col_i]:
