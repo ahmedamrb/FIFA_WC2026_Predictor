@@ -155,7 +155,7 @@ def render_prediction_card(
             xaxis=dict(range=[0, 100], showticklabels=False),
             yaxis=dict(showticklabels=False),
         )
-        st.plotly_chart(fig, use_container_width=True, key=f"{fixture_row.name}_chart")
+        st.plotly_chart(fig, width='stretch', key=f"{fixture_row.name}_chart")
 
         # --- Legend labels below the chart ---
         leg_col1, leg_col2, leg_col3 = st.columns(3)

@@ -401,22 +401,22 @@ def _compute_confidence():
 run("confidence score computation yields value in [0, 1]", _compute_confidence)
 
 
-def _check_no_width_stretch():
+def _check_no_use_container_width():
     src = (REPO_ROOT / "app" / "components" / "prediction_card.py").read_text(encoding="utf-8")
     _require(
-        "width='stretch'" not in src,
-        "prediction_card.py still contains width='stretch' — bug not fixed",
+        "use_container_width=" not in src,
+        "prediction_card.py still contains use_container_width= — migrate to width=",
     )
 
-run("prediction_card.py does NOT contain width='stretch'", _check_no_width_stretch)
+run("prediction_card.py does NOT contain use_container_width=", _check_no_use_container_width)
 
 run(
-    "prediction_card.py uses use_container_width=True for plotly_chart",
+    "prediction_card.py uses width='stretch' for plotly_chart",
     lambda: _require(
-        "use_container_width=True" in (
+        "width='stretch'" in (
             REPO_ROOT / "app" / "components" / "prediction_card.py"
         ).read_text(encoding="utf-8"),
-        "use_container_width=True not found in prediction_card.py",
+        "width='stretch' not found in prediction_card.py",
     ),
 )
 

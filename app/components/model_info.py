@@ -35,7 +35,7 @@ def render_feature_importance(xgb_model) -> None:
         height=600,
         margin={"l": 200, "r": 40, "t": 60, "b": 60},
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def render_training_summary(features_train_df: pd.DataFrame) -> None:
@@ -61,7 +61,7 @@ def render_training_summary(features_train_df: pd.DataFrame) -> None:
         rows.append((f"  {tournament}", count))
 
     summary_df = pd.DataFrame(rows, columns=["Metric", "Value"])
-    st.dataframe(summary_df, use_container_width=True, hide_index=True)
+    st.dataframe(summary_df, width='stretch', hide_index=True)
 
 
 def render_model_registry() -> None:
@@ -98,5 +98,5 @@ def render_model_registry() -> None:
     registry_df = pd.DataFrame(data_rows, columns=columns)
     registry_df = registry_df[registry_df["Date Trained"] != "N/A"].reset_index(drop=True)
 
-    st.dataframe(registry_df, use_container_width=True, hide_index=True)
+    st.dataframe(registry_df, width='stretch', hide_index=True)
 

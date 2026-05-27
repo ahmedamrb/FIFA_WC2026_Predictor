@@ -561,14 +561,14 @@ def render_bracket(fixtures_df: pd.DataFrame, features_predict_df, ensemble) -> 
             display["Exp. Pts"] = display["Exp. Pts"].round(1)
             with cols[col_i]:
                 st.markdown(f"**Group {label}**")
-                st.dataframe(display, hide_index=True, use_container_width=True)
+                st.dataframe(display, hide_index=True, width='stretch')
 
     st.divider()
 
     # --- Knockout Bracket ---
     st.subheader("Knockout Stage — Predicted Bracket (Simulated)")
     fig = _draw_bracket_figure(bracket_tree)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     tp = bracket_tree["THIRD_PLACE"][0]
     st.caption(
