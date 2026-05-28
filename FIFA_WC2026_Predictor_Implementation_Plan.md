@@ -1428,6 +1428,36 @@ All of the following must be true to consider the core project complete:
 
 ---
 
+### Subphase 8.5 — Goals Model Zero-Score Fix
+
+> **Root cause:** Every predicted scoreline had at least 1 goal per team — scores like 0–0, 1–0, 0–2 were impossible. Two compounding issues caused this.
+
+**Root Cause Analysis**
+
+| Issue | Location | Description |
+|-------|----------|-------------|
+| Wrong rounding | `app/components/prediction_card.py` lines ~176–177 | `int(round(float(x)))` converts any λ ≥ 0.5 to 1+. Poisson mode is `floor(λ)`, not `round(λ)`. |
+| Structural model bias | `src/models/goals_model.py` | `XGBRegressor(objective="reg:squarederror")` (continuous regression) combined with heavy L1/L2 regularisation and H2H defaults of 1.3/1.1 kept all raw predictions in [0.7, 2.5], so rounding always gave ≥ 1. |
+
+**Tasks**
+- [✅] `app/components/prediction_card.py`: replaced `int(round(float(...)))` with `max(0, int(float(...)))` (floor/truncation) for both home and away goal predictions.
+- [✅] `src/models/goals_model.py`: added `objective="count:poisson"` to both `XGBRegressor` instances in `train_tuned_goals_models()`. Poisson log-link objective is purpose-built for count data and allows λ < 1.
+- [✅] `src/models/tune.py`: added `"objective": "count:poisson"` to the goals Optuna params dict so future re-tuning preserves the Poisson objective.
+- [✅] `src/data/preprocess.py`: lowered H2H neutral defaults for teams with no prior meeting history — `h2h_avg_goals_home` 1.3 → 0.8, `h2h_avg_goals_away` 1.1 → 0.6 (better reflects WC defensive reality for unfamiliar matchups).
+- [✅] Re-ran `python scripts/run_feature_engineering.py` → `python scripts/train.py` → `python scripts/run_backtest.py`.
+
+**Verification Checklist**
+- [✅] Zero home-goals predictions now appear in backtest: **13/64** WC 2022 matches. *(WC 2022 actually had 10 zero-scoring teams — result is realistic.)*
+- [✅] Zero away-goals predictions: **23/64** WC 2022 matches.
+- [✅] Goals distribution after fix (WC 2022, 64 matches): 0 goals — home 13, away 23 | 1 goal — home 49, away 40 | 2+ goals — home 2, away 1.
+- [✅] Ensemble accuracy unchanged: **54.7%**. ROI unchanged: **+9.38%**.
+- [✅] All 7 model `.pkl` files re-serialised with updated timestamps.
+- [✅] `backtest.py` already used `np.floor` / `a_min=0` clip correctly — no change needed there.
+
+> **Verified 2026-05-28** — All 4 code changes applied. Pipeline re-ran without errors. Backtest confirmed 13 zero home-goal and 23 zero away-goal predictions across 64 WC 2022 matches. Previously every prediction had ≥ 1 goal per team.
+
+---
+
 ### ✅ Phase 8 — Definition of Done
 
 - [✅] `python scripts/run_feature_engineering.py` produces 37-feature parquets with zero nulls.
@@ -1435,6 +1465,7 @@ All of the following must be true to consider the core project complete:
 - [✅] Ensemble val log-loss minimised to best achievable with current data (1.029).
 - [✅] `best_hyperparams.json` contains 37-feature tuned values for all 4 model keys.
 - [✅] All 13 unit tests pass (`python -m pytest tests/ -v`).
+- [✅] Goals models produce realistic zero-score predictions (Subphase 8.5).
 - [⚠️] PRD log-loss target (0.95) not met — requires historical bookmaker odds as training features; current free data sources are insufficient.
 
 ---

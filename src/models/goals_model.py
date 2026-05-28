@@ -117,6 +117,7 @@ def train_tuned_goals_models(X_train, y_home, y_away, best_params):
         colsample_bytree=hp["colsample_bytree"],
         reg_alpha=hp["reg_alpha"],
         reg_lambda=hp["reg_lambda"],
+        objective="count:poisson",
         random_state=42,
     )
     xgb_home.fit(X_train, y_home)
@@ -131,6 +132,7 @@ def train_tuned_goals_models(X_train, y_home, y_away, best_params):
         colsample_bytree=ap["colsample_bytree"],
         reg_alpha=ap["reg_alpha"],
         reg_lambda=ap["reg_lambda"],
+        objective="count:poisson",
         random_state=42,
     )
     xgb_away.fit(X_train, y_away)

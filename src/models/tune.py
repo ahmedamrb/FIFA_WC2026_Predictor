@@ -276,6 +276,7 @@ def tune_xgboost_goals(X_train, y_goals, label="home"):
             "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
             "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 1.0, log=True),
             "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 1.0, log=True),
+            "objective": "count:poisson",
             "random_state": 42,
             "n_jobs": -1,
         }

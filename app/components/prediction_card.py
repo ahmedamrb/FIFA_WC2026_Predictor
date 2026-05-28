@@ -173,8 +173,8 @@ def render_prediction_card(
         )
 
         # --- Predicted scoreline ---
-        h_goals = int(round(float(home_goals_model.predict(X)[0])))
-        a_goals = int(round(float(away_goals_model.predict(X)[0])))
+        h_goals = max(0, int(float(home_goals_model.predict(X)[0])))
+        a_goals = max(0, int(float(away_goals_model.predict(X)[0])))
         st.markdown(
             f"**Predicted:** {home_team} {h_goals} – {a_goals} {away_team}"
         )

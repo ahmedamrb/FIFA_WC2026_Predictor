@@ -455,9 +455,9 @@ def compute_h2h_features(matches_df: pd.DataFrame) -> pd.DataFrame:
       home team (regardless of which side they were on). Default fill: 0.33
     * ``h2h_matches_count`` — total prior meetings found (0 if none).
     * ``h2h_avg_goals_home`` — average goals scored by the current home team
-      per prior meeting. Default fill: 1.3
+      per prior meeting. Default fill: 0.8
     * ``h2h_avg_goals_away`` — average goals scored by the current away team
-      per prior meeting. Default fill: 1.1
+      per prior meeting. Default fill: 0.6
 
     Rows with no prior history (``h2h_matches_count == 0``) are filled with
     the neutral defaults listed above.  The h2h history is updated **after**
@@ -534,8 +534,8 @@ def compute_h2h_features(matches_df: pd.DataFrame) -> pd.DataFrame:
     no_history_mask = df["h2h_matches_count"] == 0
     neutral_fill_count = int(no_history_mask.sum())
     df.loc[no_history_mask, "h2h_home_win_rate"] = 0.33
-    df.loc[no_history_mask, "h2h_avg_goals_home"] = 1.3
-    df.loc[no_history_mask, "h2h_avg_goals_away"] = 1.1
+    df.loc[no_history_mask, "h2h_avg_goals_home"] = 0.8
+    df.loc[no_history_mask, "h2h_avg_goals_away"] = 0.6
 
     print(f"\nH2H features: {neutral_fill_count} rows filled with neutral defaults")
 

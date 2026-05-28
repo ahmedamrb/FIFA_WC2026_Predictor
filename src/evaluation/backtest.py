@@ -80,11 +80,14 @@ def run_backtest(
     proba = ensemble.predict_proba(X)  # shape (n, 3): [away=0, draw=1, home=2]
     pred_outcome = ensemble.predict(X)  # shape (n,)
 
+    # Use floor() rather than round() — for a Poisson(λ) model the mode is
+    # floor(λ) (for non-integer λ), so floor gives the most-likely integer
+    # outcome and correctly predicts 0 when λ < 1.
     pred_home_goals = np.clip(
-        np.round(goals_home_model.predict(X)).astype(int), a_min=0, a_max=None
+        np.floor(goals_home_model.predict(X)).astype(int), a_min=0, a_max=None
     )
     pred_away_goals = np.clip(
-        np.round(goals_away_model.predict(X)).astype(int), a_min=0, a_max=None
+        np.floor(goals_away_model.predict(X)).astype(int), a_min=0, a_max=None
     )
 
     # ------------------------------------------------------------------
