@@ -56,12 +56,49 @@ _COLOR_DRAW = "#FFAA00"
 _COLOR_AWAY_WIN = "#CC3333"
 
 
+def _lookup_odds(
+    odds_df: pd.DataFrame | None,
+    match_date,
+    home_team: str,
+    away_team: str,
+) -> dict | None:
+    """Return the latest real odds row for a fixture, or None if unavailable."""
+    if odds_df is None or odds_df.empty:
+        return None
+    try:
+        target_date = pd.to_datetime(match_date).normalize()
+    except Exception:
+        return None
+
+    mask = (
+        (pd.to_datetime(odds_df["match_date"], errors="coerce").dt.normalize() == target_date)
+        & (odds_df["home_team"] == home_team)
+        & (odds_df["away_team"] == away_team)
+    )
+    hits = odds_df[mask]
+    if hits.empty:
+        return None
+
+    # Prefer the most recently fetched row
+    if "fetched_at" in hits.columns:
+        hits = hits.sort_values("fetched_at", ascending=False)
+    row = hits.iloc[0]
+    return {
+        "home_win_odds": float(row.get("home_win_odds", 2.0)),
+        "draw_odds": float(row.get("draw_odds", 3.0)),
+        "away_win_odds": float(row.get("away_win_odds", 2.5)),
+        "source": str(row.get("source", "unknown")),
+        "fetched_at": str(row.get("fetched_at", "")),
+    }
+
+
 def render_prediction_card(
     fixture_row,
     features_row,
     ensemble,
     home_goals_model,
     away_goals_model,
+    odds_df: pd.DataFrame | None = None,
 ):
     """Render a prediction card for a single WC 2026 fixture.
 
@@ -80,6 +117,9 @@ def render_prediction_card(
         Predicts expected home goals.
     away_goals_model : sklearn-compatible regressor
         Predicts expected away goals.
+    odds_df : pd.DataFrame or None
+        Canonical odds table.  When provided, the fixture's latest real odds
+        are used as default values for the inputs; users can still override.
     """
     home_team = fixture_row["home_team"]
     away_team = fixture_row["away_team"]
@@ -188,12 +228,26 @@ def render_prediction_card(
         st.markdown(f"**Confidence:** {confidence:.0%}")
 
         # --- Bookmaker odds inputs ---
+        # Look up real odds from the canonical table; fall back to neutral defaults
+        real_odds = _lookup_odds(odds_df, match_date, home_team, away_team)
+        default_home_odds = real_odds["home_win_odds"] if real_odds else 2.0
+        default_draw_odds = real_odds["draw_odds"] if real_odds else 3.0
+        default_away_odds = real_odds["away_win_odds"] if real_odds else 2.5
+
+        # Show source badge when real odds are available
+        if real_odds:
+            src_label = real_odds.get("source", "")
+            fetched = real_odds.get("fetched_at", "")[:10]
+            st.caption(f"Odds: {src_label} (fetched {fetched})")
+        else:
+            st.caption("Odds: no real odds found — using neutral defaults (edit below)")
+
         key_prefix = f"{fixture_row.name}_{home_team}_{away_team}"
         odds_col1, odds_col2, odds_col3 = st.columns(3)
         home_odds = odds_col1.number_input(
             "Home Win Odds",
             min_value=1.01,
-            value=2.0,
+            value=float(default_home_odds),
             step=0.01,
             format="%.2f",
             key=f"{key_prefix}_home_odds",
@@ -201,7 +255,7 @@ def render_prediction_card(
         draw_odds = odds_col2.number_input(
             "Draw Odds",
             min_value=1.01,
-            value=3.0,
+            value=float(default_draw_odds),
             step=0.01,
             format="%.2f",
             key=f"{key_prefix}_draw_odds",
@@ -209,7 +263,7 @@ def render_prediction_card(
         away_odds = odds_col3.number_input(
             "Away Win Odds",
             min_value=1.01,
-            value=2.5,
+            value=float(default_away_odds),
             step=0.01,
             format="%.2f",
             key=f"{key_prefix}_away_odds",

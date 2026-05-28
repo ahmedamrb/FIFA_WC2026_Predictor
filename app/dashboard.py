@@ -13,6 +13,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from src.models.ensemble import WC2026Ensemble  # noqa: E402
+from src.data.odds import load_odds_for_backtest  # noqa: E402
 
 # Path constants
 _MODELS_DIR = _REPO_ROOT / "models"
@@ -43,7 +44,7 @@ def load_resources() -> dict:
     features_train = pd.read_parquet(ft) if ft.exists() else None
 
     fixtures = pd.read_csv(_RAW / "wc2026_fixtures_flat.csv", parse_dates=["match_date"])
-    odds = pd.read_csv(_REPO_ROOT / "data" / "bookmaker_odds.csv")
+    odds = load_odds_for_backtest(mode="real")
 
     with open(_PROCESSED / "final_backtest_metrics.json", encoding="utf-8") as f:
         backtest_metrics = json.load(f)
@@ -140,7 +141,8 @@ if page == "Match Predictions":
                 if 0 <= fixture_idx < len(features_predict):
                     features_row = features_predict.iloc[fixture_idx]
             render_prediction_card(
-                fixture_row, features_row, ensemble, home_goals_model, away_goals_model
+                fixture_row, features_row, ensemble, home_goals_model, away_goals_model,
+                odds_df=resources["odds"],
             )
 elif page == "Tournament Bracket":
     st.title("Tournament Bracket")

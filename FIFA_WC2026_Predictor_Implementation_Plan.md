@@ -1476,6 +1476,157 @@ All of the following must be true to consider the core project complete:
 
 ---
 
+## Phase 10 — Real Bookmaker Odds Integration
+
+> This phase replaces synthetic default odds (2.0 flat) with real pre-match bookmaker odds for both live WC 2026 prediction and historical backtesting.  
+> Historical odds for WC 2018 and WC 2022 are imported from archive CSVs; live WC 2026 odds are fetched from The Odds API.
+
+---
+
+### Subphase 10.1 — Odds Ingestion Module (`src/data/odds.py`)
+
+**Tasks**
+- [✅] Implemented `ODDS_COLUMNS` constant (8-column schema: `match_date, home_team, away_team, home_win_odds, draw_odds, away_win_odds, source, fetched_at`).
+- [✅] Implemented `normalize_team_name(name, name_map)` — resolves provider team names via `team_name_map.csv`.
+- [✅] Implemented `validate_odds_df(df)` — raises `ValueError` on missing columns; drops rows with odds < 1.0 or null.
+- [✅] Implemented `get_latest_odds(df)` — deduplicates to the most recently fetched row per `(match_date, home_team, away_team)`.
+- [✅] Implemented `fetch_live_odds(api_key, regions, bookmaker, append)` — calls The Odds API, tries sport-key candidates in order (`soccer_fifa_world_cup_2026`, `soccer_worldcup`, `soccer_world_cup`), normalises team names, optionally appends to canonical CSV.
+- [✅] Implemented `import_historical_odds(path)` — ingests archive CSVs, normalises names, fills default `source`/`fetched_at`.
+- [✅] Implemented `append_to_canonical(new_df)` — merges with `data/bookmaker_odds.csv` (deduplicates on latest fetched_at).
+- [✅] Implemented `load_odds_for_backtest(mode, historical_paths)` — `mode='real'` merges canonical + historical archives; `mode='stub_2.0'` returns an empty DataFrame with correct schema.
+
+**Verification Checklist**
+- [✅] `validate_odds_df` raises `ValueError` for missing columns (test passes).
+- [✅] `validate_odds_df` drops rows with odds < 1.0 (test passes).
+- [✅] `normalize_team_name` applies mapping and passes through unmapped names (tests pass).
+- [✅] `get_latest_odds` deduplicates to most recent row per fixture (test passes).
+- [✅] `load_odds_for_backtest(mode="stub_2.0")` returns an empty DataFrame with ODDS_COLUMNS schema (test passes).
+- [✅] `load_odds_for_backtest(mode="real")` returns a DataFrame with ODDS_COLUMNS schema (test passes).
+
+---
+
+### Subphase 10.2 — Fetch CLI & Historical Templates
+
+**Tasks**
+- [✅] Created `scripts/fetch_odds.py` with CLI flags: `--live` (calls `fetch_live_odds`), `--historical` (imports WC 2018 + 2022 archive CSVs), `--summary` (prints canonical table state), `--bookmaker` (selects provider, default `draftkings`).
+- [✅] Added `ODDS_API_KEY` placeholder to `.env.example`; documented in README.
+- [✅] Created `data/raw/historical_odds_wc2018.csv` — header + comment rows explaining how to populate from free sources (football-data.co.uk, OddsPortal, Betfair Exchange). No real data rows yet.
+- [✅] Created `data/raw/historical_odds_wc2022.csv` — same template structure.
+
+**Usage**
+```bash
+python scripts/fetch_odds.py --live                    # fetch live WC 2026 odds (ODDS_API_KEY required)
+python scripts/fetch_odds.py --historical              # import WC 2018 + 2022 archive CSVs
+python scripts/fetch_odds.py --summary                 # print canonical table stats
+python scripts/fetch_odds.py --bookmaker bet365        # choose specific bookmaker
+```
+
+**Verification Checklist**
+- [✅] `--summary` runs without errors when canonical CSV has rows.
+- [✅] `--historical` with populated archive CSVs appends deduped rows to canonical.
+- [✅] `--live` requires `ODDS_API_KEY` in `.env` and handles missing key gracefully.
+
+---
+
+### Subphase 10.3 — Two-Mode Backtest Comparison
+
+**Tasks**
+- [✅] Refactored `simulate_betting(backtest_df, label, odds_df=None, odds_mode="real")` in `src/evaluation/backtest.py`:
+  - Accepts injected `odds_df` instead of loading internally from `_ODDS_PATH`.
+  - New columns in output: `bookmaker_odds_used`, `odds_source`, `odds_matched` (bool), `payout`, `profit`, `cumulative_profit`.
+  - Chart filenames include `_{odds_mode}` suffix for non-real modes.
+  - `stub_2.0` mode: all odds forced to 2.0, `odds_matched=False`.
+- [✅] Rewrote `scripts/run_backtest.py` for two-mode comparison:
+  - Defines `_HISTORICAL_ODDS_PATHS` pointing at WC 2018 + 2022 archive CSVs.
+  - Calls `load_odds_for_backtest` twice (stub and real modes).
+  - `_run_mode()` helper runs `simulate_betting` + `compute_edge` for both tournaments.
+  - `_collect_stats()` collects `flat_roi`, `value_roi`, `value_count`, `matched`, `defaulted`, `total_profit`.
+  - `_print_odds_comparison()` prints a side-by-side stub vs real table.
+  - Real mode CSVs overwrite `backtest_wc2022.csv` / `backtest_wc2018.csv` (dashboard compatibility preserved).
+- [✅] Extended `compile_final_metrics(wc2018_df, wc2022_df, wc2018_stub=None, wc2022_stub=None)` in `src/evaluation/metrics.py`:
+  - New `_per_tournament_metrics(df)` helper.
+  - When stubs provided: adds `"comparison"` key to JSON with `real`, `stub_2.0`, and `delta` sub-dicts.
+  - Delta fields: `flat_stake_roi` and `value_bet_roi` (percentage-point differences).
+  - New keys: `odds_matched` and `odds_defaulted` per tournament.
+  - Prints ROI delta table when comparison data exists.
+
+**Verification Checklist**
+- [✅] `stub_2.0` mode: `odds_matched.sum() == 0` for both tournaments (test passes).
+- [✅] `stub_2.0` mode: all `bookmaker_odds_used == 2.0` (test passes).
+- [✅] `real` mode: matched rows use bookmaker name in `odds_source` (test passes).
+- [✅] `profit` and `cumulative_profit` columns populated in both modes (test passes).
+- [✅] ROI differs between stub and real modes when real odds differ from 2.0 (test passes).
+- [✅] `final_backtest_metrics.json` includes `"comparison"` key when stubs provided.
+
+---
+
+### Subphase 10.4 — Dashboard Odds Prefill
+
+**Tasks**
+- [✅] Added `_lookup_odds(odds_df, match_date, home_team, away_team)` helper in `app/components/prediction_card.py` — returns a dict with `home_win_odds`, `draw_odds`, `away_win_odds`, `source`, `fetched_at` or `None` when no match found.
+- [✅] Updated `render_prediction_card(…, odds_df=None)` to:
+  - Call `_lookup_odds()` and use real odds as `value=` defaults in the three `number_input` fields.
+  - Show a source caption (`"Odds: OddsPortal (fetched 2026-05-17)"`) when real odds are found.
+  - Show `"⚠ Using default odds"` caption when no real odds are found.
+  - Fall back to 2.0 / 3.0 / 2.5 defaults if lookup returns `None`.
+- [✅] Updated `app/dashboard.py`:
+  - Replaced `pd.read_csv(...)` odds load with `load_odds_for_backtest(mode="real")`.
+  - Passes `odds_df=resources["odds"]` to every `render_prediction_card()` call.
+
+**Verification Checklist**
+- [✅] No errors from `get_errors` on `prediction_card.py` and `dashboard.py`.
+- [✅] `_lookup_odds` returns `None` for unmatched fixtures.
+- [✅] `render_prediction_card` signature is backward-compatible (`odds_df` defaults to `None`).
+- [✅] Dashboard shows real odds values when available; "⚠ Using default odds" when absent.
+
+---
+
+### Subphase 10.5 — Extended Unit Tests
+
+**Tasks**
+- [✅] Extended `tests/test_edge.py` from 2 to 10 tests:
+  - `test_compute_edge_adds_implied_probs()` — asserts all three implied-prob columns present and in range.
+  - `test_compute_edge_adds_recommendation()` — asserts valid recommendation values.
+  - `test_compute_edge_unmatched_rows_use_fallback_2()` — empty odds_df forces 0.5 implied prob (2.0 odds fallback).
+  - `test_validate_odds_df_drops_invalid_rows()` — rows with odds < 1.0 are dropped.
+  - `test_validate_odds_df_raises_on_missing_column()` — missing required column raises `ValueError`.
+  - `test_normalize_team_name_applies_map()` — USA → United States via map.
+  - `test_normalize_team_name_passthrough()` — unmapped name returned unchanged.
+  - `test_get_latest_odds_deduplicates()` — keeps only most recent row per fixture.
+- [✅] Extended `tests/test_backtest.py` from 2 to 10 tests:
+  - `test_simulate_betting_stub_mode_all_defaulted()` — `odds_matched.sum() == 0`.
+  - `test_simulate_betting_stub_mode_uses_2_0()` — all `bookmaker_odds_used == 2.0`.
+  - `test_simulate_betting_real_mode_matches_supplied_rows()` — 2 of 4 rows matched.
+  - `test_simulate_betting_real_mode_odds_source_populated()` — source column set correctly.
+  - `test_simulate_betting_returns_profit_column()` — `profit` and `cumulative_profit` columns present.
+  - `test_simulate_betting_comparison_roi_differs_with_real_odds()` — ROI diverges between modes.
+  - `test_load_odds_stub_mode_returns_empty()` — stub mode returns empty DataFrame with schema.
+  - `test_load_odds_real_mode_returns_dataframe()` — real mode returns DataFrame with ODDS_COLUMNS.
+- [✅] Run `python -m pytest tests/ -v` → **33 passed, 1 warning**.
+
+**Verification Checklist**
+- [✅] All 33 tests pass (`python -m pytest tests/ -v` shows `33 passed`).
+- [✅] No regressions in existing 17 tests.
+
+> **Verified 2026-05-29** — All 9 implementation tasks completed. `src/data/odds.py` fully implemented (was an empty stub). `scripts/fetch_odds.py` created. Historical odds templates created. `simulate_betting()` refactored to odds-injection pattern. `run_backtest.py` rewritten for two-mode comparison. `compile_final_metrics()` extended with stub delta reporting. Dashboard wired end-to-end with real odds prefill. Test suite expanded from 17 to 33 tests. `python -m pytest tests/ -v` → **33 passed, 1 warning in 6.22s**.
+
+---
+
+### ✅ Phase 10 — Definition of Done
+
+- [✅] `src/data/odds.py` fully implemented — all 8 public functions operational.
+- [✅] `scripts/fetch_odds.py` operational with `--live`, `--historical`, `--summary` flags.
+- [✅] `data/raw/historical_odds_wc2018.csv` and `historical_odds_wc2022.csv` templates committed.
+- [✅] `scripts/run_backtest.py` produces stub vs real comparison output.
+- [✅] `data/processed/final_backtest_metrics.json` includes `"comparison"` delta section when real odds present.
+- [✅] Dashboard Page 1 prefills odds inputs from real data and shows source caption.
+- [✅] 33 unit tests pass with no regressions.
+- [ ] `data/raw/historical_odds_wc2018.csv` populated with real archived WC 2018 odds (manual step — requires free data from football-data.co.uk or OddsPortal).
+- [ ] `data/raw/historical_odds_wc2022.csv` populated with real archived WC 2022 odds (manual step).
+- [ ] `ODDS_API_KEY` set in `.env` and `python scripts/fetch_odds.py --live` fetches real WC 2026 pre-match odds.
+
+---
+
 ## Phase 9 — Tournament Maintenance (Ongoing During WC 2026)
 
 > Repeat this phase after each round of matches. Each iteration is a mini-sprint.
@@ -1565,6 +1716,8 @@ All of the following must be true to consider the core project complete:
 | `data/raw/wc2026_fixtures_flat.csv` | Phase 1 | [ ] |
 | `data/raw/team_name_map.csv` | Phase 2 | [ ] |
 | `data/raw/SOURCES.md` | Phase 1 | [ ] |
+| `data/raw/historical_odds_wc2018.csv` | Phase 10 | [ ] |
+| `data/raw/historical_odds_wc2022.csv` | Phase 10 | [ ] |
 | `data/bookmaker_odds.csv` | Phase 1 | [ ] |
 | `data/processed/features_train.parquet` | Phase 3 | [ ] |
 | `data/processed/features_predict.parquet` | Phase 3 | [ ] |
@@ -1583,7 +1736,7 @@ All of the following must be true to consider the core project complete:
 | `models/MODEL_REGISTRY.md` | Phase 5 | [ ] |
 | `src/data/ingest.py` | Phase 1 | [ ] |
 | `src/data/preprocess.py` | Phase 3 | [ ] |
-| `src/data/odds.py` | Phase 1 | [ ] |
+| `src/data/odds.py` | Phase 10 | [ ] |
 | `src/models/outcome_model.py` | Phase 4 | [ ] |
 | `src/models/goals_model.py` | Phase 4 | [ ] |
 | `src/models/ensemble.py` | Phase 5 | [ ] |
@@ -1596,9 +1749,10 @@ All of the following must be true to consider the core project complete:
 | `scripts/run_feature_engineering.py` | Phase 3 | [ ] |
 | `scripts/run_baseline_models.py` | Phase 4 | [ ] |
 | `scripts/run_tuning.py` | Phase 5 | [ ] |
-| `scripts/run_backtest.py` | Phase 6 | [ ] |
+| `scripts/run_backtest.py` | Phase 6/10 | [ ] |
 | `scripts/train.py` | Phase 5 | [ ] |
 | `scripts/predict.py` | Phase 7 | [ ] |
+| `scripts/fetch_odds.py` | Phase 10 | [ ] |
 | `app/dashboard.py` | Phase 7 | [ ] |
 | `tests/test_preprocess.py` | Phase 3 | [ ] |
 | `tests/test_models.py` | Phase 4/5 | [ ] |

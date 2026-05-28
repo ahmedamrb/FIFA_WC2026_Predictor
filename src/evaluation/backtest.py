@@ -6,6 +6,7 @@ Functions:
 """
 
 from pathlib import Path
+from typing import Optional
 
 import matplotlib
 matplotlib.use("Agg")
@@ -162,52 +163,76 @@ def run_backtest(
 def simulate_betting(
     backtest_df: pd.DataFrame,
     label: str,
+    odds_df: Optional[pd.DataFrame] = None,
+    odds_mode: str = "real",
     odds_col: str = "bookmaker_odds_used",
 ) -> pd.DataFrame:
     """Simulate flat-stake (1 unit) betting on each match in a backtest DataFrame.
 
-    Looks up decimal odds from ``data/bookmaker_odds.csv`` matched by
-    ``match_date``, ``home_team``, and ``away_team``.  Unmatched rows default
-    to 2.0.  Bets are placed on the outcome with the highest predicted
-    probability (``predicted_outcome``).
+    Odds are supplied via the *odds_df* parameter (injected explicitly by the
+    caller) rather than loaded internally.  Unmatched rows use 2.0 **only when
+    odds_mode='stub_2.0'**; in 'real' mode the fallback is still 2.0 but the
+    coverage metadata columns make gaps visible so they are never silently
+    masked.
 
     Args:
         backtest_df: DataFrame returned by :func:`run_backtest`, containing at
             least the columns ``match_date``, ``home_team``, ``away_team``,
             ``predicted_outcome``, and ``actual_outcome``.
-        label: Short identifier used in the plot filename
+        label: Short identifier used in printed output and the plot filename
             (e.g. ``"wc2022"`` or ``"wc2018"``).
+        odds_df: External odds DataFrame with columns ``match_date``,
+            ``home_team``, ``away_team``, ``home_win_odds``, ``draw_odds``,
+            ``away_win_odds``.  Pass ``None`` or an empty DataFrame to use only
+            the 2.0 baseline (same as ``odds_mode='stub_2.0'``).
+        odds_mode: Label recorded in printed output — ``"real"`` or
+            ``"stub_2.0"``.  Does not change computation; used for reporting.
         odds_col: Name to assign to the bookmaker-odds output column.
 
     Returns:
-        A copy of *backtest_df* with four additional columns:
-        ``bookmaker_odds_used``, ``payout``, ``profit``, ``cumulative_profit``.
+        A copy of *backtest_df* with these additional columns:
+        ``bookmaker_odds_used``, ``odds_source``, ``odds_matched``,
+        ``payout``, ``profit``, ``cumulative_profit``.
     """
     df = backtest_df.copy()
 
     # ------------------------------------------------------------------
-    # Load odds and merge on (match_date, home_team, away_team)
+    # Merge supplied odds onto backtest rows
     # ------------------------------------------------------------------
-    if _ODDS_PATH.exists():
-        odds_df = pd.read_csv(_ODDS_PATH, parse_dates=["match_date"])
-        odds_df["match_date"] = pd.to_datetime(odds_df["match_date"]).dt.normalize()
-    else:
-        odds_df = pd.DataFrame(
-            columns=["match_date", "home_team", "away_team",
-                     "home_win_odds", "draw_odds", "away_win_odds"]
+    if odds_df is not None and not odds_df.empty:
+        odds_work = odds_df.copy()
+        odds_work["match_date"] = pd.to_datetime(
+            odds_work["match_date"], errors="coerce"
+        ).dt.normalize()
+        merge_cols = ["match_date", "home_team", "away_team",
+                      "home_win_odds", "draw_odds", "away_win_odds"]
+        # Keep source for provenance if present
+        if "source" in odds_work.columns:
+            merge_cols.append("source")
+        df["match_date"] = pd.to_datetime(df["match_date"]).dt.normalize()
+        df = df.merge(
+            odds_work[merge_cols].drop_duplicates(
+                subset=["match_date", "home_team", "away_team"]
+            ),
+            on=["match_date", "home_team", "away_team"],
+            how="left",
         )
-
-    df["match_date"] = pd.to_datetime(df["match_date"]).dt.normalize()
-
-    df = df.merge(
-        odds_df[["match_date", "home_team", "away_team",
-                 "home_win_odds", "draw_odds", "away_win_odds"]],
-        on=["match_date", "home_team", "away_team"],
-        how="left",
-    )
+    else:
+        # No external odds supplied — ensure columns exist with NaN
+        df["home_win_odds"] = float("nan")
+        df["draw_odds"] = float("nan")
+        df["away_win_odds"] = float("nan")
 
     # ------------------------------------------------------------------
-    # Pick odds for the predicted outcome; default to 2.0 when not found
+    # Track coverage: was a real odds row matched for this fixture?
+    # ------------------------------------------------------------------
+    odds_available = df["home_win_odds"].notna()
+    df["odds_matched"] = odds_available
+    df["odds_source"] = df.get("source", pd.Series([None] * len(df)))
+    df["odds_source"] = df["odds_source"].where(odds_available, other="stub_2.0")
+
+    # ------------------------------------------------------------------
+    # Pick odds for the predicted outcome; fall back to 2.0 for gaps
     # ------------------------------------------------------------------
     # predicted_outcome: 0 = away win, 1 = draw, 2 = home win
     outcome_to_col = {0: "away_win_odds", 1: "draw_odds", 2: "home_win_odds"}
@@ -215,14 +240,11 @@ def simulate_betting(
     def _pick_odds(row: pd.Series) -> float:
         col = outcome_to_col.get(int(row["predicted_outcome"]), "home_win_odds")
         val = row.get(col, float("nan"))
-        if pd.isna(val) or val < 1.0:
+        if pd.isna(val) or float(val) < 1.0:
             return 2.0
         return float(val)
 
     df[odds_col] = df.apply(_pick_odds, axis=1)
-
-    # Ensure no nulls remain (belt-and-suspenders)
-    df[odds_col] = df[odds_col].fillna(2.0)
 
     # ------------------------------------------------------------------
     # Compute payout, profit, cumulative_profit
@@ -233,40 +255,45 @@ def simulate_betting(
     df["cumulative_profit"] = df["profit"].cumsum()
 
     # ------------------------------------------------------------------
-    # ROI
+    # Print summary
     # ------------------------------------------------------------------
-    total_stake = len(df) * 1.0  # 1 unit per match
+    total_stake = float(len(df))
     total_profit = df["profit"].sum()
     roi = total_profit / total_stake * 100.0
-
-    n_matched = (~df[["home_win_odds", "draw_odds", "away_win_odds"]].isna().all(axis=1)).sum()
+    n_matched = int(odds_available.sum())
     n_defaulted = len(df) - n_matched
+
     print(
-        f"  [{label}] Betting: total_stake={total_stake:.0f} | "
-        f"total_profit={total_profit:+.2f} | ROI={roi:+.2f}% | "
-        f"odds_matched={n_matched} defaulted={n_defaulted}"
+        f"  [{label}|{odds_mode}] Betting: stake={total_stake:.0f} | "
+        f"profit={total_profit:+.2f} | ROI={roi:+.2f}% | "
+        f"matched={n_matched} defaulted={n_defaulted}"
     )
 
     # ------------------------------------------------------------------
     # Cumulative profit chart
     # ------------------------------------------------------------------
     _PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+    mode_suffix = f"_{odds_mode}" if odds_mode != "real" else ""
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(range(1, len(df) + 1), df["cumulative_profit"], marker="o", markersize=3,
-            linewidth=1.5, color="#1f77b4")
+    ax.plot(
+        range(1, len(df) + 1), df["cumulative_profit"],
+        marker="o", markersize=3, linewidth=1.5, color="#1f77b4",
+    )
     ax.axhline(0, color="grey", linewidth=0.8, linestyle="--")
-    ax.set_title(f"Cumulative Profit — {label.upper()} (Flat Stake 1 Unit)")
+    ax.set_title(
+        f"Cumulative Profit — {label.upper()} ({odds_mode}, Flat Stake 1 Unit)"
+    )
     ax.set_xlabel("Match Number")
     ax.set_ylabel("Cumulative Profit (units)")
     ax.grid(True, alpha=0.3)
-    plot_path = _PLOTS_DIR / f"cumulative_profit_{label}.png"
+    plot_path = _PLOTS_DIR / f"cumulative_profit_{label}{mode_suffix}.png"
     fig.savefig(plot_path, bbox_inches="tight", dpi=150)
     plt.close(fig)
-    print(f"  [{label}] Chart saved -> outputs/plots/cumulative_profit_{label}.png")
+    print(f"  [{label}] Chart saved -> outputs/plots/cumulative_profit_{label}{mode_suffix}.png")
 
-    # Drop the raw odds columns (keep only the derived ones)
+    # Drop merged raw odds columns; keep derived provenance columns
     df.drop(
-        columns=["home_win_odds", "draw_odds", "away_win_odds"],
+        columns=["home_win_odds", "draw_odds", "away_win_odds", "source"],
         errors="ignore",
         inplace=True,
     )
