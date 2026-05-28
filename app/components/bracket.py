@@ -638,7 +638,7 @@ def render_bracket(fixtures_df: pd.DataFrame, features_predict_df, ensemble) -> 
     # --- Group Standings ---
     st.subheader("Group Stage — Predicted Standings")
     st.caption(
-        "Expected points computed from ML model probabilities. "
+        "Points based on predicted match outcomes (3W / 1D / 0L). "
         "Top 2 per group + best 8 third-placed teams advance."
     )
 
@@ -724,7 +724,7 @@ def render_bracket(fixtures_df: pd.DataFrame, features_predict_df, ensemble) -> 
             rows_html = ""
             for i, row in df.iterrows():
                 team = row["team"]
-                pts = round(float(row["expected_pts"]), 1)
+                pts = int(round(float(row["expected_pts"])))
                 rank = int(row["rank"])
                 url = _flag_url(team)
                 flag_html = (

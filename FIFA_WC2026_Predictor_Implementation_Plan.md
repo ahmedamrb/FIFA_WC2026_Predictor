@@ -1276,6 +1276,12 @@ All of the following must be true before starting Phase 7:
 > QF: Spain def. Netherlands (57%), Argentina def. Colombia (55%), France def. Portugal (52%),
 > England def. Brazil (51%).
 
+> **Fix 2026-05-29 — Group stage xPts display:**
+> - **Bug:** Group standings showed decimal xPts (e.g. 5.2) and, after an intermediate fix using `argmax`, showed only multiples of 3 with no draws possible.
+> - **Root cause:** The `argmax` approach always picks the single most likely outcome per match; draw is rarely the argmax in football models, so all groups showed 9/6/3/0 patterns only.
+> - **Fix applied in `app/components/bracket.py`:** Reverted `_simulate_group_stage` to the probabilistic expected-value formula (`home += 3·P(home_win) + 1·P(draw)`, `away += 3·P(away_win) + 1·P(draw)`). Display changed from `round(..., 1)` to `int(round(float(...)))`. Removed `numpy` import added for the rejected `argmax` approach.
+> - **Result:** xPts now display as integers (0–9) and draws appear naturally in standings — teams can show 1, 4, 5, 7 points reflecting partial draw probability across their 6 group matches. Caption updated to: *"Points based on predicted match outcomes (3W / 1D / 0L)."*
+
 ---
 
 ### Subphase 7.4 — Page 3: Model Performance
