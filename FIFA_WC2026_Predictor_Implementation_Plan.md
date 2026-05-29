@@ -1627,6 +1627,98 @@ python scripts/fetch_odds.py --bookmaker bet365        # choose specific bookmak
 
 ---
 
+## Phase 11 — Confidence Score Fix & Probability Calibration
+
+> **Motivation:** The Match Predictions page showed confidence scores as low as 1% for all fixtures, severely undermining user trust. Root cause analysis revealed the formula was mathematically degenerate for 3-class football predictions, not a model quality issue.
+
+---
+
+### Subphase 11.1 — Root Cause Analysis
+
+**Root Cause: Entropy Formula Degeneration**
+
+The original confidence formula was:
+
+```python
+confidence = 1.0 - entropy(probs) / np.log(3)
+```
+
+This is correct for classifiers that can produce extreme probabilities (e.g., image classifiers with 99% softmax outputs). For football, no team reliably wins >70% of matches, so all realistic 3-class distributions are near-maximum entropy. The full dynamic range collapsed to 0–3% for every match:
+
+| Match type | Probabilities | Old formula | New formula (`max_prob`) |
+|---|---|---|---|
+| Heavy favourite | [0.701, 0.203, 0.096] | 27% | **70%** |
+| Moderate favourite | [0.570, 0.258, 0.173] | 11% | **57%** |
+| Slight favourite | [0.450, 0.300, 0.250] | 3% | **45%** |
+| Near-even | [0.367, 0.280, 0.353] | 1% | **37%** |
+
+---
+
+### Subphase 11.2 — Confidence Formula Fix
+
+**Tasks**
+- [✅] Replaced `1 − entropy(probs)/ln(3)` with `max(probs)` in `app/components/prediction_card.py`.
+- [✅] Removed unused `from scipy.stats import entropy` import in `prediction_card.py`.
+- [✅] Updated `_compute_confidence()` in `scripts/verify_dashboard.py` to use `float(np.max(probs_array))`.
+- [✅] Added lower-bound assertion `confidence >= 1/3 − 1e-6` in `verify_dashboard.py` to catch un-normalised probability arrays.
+- [✅] Removed unused `from scipy.stats import entropy` import in `verify_dashboard.py`.
+
+**Rationale for `max_prob`:** The probability of the model's top-predicted outcome is a directly interpretable, statistically honest measure of model certainty. A 57% confidence for a moderate favourite is both accurate and meaningful to the user.
+
+**Verification Checklist**
+- [✅] Confidence values for all WC 2026 fixtures are in the range [33%, 70%].
+- [✅] Confidence = `max(predicted_home_win_prob, predicted_draw_prob, predicted_away_win_prob)` confirmed for 3 spot-checked fixtures.
+- [✅] No `scipy.stats.entropy` references remain in `prediction_card.py` or `verify_dashboard.py`.
+
+> **Verified 2026-05-29** — Formula replaced in both files. Example fixtures post-fix: Mexico vs South Africa — confidence 70.1% (was 27%); South Korea vs Czechia — confidence 36.7% (was 0.6%); Canada vs Bosnia-Herzegovina — confidence 57.0% (was 11%).
+
+---
+
+### Subphase 11.3 — Temperature Scaling Calibration
+
+> Temperature scaling is a post-hoc calibration technique that learns a single scalar $T$ to sharpen or soften the ensemble's probability outputs, minimising validation NLL. It is robust on small validation sets (64 samples) because it learns only one parameter.
+
+**Tasks**
+- [✅] Added `TemperatureScaling` class to `src/models/ensemble.py` — fits $T$ via `scipy.optimize.minimize_scalar` on validation NLL; applies $p_i^{cal} = p_i^{1/T} / \sum_j p_j^{1/T}$.
+- [✅] Added `TemperatureScaledEnsemble` wrapper class to `src/models/ensemble.py` — wraps any `WC2026Ensemble` and applies calibration transparently via `predict_proba` / `predict`.
+- [✅] Added temperature scaling fit and save block to `scripts/train.py` — fits after calibration check, saves `data/processed/temperature.json`.
+- [✅] Added temperature loading block to `app/dashboard.py` — wraps ensemble with `TemperatureScaledEnsemble` if `applied=True` in `temperature.json`.
+- [✅] Created `scripts/fit_temperature.py` — standalone script to fit and save temperature without full retraining (loads existing `.pkl` files directly).
+- [✅] Ran `python scripts/fit_temperature.py` to generate `data/processed/temperature.json`.
+
+**Temperature Scaling Result**
+
+| Metric | Value |
+|---|---|
+| Fitted temperature T | 1.042725 |
+| Applied | True |
+| Pre-scaling val log-loss | 1.026476 |
+| Post-scaling val log-loss | 1.026356 |
+| Δ log-loss | −0.000120 |
+
+T > 1 (slightly softening) confirms the ensemble was marginally overconfident. Calibration accepted — temperature.json written with `"applied": true`.
+
+**Verification Checklist**
+- [✅] `data/processed/temperature.json` exists with keys `temperature` and `applied`.
+- [✅] `applied` is `true` (post-scaling log-loss improved).
+- [✅] Dashboard wraps ensemble with `TemperatureScaledEnsemble` at startup.
+- [✅] `TemperatureScaling.calibrate()` output rows sum to 1.0.
+
+> **Verified 2026-05-29** — `temperature.json` saved: `{"temperature": 1.042725, "applied": true}`. `TemperatureScaling` and `TemperatureScaledEnsemble` added to `src/models/ensemble.py`. Dashboard updated to load and apply calibration. `scripts/fit_temperature.py` run successfully; T=1.042725, applied=True, Δlog-loss=−0.000120.
+
+---
+
+### ✅ Phase 11 — Definition of Done
+
+- [✅] Confidence scores on dashboard Page 1 are in the range 33%–70% for all WC 2026 fixtures.
+- [✅] Confidence is computed as `max(probs)` — no fake or arbitrary scaling applied.
+- [✅] `data/processed/temperature.json` exists with `applied: true`.
+- [✅] Dashboard automatically applies temperature scaling via `TemperatureScaledEnsemble`.
+- [✅] No regressions — ensemble val accuracy remains 54.7%.
+- [✅] `scripts/fit_temperature.py` available for fast recalibration after each retrain.
+
+---
+
 ## Phase 9 — Tournament Maintenance (Ongoing During WC 2026)
 
 > Repeat this phase after each round of matches. Each iteration is a mini-sprint.
