@@ -139,12 +139,11 @@ def _run_mode(
     wc2022_bet = simulate_betting(wc2022_df, label=label_22, odds_df=odds_df, odds_mode=odds_mode)
     wc2018_bet = simulate_betting(wc2018_df, label=label_18, odds_df=odds_df, odds_mode=odds_mode)
 
-    # We need a canonical odds_df for compute_edge; build from the already-merged cols
-    odds_for_edge = odds_df if odds_df is not None and not odds_df.empty else pd.DataFrame()
+    # Pass odds_df directly to compute_edge; empty DataFrame with ODDS_COLUMNS schema
+    # is fine — all merges produce NaN which fillna(2.0) covers.
+    odds_for_edge = odds_df if odds_df is not None else pd.DataFrame(columns=["match_date", "home_team", "away_team", "home_win_odds", "draw_odds", "away_win_odds"])
     wc2022_edge = compute_edge(wc2022_bet, odds_for_edge)
     wc2018_edge = compute_edge(wc2018_bet, odds_for_edge)
-
-    # Save enriched CSVs (one per mode, do not overwrite the default ones yet)
     if odds_mode == "real":
         wc2022_edge.to_csv(_PROCESSED_DIR / "backtest_wc2022.csv", index=False)
         wc2018_edge.to_csv(_PROCESSED_DIR / "backtest_wc2018.csv", index=False)

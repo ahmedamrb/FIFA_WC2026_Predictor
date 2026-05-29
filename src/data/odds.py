@@ -309,7 +309,10 @@ def import_historical_odds(path: Union[str, Path]) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"Historical odds file not found: {path}")
 
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, comment="#")
+    if df.empty:
+        return pd.DataFrame(columns=ODDS_COLUMNS)
+
     name_map = _load_team_name_map()
 
     df["home_team"] = df["home_team"].astype(str).apply(

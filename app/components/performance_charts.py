@@ -37,7 +37,7 @@ def render_metrics_bar_chart(metrics_dict):
         yaxis_title="Value",
     )
 
-    st.plotly_chart(fig, width='stretch')
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def render_cumulative_profit_chart(wc2018_df, wc2022_df):
@@ -71,7 +71,7 @@ def render_cumulative_profit_chart(wc2018_df, wc2022_df):
         yaxis_title="Cumulative Profit (units)",
     )
 
-    st.plotly_chart(fig, width='stretch')
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def render_calibration_chart():
@@ -92,7 +92,7 @@ def render_calibration_chart():
             found_any = True
             caption = path.stem  # filename without extension
             with st.expander(caption):
-                st.image(str(path), caption=caption, width='stretch')
+                st.image(str(path), caption=caption, use_container_width=True)
 
     if not found_any:
         st.info("No calibration charts found.")
