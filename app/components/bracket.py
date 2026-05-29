@@ -10,6 +10,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from components.tooltips import TOOLTIPS
+
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _RAW = _REPO_ROOT / "data" / "raw"
 
@@ -493,7 +495,8 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
                 fillcolor=_prob_to_color(match["win_prob"]),
                 line=dict(color="rgba(0,0,0,0)", width=0),
                 mode="lines",
-                hoverinfo="skip",
+                hoverinfo="text",
+                text=f"{match['winner']} wins<br>Win prob: {match['win_prob']:.0%}",
                 showlegend=False,
             ))
             # Loser band (bottom half)
@@ -554,7 +557,8 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
         fillcolor=_prob_to_color(tp["win_prob"]),
         line=dict(color="rgba(0,0,0,0)", width=0),
         mode="lines",
-        hoverinfo="skip",
+        hoverinfo="text",
+        text=f"{tp['winner']} wins<br>Win prob: {tp['win_prob']:.0%}",
         showlegend=False,
     ))
     fig.add_trace(go.Scatter(
@@ -765,11 +769,17 @@ def render_bracket(fixtures_df: pd.DataFrame, features_predict_df, ensemble) -> 
             with cols[col_i]:
                 st.markdown(card_html, unsafe_allow_html=True)
 
+    st.caption(TOOLTIPS["expected_pts"])
     st.divider()
 
     # --- Knockout Bracket ---
     st.subheader("Knockout Stage — Predicted Bracket (Simulated)")
     fig = _draw_bracket_figure(bracket_tree)
+    st.caption(
+        "Group stage: teams are ranked by expected points (ML ensemble). "
+        "Knockout rounds: winner predicted by FIFA ranking-based logistic model. "
+        + TOOLTIPS["knockout_win_prob"]
+    )
     st.plotly_chart(fig, use_container_width=True)
 
     tp = bracket_tree["THIRD_PLACE"][0]

@@ -5,6 +5,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from components.tooltips import TOOLTIPS
+
 FEATURE_COLUMNS = [
     # --- Rankings ---
     "home_rank",
@@ -61,18 +63,21 @@ _CONF_MED  = 0.45   # 45-54% -> Medium confidence; <45% -> Low confidence
 
 
 def _edge_label_html(edge: float, is_best: bool, show_labels: bool, outcome_prob: float | None = None) -> str:
-    edge_text = f"Edge: {edge:+.1%}"
+    edge_raw = f"Edge: {edge:+.1%}"
     if outcome_prob is not None:
-        edge_text += f"  ·  Model: {outcome_prob:.0%}"
+        edge_raw += f"  ·  Model: {outcome_prob:.0%}"
+    edge_tip = TOOLTIPS["edge"]
+    edge_text = f'<span title="{edge_tip}">{edge_raw}</span>'
     if not show_labels:
         return edge_text
     badge_style = "padding:2px 8px;border-radius:4px;font-size:0.75em;font-weight:bold;"
+    value_tip = TOOLTIPS["value_bet"]
     if is_best:
-        badge = f"<span style='background:#1a7a3a;color:white;{badge_style}'>\u2705 Best Value</span>"
+        badge = f"<span style='background:#1a7a3a;color:white;{badge_style}' title=\"{value_tip}\">\u2705 Best Value</span>"
     elif edge < _AVOID_THRESHOLD:
-        badge = f"<span style='background:#7a1a1a;color:white;{badge_style}'>\u274c Avoid</span>"
+        badge = f"<span style='background:#7a1a1a;color:white;{badge_style}' title=\"{value_tip}\">\u274c Avoid</span>"
     else:
-        badge = f"<span style='background:#555555;color:white;{badge_style}'>&mdash; Neutral</span>"
+        badge = f"<span style='background:#555555;color:white;{badge_style}' title=\"{value_tip}\">&mdash; Neutral</span>"
     return f"{edge_text}&nbsp;&nbsp;{badge}"
 
 
@@ -80,12 +85,13 @@ def _confidence_tier_html(confidence: float) -> str:
     """Return a styled HTML badge for the confidence tier."""
     badge_style = "padding:3px 10px;border-radius:4px;font-size:0.8em;font-weight:bold;"
     pct = f"{confidence:.0%}"
+    conf_tip = TOOLTIPS["confidence"]
     if confidence >= _CONF_HIGH:
-        return f"<span style='background:#1a7a3a;color:white;{badge_style}'>High Confidence · {pct}</span>"
+        return f"<span style='background:#1a7a3a;color:white;{badge_style}' title=\"{conf_tip}\">High Confidence · {pct}</span>"
     elif confidence >= _CONF_MED:
-        return f"<span style='background:#7a6a00;color:white;{badge_style}'>Medium Confidence · {pct}</span>"
+        return f"<span style='background:#7a6a00;color:white;{badge_style}' title=\"{conf_tip}\">Medium Confidence · {pct}</span>"
     else:
-        return f"<span style='background:#5a2a2a;color:white;{badge_style}'>Low Confidence · {pct}</span>"
+        return f"<span style='background:#5a2a2a;color:white;{badge_style}' title=\"{conf_tip}\">Low Confidence · {pct}</span>"
 
 
 def _lookup_odds(
@@ -192,6 +198,7 @@ def render_prediction_card(
                 text=[f"{prob_home_win:.0%}"],
                 textposition="inside",
                 insidetextanchor="middle",
+                hovertemplate="Home Win: %{x:.1f}%<extra></extra>",
             )
         )
         fig.add_trace(
@@ -204,6 +211,7 @@ def render_prediction_card(
                 text=[f"{prob_draw:.0%}"],
                 textposition="inside",
                 insidetextanchor="middle",
+                hovertemplate="Draw: %{x:.1f}%<extra></extra>",
             )
         )
         fig.add_trace(
@@ -216,6 +224,7 @@ def render_prediction_card(
                 text=[f"{prob_away_win:.0%}"],
                 textposition="inside",
                 insidetextanchor="middle",
+                hovertemplate="Away Win: %{x:.1f}%<extra></extra>",
             )
         )
         fig.update_layout(
@@ -250,6 +259,7 @@ def render_prediction_card(
         st.markdown(
             f"**Predicted:** {home_team} {h_goals} – {a_goals} {away_team}"
         )
+        st.caption(TOOLTIPS["scoreline"])
 
         # --- Confidence score ---
         probs_array = np.array([prob_away_win, prob_draw, prob_home_win], dtype=float)
@@ -280,6 +290,7 @@ def render_prediction_card(
             step=0.01,
             format="%.2f",
             key=f"{key_prefix}_home_odds",
+            help=TOOLTIPS["home_odds"],
         )
         draw_odds = odds_col2.number_input(
             "Draw Odds",
@@ -288,6 +299,7 @@ def render_prediction_card(
             step=0.01,
             format="%.2f",
             key=f"{key_prefix}_draw_odds",
+            help=TOOLTIPS["draw_odds"],
         )
         away_odds = odds_col3.number_input(
             "Away Win Odds",
@@ -296,6 +308,7 @@ def render_prediction_card(
             step=0.01,
             format="%.2f",
             key=f"{key_prefix}_away_odds",
+            help=TOOLTIPS["away_odds"],
         )
 
         # --- Edge values ---
@@ -340,9 +353,10 @@ def render_prediction_card(
                 summary_bg = "#1a2a4a"
                 summary_label = f"✅ Best Value Bet"
 
+            value_tip = TOOLTIPS["value_bet"]
             summary_html = (
                 f"<div style='background:{summary_bg};color:white;padding:8px 14px;"
-                f"border-radius:6px;margin-top:8px;font-size:0.85em;font-weight:bold;'>"
+                f"border-radius:6px;margin-top:8px;font-size:0.85em;font-weight:bold;' title=\"{value_tip}\">"
                 f"{summary_label}: {best_outcome_name} &nbsp;|&nbsp; "
                 f"Edge: {best_edge_val:+.1%} &nbsp;|&nbsp; "
                 f"Model: {best_outcome_prob:.0%}"

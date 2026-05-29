@@ -4,6 +4,7 @@ from pathlib import Path
 
 import plotly.graph_objects as go
 import streamlit as st
+from components.tooltips import TOOLTIPS
 
 
 def render_metrics_bar_chart(metrics_dict):
@@ -19,15 +20,21 @@ def render_metrics_bar_chart(metrics_dict):
     wc2022 = metrics_dict["wc2022"]
 
     fig = go.Figure()
+    direction_hints = ["lower is better", "higher is better", "lower is better"]
+
     fig.add_trace(go.Bar(
         name="WC 2018",
         x=categories,
         y=[wc2018["log_loss"], wc2018["accuracy"], wc2018["brier_score"]],
+        customdata=direction_hints,
+        hovertemplate="%{x} (WC 2018): %{y:.4f} — %{customdata}<extra></extra>",
     ))
     fig.add_trace(go.Bar(
         name="WC 2022",
         x=categories,
         y=[wc2022["log_loss"], wc2022["accuracy"], wc2022["brier_score"]],
+        customdata=direction_hints,
+        hovertemplate="%{x} (WC 2022): %{y:.4f} — %{customdata}<extra></extra>",
     ))
 
     fig.update_layout(
@@ -38,6 +45,7 @@ def render_metrics_bar_chart(metrics_dict):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+    st.caption("Bars show backtest results on WC 2018 (held-out test) and WC 2022 (validation). Hover each bar for the exact value.")
 
 
 def render_cumulative_profit_chart(wc2018_df, wc2022_df):
@@ -54,12 +62,14 @@ def render_cumulative_profit_chart(wc2018_df, wc2022_df):
         y=wc2022_df["cumulative_profit"].tolist(),
         mode="lines+markers",
         name="WC 2022",
+        hovertemplate="Match #%{x}<br>Cumulative Profit: %{y:+.2f} units<extra></extra>",
     ))
     fig.add_trace(go.Scatter(
         x=list(range(len(wc2018_df))),
         y=wc2018_df["cumulative_profit"].tolist(),
         mode="lines+markers",
         name="WC 2018",
+        hovertemplate="Match #%{x}<br>Cumulative Profit: %{y:+.2f} units<extra></extra>",
     ))
 
     # Horizontal reference line at y=0
@@ -72,6 +82,7 @@ def render_cumulative_profit_chart(wc2018_df, wc2022_df):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+    st.caption("Flat-stake simulation: one unit bet on the model's top-probability outcome for every match. Profit/loss accumulates over the tournament.")
 
 
 def render_calibration_chart():
@@ -93,6 +104,7 @@ def render_calibration_chart():
             caption = path.stem  # filename without extension
             with st.expander(caption):
                 st.image(str(path), caption=caption, use_container_width=True)
+                st.caption("A well-calibrated model's curve follows the diagonal. Points above the diagonal mean the model underestimates probability; points below mean overconfidence.")
 
     if not found_any:
         st.info("No calibration charts found.")

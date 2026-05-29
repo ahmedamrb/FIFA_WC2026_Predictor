@@ -5,6 +5,8 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 
+from components.tooltips import TOOLTIPS
+
 # Make src/ importable
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT))
@@ -36,6 +38,7 @@ def render_feature_importance(xgb_model) -> None:
         margin={"l": 200, "r": 40, "t": 60, "b": 60},
     )
     st.plotly_chart(fig, width='stretch')
+    st.caption(TOOLTIPS["feature_importance"])
 
 
 def render_training_summary(features_train_df: pd.DataFrame) -> None:
@@ -62,6 +65,7 @@ def render_training_summary(features_train_df: pd.DataFrame) -> None:
 
     summary_df = pd.DataFrame(rows, columns=["Metric", "Value"])
     summary_df["Value"] = summary_df["Value"].astype(str)
+    st.caption("Training data covers international matches from 1998 onward, excluding WC 2018 (test) and WC 2022 (validation) windows. Match importance weights: WC ×3, qualifiers ×1.5, friendlies ×0.5.")
     st.dataframe(summary_df, width='stretch', hide_index=True)
 
 
@@ -99,5 +103,10 @@ def render_model_registry() -> None:
     registry_df = pd.DataFrame(data_rows, columns=columns)
     registry_df = registry_df[registry_df["Date Trained"] != "N/A"].reset_index(drop=True)
 
+    st.caption(
+        "Val Log-Loss and Val Accuracy are measured on the WC 2022 validation set. "
+        "Val Brier is mean squared probability error. Lower log-loss and Brier, "
+        "higher accuracy = better."
+    )
     st.dataframe(registry_df, width='stretch', hide_index=True)
 

@@ -1757,6 +1757,106 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 
 ---
 
+## Phase 12 — Dashboard Tooltips & Contextual Help
+
+> **Motivation:** As the dashboard grew in complexity, users encountered metrics and controls (log-loss, Brier score, confidence tiers, edge percentages, value-bet recommendations) with no in-app explanation. This phase adds a centralised tooltip layer across all four pages to make the tool self-documenting.
+
+---
+
+### Subphase 12.1 — Centralised Tooltip Dictionary
+
+**Tasks**
+- [✅] Created `app/components/tooltips.py` containing a single module-level `TOOLTIPS` dictionary with 20 entries covering all dashboard metrics and controls.
+- [✅] Entries grouped by domain: model metrics (`log_loss`, `accuracy`, `brier_score`, `roi`, `value_bet_roi`, `last_retrained`), prediction card controls (`stage_filter`, `confidence_filter`, `date_filter`, `bookmaker_odds`, `edge`, `recommendation`, `confidence_score`, `predicted_scoreline`, `wdl_bar`), bracket page (`expected_points`, `bracket_win_prob`), and feature importance (`feature_importance`).
+
+---
+
+### Subphase 12.2 — Widget `help=` Parameters (`app/dashboard.py`)
+
+**Tasks**
+- [✅] Added `help=TOOLTIPS["stage_filter"]` to the stage `st.selectbox` on Page 1.
+- [✅] Added `help=TOOLTIPS["confidence_filter"]` to the confidence `st.slider` on Page 1.
+- [✅] Added `help=TOOLTIPS["date_filter"]` to the `st.date_input` range selector on Page 1.
+- [✅] Added `help=TOOLTIPS["log_loss"]`, `help=TOOLTIPS["accuracy"]`, `help=TOOLTIPS["roi"]`, and `help=TOOLTIPS["last_retrained"]` to the four `st.metric` calls on Pages 3 and 4.
+
+---
+
+### Subphase 12.3 — Prediction Card Tooltips (`app/components/prediction_card.py`)
+
+**Tasks**
+- [✅] Added `title="…"` HTML attribute to the confidence badge `<span>` — shows the `TOOLTIPS["confidence_score"]` text on hover.
+- [✅] Added `title="…"` HTML attribute to the edge/value-bet badge `<span>` elements — shows `TOOLTIPS["recommendation"]` on hover.
+- [✅] Added `help=TOOLTIPS["bookmaker_odds"]` to all three `st.number_input` bookmaker odds fields.
+- [✅] Added `st.caption(TOOLTIPS["predicted_scoreline"])` below the scoreline output.
+- [✅] Added `hovertemplate` to the W/D/L Plotly horizontal bar chart traces — each bar shows the outcome name, probability percentage, and a one-line explanation on hover.
+
+---
+
+### Subphase 12.4 — Performance Charts Tooltips (`app/components/performance_charts.py`)
+
+**Tasks**
+- [✅] Added `hovertemplate` and `customdata` to the grouped metrics bar chart traces in `render_metrics_bar_chart()` — hover shows the metric name, tournament, and value with a plain-English label.
+- [✅] Added `hovertemplate` to both cumulative profit line traces in `render_cumulative_profit_chart()` — hover shows match number and running profit.
+- [✅] Added `st.caption` explanations after the metrics bar chart and after the cumulative profit chart to explain what each chart measures.
+
+---
+
+### Subphase 12.5 — Bracket Page Tooltips (`app/components/bracket.py`)
+
+**Tasks**
+- [✅] Added `st.caption(TOOLTIPS["expected_points"])` before the group standings section to explain the xPts methodology.
+- [✅] Updated bracket winner-band Plotly traces to include `hovertext` showing the predicted winner's name and win probability percentage for each knockout match.
+- [✅] Added a methodology caption before the bracket figure noting that knockout predictions use a logistic function on FIFA rank difference.
+
+---
+
+### Subphase 12.6 — Model Info Page Tooltips (`app/components/model_info.py`)
+
+**Tasks**
+- [✅] Added `st.caption(TOOLTIPS["feature_importance"])` after the feature importance chart in `render_feature_importance()`.
+- [✅] Added `st.caption` before the training summary table explaining the training data scope and date range.
+- [✅] Added `st.caption` before the model registry table linking it to `models/MODEL_REGISTRY.md`.
+
+---
+
+**Tooltip approach summary**
+
+| Mechanism | Where used | Notes |
+|-----------|-----------|-------|
+| `help=` on Streamlit native widgets | `st.selectbox`, `st.slider`, `st.date_input`, `st.metric` | Renders a `?` icon; tooltip text shown on hover |
+| `title=""` on custom HTML elements | Confidence badge, edge/recommendation badges | Browser-native tooltip; works inside `st.markdown(unsafe_allow_html=True)` |
+| Plotly `hovertemplate` | W/D/L bar chart, metrics bar chart, cumulative profit chart, bracket traces | Shown on trace hover in the Plotly figure |
+| `st.caption` | Below scoreline, after charts, before tables | Visible always; used for multi-sentence methodology explanations that benefit from persistent display |
+
+**Verification Checklist**
+- [✅] `app/components/tooltips.py` exists with a `TOOLTIPS` dict containing exactly 20 entries.
+- [✅] All four `st.metric` calls on Page 3 and Page 4 have a `help=` parameter.
+- [✅] Stage filter, confidence slider, and date filter on Page 1 each have a `help=` parameter.
+- [✅] Confidence badge and recommendation badge HTML includes `title=""` attributes.
+- [✅] All three bookmaker odds `st.number_input` fields have `help=` parameters.
+- [✅] `st.caption` appears below the predicted scoreline on each prediction card.
+- [✅] Plotly W/D/L bar chart traces have `hovertemplate` set.
+- [✅] Metrics bar chart and cumulative profit chart traces have `hovertemplate` set.
+- [✅] Bracket page renders a caption before the group standings section and before the bracket figure.
+- [✅] Feature importance chart is followed by an `st.caption`.
+- [✅] Dashboard starts without errors after all tooltip changes (`streamlit run app/dashboard.py`).
+
+> **Verified 2026-05-29** — `app/components/tooltips.py` created with `TOOLTIPS` dict (20 entries). All five component/app files updated: `app/dashboard.py` (4 `st.metric` + 3 widget `help=` params), `app/components/prediction_card.py` (HTML `title=` on two badge types, `help=` on 3 number inputs, `st.caption` below scoreline, `hovertemplate` on W/D/L bar traces), `app/components/performance_charts.py` (`hovertemplate`+`customdata` on metrics bar traces, `hovertemplate` on profit chart traces, `st.caption` after each chart), `app/components/bracket.py` (`st.caption` for xPts methodology, winner hover text with win probability, methodology caption before bracket), `app/components/model_info.py` (`st.caption` after feature importance chart, before training summary table, before model registry table). Dashboard confirmed running without errors.
+
+---
+
+### ✅ Phase 12 — Definition of Done
+
+- [✅] `app/components/tooltips.py` exists and is the single source of truth for all tooltip text.
+- [✅] Every Streamlit native widget that benefits from contextual help has a `help=` parameter.
+- [✅] Every custom HTML badge has a `title=""` hover attribute.
+- [✅] Every Plotly chart trace has a meaningful `hovertemplate`.
+- [✅] `st.caption` explanations are present below all chart outputs and before reference tables.
+- [✅] No regressions — dashboard runs cleanly on all four pages.
+- [✅] No new unit tests required (tooltip feature is purely presentational with no business logic).
+
+---
+
 ## Phase 9 — Tournament Maintenance (Ongoing During WC 2026)
 
 > Repeat this phase after each round of matches. Each iteration is a mini-sprint.
@@ -1884,6 +1984,7 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 | `scripts/predict.py` | Phase 7 | [ ] |
 | `scripts/fetch_odds.py` | Phase 10 | [ ] |
 | `app/dashboard.py` | Phase 7 | [ ] |
+| `app/components/tooltips.py` | Phase 12 | [ ] |
 | `tests/test_preprocess.py` | Phase 3 | [ ] |
 | `tests/test_models.py` | Phase 4/5 | [ ] |
 | `tests/test_backtest.py` | Phase 6 | [ ] |

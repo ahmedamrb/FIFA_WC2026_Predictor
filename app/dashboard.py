@@ -14,6 +14,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 from src.models.ensemble import WC2026Ensemble  # noqa: E402
 from src.data.odds import load_odds_for_backtest  # noqa: E402
+from components.tooltips import TOOLTIPS  # noqa: E402
 
 # Path constants
 _MODELS_DIR = _REPO_ROOT / "models"
@@ -108,12 +109,13 @@ if page == "Match Predictions":
 
     with col_stage:
         stages = ["All"] + sorted(fixtures["stage"].dropna().unique().tolist())
-        selected_stage = st.selectbox("Filter by Stage", stages)
+        selected_stage = st.selectbox("Filter by Stage", stages, help=TOOLTIPS["stage_filter"])
 
     with col_conf:
         min_conf_pct = st.slider(
             "Min. Model Confidence",
-            min_value=0, max_value=70, value=0, step=5, format="%d%%"
+            min_value=0, max_value=70, value=0, step=5, format="%d%%",
+            help=TOOLTIPS["min_confidence_filter"]
         )
         min_conf_threshold = min_conf_pct / 100.0
 
@@ -125,6 +127,7 @@ if page == "Match Predictions":
             value=(min_date, max_date),
             min_value=min_date,
             max_value=max_date,
+            help=TOOLTIPS["date_filter"],
         )
 
     # Apply filters
@@ -202,9 +205,9 @@ elif page == "Model Performance":
     ) / 2
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Combined Log-loss", f"{combined_log_loss:.4f}")
-    col2.metric("Combined Accuracy", f"{combined_accuracy:.1%}")
-    col3.metric("Combined Flat-stake ROI", f"{combined_roi:.2f}%")
+    col1.metric("Combined Log-loss", f"{combined_log_loss:.4f}", help=TOOLTIPS["log_loss"])
+    col2.metric("Combined Accuracy", f"{combined_accuracy:.1%}", help=TOOLTIPS["accuracy"])
+    col3.metric("Combined Flat-stake ROI", f"{combined_roi:.2f}%", help=TOOLTIPS["flat_stake_roi"])
 
     st.divider()
 
@@ -236,7 +239,7 @@ elif page == "Data & Model Info":
         if _dates:
             last_retrained = max(_dates)
 
-    st.metric("Last Retrained", last_retrained)
+    st.metric("Last Retrained", last_retrained, help=TOOLTIPS["last_retrained"])
     st.divider()
 
     # --- Feature Importance ---
