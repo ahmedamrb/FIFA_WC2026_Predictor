@@ -304,12 +304,52 @@ def main():
     results["calibration_applied"] = calibration_applied
 
     # ------------------------------------------------------------------
+    # Temperature Scaling (single-parameter calibration, robust on small val)
+    # ------------------------------------------------------------------
+    from src.models.ensemble import TemperatureScaling, TemperatureScaledEnsemble
+
+    _ts = TemperatureScaling()
+    _raw_val_proba = ensemble.predict_proba(X_val)
+    _ts.fit(_raw_val_proba, y_val.to_numpy() if hasattr(y_val, "to_numpy") else np.array(y_val))
+    print(f"\n  Temperature scaling fit: T = {_ts.temperature:.4f}")
+
+    _ts_ensemble = TemperatureScaledEnsemble(ensemble, _ts.temperature)
+    from sklearn.metrics import log_loss as _log_loss
+    _ts_pre_ll = _log_loss(y_val, _raw_val_proba)
+    _ts_post_proba = _ts_ensemble.predict_proba(X_val)
+    _ts_post_ll = _log_loss(y_val, _ts_post_proba)
+
+    if _ts_post_ll <= _ts_pre_ll:
+        print(
+            f"  Temperature scaling APPLIED  "
+            f"(val log-loss {_ts_pre_ll:.4f} \u2192 {_ts_post_ll:.4f},  \u0394={_ts_post_ll - _ts_pre_ll:+.4f})"
+        )
+        results["temperature"] = _ts.temperature
+        results["temperature_applied"] = True
+    else:
+        print(
+            f"  Temperature scaling NOT applied \u2014 no improvement  "
+            f"(val log-loss {_ts_pre_ll:.4f} \u2192 {_ts_post_ll:.4f},  \u0394={_ts_post_ll - _ts_pre_ll:+.4f})"
+        )
+        results["temperature"] = 1.0
+        results["temperature_applied"] = False
+
+    # ------------------------------------------------------------------
     # Persist all metrics to baseline_results.json
     # ------------------------------------------------------------------
     with baseline_path.open("w", encoding="utf-8") as fh:
         json.dump(results, fh, indent=2)
 
     print(f"\nUpdated metrics saved to: {baseline_path}")
+
+    # Save temperature value for dashboard consumption
+    import json as _json_temp
+    _temp_path = _PROCESSED_DIR / "temperature.json"
+    _json_temp.dump(
+        {"temperature": results.get("temperature", 1.0), "applied": results.get("temperature_applied", False)},
+        _temp_path.open("w")
+    )
+    print(f"  Saved: {_temp_path}  (T={results.get('temperature', 1.0):.4f}, applied={results.get('temperature_applied', False)})")
 
     # ------------------------------------------------------------------
     # Subphase 5.9 — Model Serialisation

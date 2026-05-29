@@ -37,6 +37,15 @@ def load_resources() -> dict:
 
     ensemble = WC2026Ensemble(outcome_lr, outcome_rf, outcome_xgb)
 
+    # Apply temperature scaling calibration if available
+    _temp_path = _PROCESSED / "temperature.json"
+    if _temp_path.exists():
+        with open(_temp_path, encoding="utf-8") as _f:
+            _temp_data = json.load(_f)
+        if _temp_data.get("applied", False):
+            from src.models.ensemble import TemperatureScaledEnsemble
+            ensemble = TemperatureScaledEnsemble(ensemble, float(_temp_data["temperature"]))
+
     fp = _PROCESSED / "features_predict.parquet"
     features_predict = pd.read_parquet(fp) if fp.exists() else None
 

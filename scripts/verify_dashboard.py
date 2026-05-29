@@ -26,7 +26,6 @@ sys.modules["streamlit"] = MagicMock()
 import joblib                                                     # noqa: E402
 import numpy as np                                               # noqa: E402
 import pandas as pd                                              # noqa: E402
-from scipy.stats import entropy                                  # noqa: E402
 
 from src.models.ensemble import WC2026Ensemble                   # noqa: E402
 from src.data.preprocess import FEATURE_COLUMNS as CANONICAL_FC  # noqa: E402
@@ -393,10 +392,10 @@ run("home_goals_xgb and away_goals_xgb predict non-negative values", _run_goals_
 
 
 def _compute_confidence():
-    probs_array = np.clip(_proba, 1e-9, 1.0)
-    raw_entropy = entropy(probs_array)
-    confidence = float(np.clip(1.0 - raw_entropy / np.log(3), 0.0, 1.0))
+    probs_array = np.asarray(_proba, dtype=float)
+    confidence = float(np.max(probs_array))
     _require(0.0 <= confidence <= 1.0, f"confidence={confidence}")
+    _require(confidence >= 1/3 - 1e-6, f"confidence below 1/3 (probs not normalised?): {confidence}")
 
 run("confidence score computation yields value in [0, 1]", _compute_confidence)
 

@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from scipy.stats import entropy
 
 FEATURE_COLUMNS = [
     # --- Rankings ---
@@ -238,10 +237,7 @@ def render_prediction_card(
 
         # --- Confidence score ---
         probs_array = np.array([prob_away_win, prob_draw, prob_home_win], dtype=float)
-        # Clamp tiny negatives from floating-point to avoid log(0)
-        probs_array = np.clip(probs_array, 1e-9, 1.0)
-        raw_entropy = entropy(probs_array)  # natural log (base=None default)
-        confidence = float(np.clip(1.0 - raw_entropy / np.log(3), 0.0, 1.0))
+        confidence = float(np.max(probs_array))
         st.markdown(f"**Confidence:** {confidence:.0%}")
 
         # --- Bookmaker odds inputs ---

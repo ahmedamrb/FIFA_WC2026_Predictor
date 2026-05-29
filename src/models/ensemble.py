@@ -90,3 +90,71 @@ def optimize_ensemble_weights(oof_preds, y_train):
     raw = result.x
     weights = np.exp(raw) / np.exp(raw).sum()
     return weights
+
+
+class TemperatureScaling:
+    """Post-hoc probability calibration via a single temperature parameter T.
+
+    Applies the transformation p_cal_i = p_i^(1/T) / sum_j(p_j^(1/T)).
+    Fit by minimising NLL on a held-out validation set.
+    """
+
+    def __init__(self, temperature: float = 1.0):
+        self.temperature = temperature
+
+    def calibrate(self, proba: np.ndarray) -> np.ndarray:
+        """Apply temperature scaling to a probability array.
+
+        Args:
+            proba: Array of shape (n_samples, 3) with rows summing to 1.
+
+        Returns:
+            Calibrated array of same shape.
+        """
+        clipped = np.clip(proba, 1e-9, 1.0)
+        powered = clipped ** (1.0 / self.temperature)
+        return powered / powered.sum(axis=1, keepdims=True)
+
+    def fit(self, proba: np.ndarray, y: np.ndarray) -> "TemperatureScaling":
+        """Find T that minimises NLL on the provided proba/y pair.
+
+        Args:
+            proba: Array of shape (n_val, 3).
+            y: Integer ground-truth labels (0/1/2), shape (n_val,).
+
+        Returns:
+            self (fitted).
+        """
+        from scipy.optimize import minimize_scalar
+        from sklearn.metrics import log_loss
+
+        def nll(t: float) -> float:
+            if t <= 0:
+                return 1e9
+            clipped = np.clip(proba, 1e-9, 1.0)
+            powered = clipped ** (1.0 / t)
+            cal_t = powered / powered.sum(axis=1, keepdims=True)
+            return log_loss(y, cal_t)
+
+        result = minimize_scalar(nll, bounds=(0.1, 5.0), method="bounded")
+        self.temperature = float(result.x)
+        return self
+
+
+class TemperatureScaledEnsemble:
+    """WC2026Ensemble wrapped with temperature scaling calibration."""
+
+    def __init__(self, ensemble: "WC2026Ensemble", temperature: float):
+        self._ensemble = ensemble
+        self._ts = TemperatureScaling(temperature)
+
+    @property
+    def temperature(self) -> float:
+        return self._ts.temperature
+
+    def predict_proba(self, X) -> np.ndarray:
+        raw = self._ensemble.predict_proba(X)
+        return self._ts.calibrate(raw)
+
+    def predict(self, X) -> np.ndarray:
+        return np.argmax(self.predict_proba(X), axis=1)
