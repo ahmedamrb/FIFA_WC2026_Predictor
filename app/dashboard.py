@@ -95,7 +95,7 @@ with st.sidebar:
 if page == "Match Predictions":
     st.title("Match Predictions")
 
-    from app.components.prediction_card import render_prediction_card
+    from app.components.prediction_card import render_prediction_card, FEATURE_COLUMNS
 
     fixtures = resources["fixtures"]
     features_predict = resources["features_predict"]
@@ -104,11 +104,18 @@ if page == "Match Predictions":
     away_goals_model = resources["away_goals_xgb"]
 
     # --- Filters ---
-    col_stage, col_dates = st.columns([1, 2])
+    col_stage, col_conf, col_dates = st.columns(3)
 
     with col_stage:
         stages = ["All"] + sorted(fixtures["stage"].dropna().unique().tolist())
         selected_stage = st.selectbox("Filter by Stage", stages)
+
+    with col_conf:
+        min_conf_pct = st.slider(
+            "Min. Model Confidence",
+            min_value=0, max_value=70, value=0, step=5, format="%d%%"
+        )
+        min_conf_threshold = min_conf_pct / 100.0
 
     with col_dates:
         min_date = fixtures["match_date"].min().date()
@@ -140,7 +147,8 @@ if page == "Match Predictions":
     if filtered.empty:
         st.info("No fixtures match the selected filters.")
     else:
-        st.caption(f"Showing {len(filtered)} fixture(s)")
+        caption_placeholder = st.empty()
+        n_shown = 0
         for _, fixture_row in filtered.iterrows():
             # features_predict.parquet has no team-name columns; rows align
             # positionally with wc2026_fixtures_flat.csv (same order, 0-indexed).
@@ -149,10 +157,26 @@ if page == "Match Predictions":
                 fixture_idx = fixture_row.name  # original 0-based index from CSV
                 if 0 <= fixture_idx < len(features_predict):
                     features_row = features_predict.iloc[fixture_idx]
+
+            # Pre-filter by confidence when threshold is active
+            if min_conf_threshold > 0 and features_row is not None:
+                import numpy as _np
+                _proba = ensemble.predict_proba(
+                    pd.DataFrame(
+                        [features_row[FEATURE_COLUMNS].values],
+                        columns=FEATURE_COLUMNS
+                    )
+                )[0]
+                if float(_np.max(_proba)) < min_conf_threshold:
+                    continue
+
+            n_shown += 1
             render_prediction_card(
                 fixture_row, features_row, ensemble, home_goals_model, away_goals_model,
                 odds_df=resources["odds"],
             )
+        filter_note = f" \u00b7 confidence \u2265{min_conf_pct}% filter active" if min_conf_threshold > 0 else ""
+        caption_placeholder.caption(f"Showing {n_shown} fixture(s){filter_note}")
 elif page == "Tournament Bracket":
     st.title("Tournament Bracket")
     from app.components.bracket import render_bracket

@@ -56,10 +56,14 @@ _COLOR_AWAY_WIN = "#CC3333"
 
 _BEST_VALUE_THRESHOLD = 0.05
 _AVOID_THRESHOLD = -0.05
+_CONF_HIGH = 0.55   # >=55% -> High confidence
+_CONF_MED  = 0.45   # 45-54% -> Medium confidence; <45% -> Low confidence
 
 
-def _edge_label_html(edge: float, is_best: bool, show_labels: bool) -> str:
+def _edge_label_html(edge: float, is_best: bool, show_labels: bool, outcome_prob: float | None = None) -> str:
     edge_text = f"Edge: {edge:+.1%}"
+    if outcome_prob is not None:
+        edge_text += f"  ·  Model: {outcome_prob:.0%}"
     if not show_labels:
         return edge_text
     badge_style = "padding:2px 8px;border-radius:4px;font-size:0.75em;font-weight:bold;"
@@ -70,6 +74,18 @@ def _edge_label_html(edge: float, is_best: bool, show_labels: bool) -> str:
     else:
         badge = f"<span style='background:#555555;color:white;{badge_style}'>&mdash; Neutral</span>"
     return f"{edge_text}&nbsp;&nbsp;{badge}"
+
+
+def _confidence_tier_html(confidence: float) -> str:
+    """Return a styled HTML badge for the confidence tier."""
+    badge_style = "padding:3px 10px;border-radius:4px;font-size:0.8em;font-weight:bold;"
+    pct = f"{confidence:.0%}"
+    if confidence >= _CONF_HIGH:
+        return f"<span style='background:#1a7a3a;color:white;{badge_style}'>High Confidence · {pct}</span>"
+    elif confidence >= _CONF_MED:
+        return f"<span style='background:#7a6a00;color:white;{badge_style}'>Medium Confidence · {pct}</span>"
+    else:
+        return f"<span style='background:#5a2a2a;color:white;{badge_style}'>Low Confidence · {pct}</span>"
 
 
 def _lookup_odds(
@@ -238,7 +254,7 @@ def render_prediction_card(
         # --- Confidence score ---
         probs_array = np.array([prob_away_win, prob_draw, prob_home_win], dtype=float)
         confidence = float(np.max(probs_array))
-        st.markdown(f"**Confidence:** {confidence:.0%}")
+        st.markdown(_confidence_tier_html(confidence), unsafe_allow_html=True)
 
         # --- Bookmaker odds inputs ---
         # Look up real odds from the canonical table; fall back to neutral defaults
@@ -293,17 +309,46 @@ def render_prediction_card(
 
         edge_col1, edge_col2, edge_col3 = st.columns(3)
         edge_col1.markdown(
-            _edge_label_html(home_edge, home_edge == best_val and show_labels, show_labels),
+            _edge_label_html(home_edge, home_edge == best_val and show_labels, show_labels, outcome_prob=prob_home_win),
             unsafe_allow_html=True,
         )
         edge_col2.markdown(
-            _edge_label_html(draw_edge, draw_edge == best_val and show_labels, show_labels),
+            _edge_label_html(draw_edge, draw_edge == best_val and show_labels, show_labels, outcome_prob=prob_draw),
             unsafe_allow_html=True,
         )
         edge_col3.markdown(
-            _edge_label_html(away_edge, away_edge == best_val and show_labels, show_labels),
+            _edge_label_html(away_edge, away_edge == best_val and show_labels, show_labels, outcome_prob=prob_away_win),
             unsafe_allow_html=True,
         )
+
+        # Summary signal row — only shown when there is a positive-edge bet
+        if show_labels:
+            outcome_names = [f"{home_team} Win", "Draw", f"{away_team} Win"]
+            outcome_probs = [prob_home_win, prob_draw, prob_away_win]
+            all_edges = [home_edge, draw_edge, away_edge]
+            best_idx = all_edges.index(max(all_edges))
+            best_outcome_name = outcome_names[best_idx]
+            best_outcome_prob = outcome_probs[best_idx]
+            best_edge_val = all_edges[best_idx]
+
+            is_high_conf_value = confidence >= _CONF_HIGH and best_outcome_prob == confidence
+
+            if is_high_conf_value:
+                summary_bg = "#0d4f2e"
+                summary_label = f"⭐ High-Confidence Value Bet"
+            else:
+                summary_bg = "#1a2a4a"
+                summary_label = f"✅ Best Value Bet"
+
+            summary_html = (
+                f"<div style='background:{summary_bg};color:white;padding:8px 14px;"
+                f"border-radius:6px;margin-top:8px;font-size:0.85em;font-weight:bold;'>"
+                f"{summary_label}: {best_outcome_name} &nbsp;|&nbsp; "
+                f"Edge: {best_edge_val:+.1%} &nbsp;|&nbsp; "
+                f"Model: {best_outcome_prob:.0%}"
+                f"</div>"
+            )
+            st.markdown(summary_html, unsafe_allow_html=True)
 
         st.divider()
 
