@@ -55,6 +55,23 @@ _COLOR_HOME_WIN = "#00CC66"
 _COLOR_DRAW = "#FFAA00"
 _COLOR_AWAY_WIN = "#CC3333"
 
+_BEST_VALUE_THRESHOLD = 0.05
+_AVOID_THRESHOLD = -0.05
+
+
+def _edge_label_html(edge: float, is_best: bool, show_labels: bool) -> str:
+    edge_text = f"Edge: {edge:+.1%}"
+    if not show_labels:
+        return edge_text
+    badge_style = "padding:2px 8px;border-radius:4px;font-size:0.75em;font-weight:bold;"
+    if is_best:
+        badge = f"<span style='background:#1a7a3a;color:white;{badge_style}'>\u2705 Best Value</span>"
+    elif edge < _AVOID_THRESHOLD:
+        badge = f"<span style='background:#7a1a1a;color:white;{badge_style}'>\u274c Avoid</span>"
+    else:
+        badge = f"<span style='background:#555555;color:white;{badge_style}'>&mdash; Neutral</span>"
+    return f"{edge_text}&nbsp;&nbsp;{badge}"
+
 
 def _lookup_odds(
     odds_df: pd.DataFrame | None,
@@ -274,32 +291,23 @@ def render_prediction_card(
         draw_edge = prob_draw - (1.0 / draw_odds)
         away_edge = prob_away_win - (1.0 / away_odds)
 
-        edge_col1, edge_col2, edge_col3 = st.columns(3)
-        edge_col1.markdown(f"Edge: {home_edge:+.1%}")
-        edge_col2.markdown(f"Edge: {draw_edge:+.1%}")
-        edge_col3.markdown(f"Edge: {away_edge:+.1%}")
+        edges = [home_edge, draw_edge, away_edge]
+        best_val = max(edges)
+        show_labels = best_val > _BEST_VALUE_THRESHOLD
 
-        # --- Recommendation badge ---
-        best_edge = max(home_edge, draw_edge, away_edge)
-        if best_edge > 0.05:
-            badge_html = (
-                "<span style='background-color:#1a7a3a;color:white;"
-                "padding:4px 10px;border-radius:4px;font-weight:bold;'>"
-                "&#9989; Value</span>"
-            )
-        elif best_edge < -0.05:
-            badge_html = (
-                "<span style='background-color:#7a1a1a;color:white;"
-                "padding:4px 10px;border-radius:4px;font-weight:bold;'>"
-                "&#10060; Avoid</span>"
-            )
-        else:
-            badge_html = (
-                "<span style='background-color:#555555;color:white;"
-                "padding:4px 10px;border-radius:4px;font-weight:bold;'>"
-                "&#11036; Neutral</span>"
-            )
-        st.markdown(badge_html, unsafe_allow_html=True)
+        edge_col1, edge_col2, edge_col3 = st.columns(3)
+        edge_col1.markdown(
+            _edge_label_html(home_edge, home_edge == best_val and show_labels, show_labels),
+            unsafe_allow_html=True,
+        )
+        edge_col2.markdown(
+            _edge_label_html(draw_edge, draw_edge == best_val and show_labels, show_labels),
+            unsafe_allow_html=True,
+        )
+        edge_col3.markdown(
+            _edge_label_html(away_edge, away_edge == best_val and show_labels, show_labels),
+            unsafe_allow_html=True,
+        )
 
         st.divider()
 
