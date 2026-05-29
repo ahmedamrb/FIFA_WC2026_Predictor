@@ -1708,6 +1708,41 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 
 ---
 
+### Subphase 11.4 — Confidence Score Integration into Betting Recommendation UI
+
+> **Motivation:** Confidence and betting recommendation were displayed as unrelated widgets. Users couldn't tell whether a "Value" edge signal was backed by strong model conviction or was low-certainty noise.
+
+**Confidence Tiers**
+
+| Tier | Threshold | Badge |
+|---|---|---|
+| High | ≥ 55% | 🟢 green |
+| Medium | 45–54% | 🟡 amber |
+| Low | < 45% | 🔴 dark red |
+
+**Tasks**
+- [✅] Added `_CONF_HIGH = 0.55` and `_CONF_MED = 0.45` constants to `app/components/prediction_card.py`.
+- [✅] Added `_confidence_tier_html(confidence)` helper — returns a colour-coded HTML badge for High / Medium / Low tiers.
+- [✅] Updated `_edge_label_html` to accept `outcome_prob: float | None = None` — appends `· Model: X%` to each edge label when provided.
+- [✅] Replaced plain `st.markdown(f"**Confidence:** {confidence:.0%}")` with `st.markdown(_confidence_tier_html(confidence), unsafe_allow_html=True)`.
+- [✅] Updated all three `_edge_label_html` call sites to pass `outcome_prob=prob_home_win`, `outcome_prob=prob_draw`, `outcome_prob=prob_away_win` respectively.
+- [✅] Added summary signal row after the edge columns (gated on `show_labels`): renders `⭐ High-Confidence Value Bet` when confidence ≥ 55% and the recommended outcome is the model's top pick; otherwise renders `✅ Best Value Bet`. Row shows outcome name, edge %, and model probability inline.
+- [✅] Added `FEATURE_COLUMNS` to the `prediction_card` import in `app/dashboard.py`.
+- [✅] Added "Min. Model Confidence" slider (0–70%, step 5%) to Page 1 filter row in `app/dashboard.py` — filters out fixtures below the threshold in the render loop.
+- [✅] Updated fixture count caption to note `· confidence ≥X% filter active` when the slider is non-zero.
+
+**Verification Checklist**
+- [✅] Confidence badge renders as 🟢/🟡/🔴 tier (not plain text) on all prediction cards.
+- [✅] Each edge label shows `Edge: +X%  ·  Model: Y%` for all three outcomes.
+- [✅] Summary signal row appears only when best edge > 5%.
+- [✅] `⭐ High-Confidence Value Bet` badge appears when confidence ≥ 55% and recommended outcome matches top-probability outcome.
+- [✅] Confidence filter slider on Page 1 correctly hides fixtures below the selected threshold.
+- [✅] Fixture count caption updates with filter note when slider > 0%.
+
+> **Verified 2026-05-29** — All tasks implemented across `app/components/prediction_card.py` and `app/dashboard.py`. Confidence tier badge, per-outcome model probability on edge labels, summary signal row, and confidence filter slider all added. Summary row upgrades to ⭐ High-Confidence when model conviction aligns with the value recommendation.
+
+---
+
 ### ✅ Phase 11 — Definition of Done
 
 - [✅] Confidence scores on dashboard Page 1 are in the range 33%–70% for all WC 2026 fixtures.
@@ -1716,6 +1751,9 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 - [✅] Dashboard automatically applies temperature scaling via `TemperatureScaledEnsemble`.
 - [✅] No regressions — ensemble val accuracy remains 54.7%.
 - [✅] `scripts/fit_temperature.py` available for fast recalibration after each retrain.
+- [✅] Confidence tier badge (🟢/🟡/🔴) replaces plain confidence label on all prediction cards.
+- [✅] Betting recommendation cards show per-outcome model probability and a summary signal row qualifying edge signals with confidence level.
+- [✅] Page 1 confidence filter slider allows users to hide low-certainty fixtures.
 
 ---
 
