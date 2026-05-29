@@ -66,7 +66,7 @@ with st.sidebar:
 if page == "Match Predictions":
     st.title("Match Predictions")
 
-    from app.components.prediction_card import render_prediction_card, FEATURE_COLUMNS
+    from app.components.prediction_card import render_prediction_card
 
     fixtures = resources["fixtures"]
     predictions = resources["predictions"]
