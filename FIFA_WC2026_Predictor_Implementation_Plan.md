@@ -44,7 +44,9 @@ FIFA_WC2026_Predictor/
 │   │   ├── baseline_results.json
 │   │   ├── backtest_wc2018.csv
 │   │   ├── backtest_wc2022.csv
-│   │   └── final_backtest_metrics.json
+│   │   ├── final_backtest_metrics.json
+│   │   ├── wc2026_predictions.csv
+│   │   └── feature_importances.json
 │   └── bookmaker_odds.csv
 ├── outputs/
 │   └── plots/
@@ -76,7 +78,8 @@ FIFA_WC2026_Predictor/
 │   ├── run_tuning.py
 │   ├── run_backtest.py
 │   ├── train.py
-│   └── predict.py
+│   ├── predict.py
+│   └── precompute_predictions.py
 ├── app/
 │   ├── dashboard.py
 │   └── components/
@@ -1363,6 +1366,25 @@ All of the following must be true to consider the core project complete:
 
 ---
 
+### Streamlit Community Cloud Deployment
+
+> **Pre-compute approach:** The Streamlit app (`app/dashboard.py`) does **not** load any `.pkl` model files at runtime. All predictions are pre-computed locally and committed to the repo as plain CSV/JSON. This enables deployment on Streamlit Community Cloud without shipping large model files (>200 MB) to the repository.
+
+**How it works:**
+1. Run `python scripts/precompute_predictions.py` locally after training or after each results update.
+2. The script loads the local `.pkl` models and `data/processed/features_predict.parquet`, then writes two committed artifacts:
+   - `data/processed/wc2026_predictions.csv` — one row per WC 2026 fixture: `home_team`, `away_team`, `match_date`, `stage`, `prob_home_win`, `prob_draw`, `prob_away_win`, `confidence`, `predicted_outcome`, `predicted_home_goals`, `predicted_away_goals`, `generated_at`.
+   - `data/processed/feature_importances.json` — XGBoost feature importance scores.
+3. Commit and push both files; Streamlit Community Cloud redeploys automatically.
+
+**Modified components (post-Phase 7):**
+- `app/dashboard.py` — removed all 7 `joblib.load()` calls and model/ensemble construction; loads `wc2026_predictions.csv` instead.
+- `app/components/prediction_card.py` — `render_prediction_card(fixture_row, prediction_row, odds_df=None)` reads pre-computed values instead of calling model inference.
+- `app/components/bracket.py` — `render_bracket(fixtures_df, predictions_df)` reads pre-computed probabilities instead of calling the ensemble.
+- `app/components/model_info.py` — `render_feature_importance()` reads from `feature_importances.json` instead of taking an XGBoost model argument.
+
+---
+
 ## Phase 8 — ML Optimization & Improvement
 
 > This phase documents the improvement sprint undertaken after Phase 5 to close the gap toward the PRD log-loss target of 0.95.
@@ -1894,7 +1916,27 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 
 ---
 
-### Subphase 9.3 — Model Retrain
+### Subphase 9.3 — Pre-Compute Predictions & Deploy
+
+> Run this after every results update (9.1 → 9.2 → **9.3**). If models have been retrained (Subphase 9.4), run this immediately after retraining as well.
+
+**Tasks**
+- [ ] Run `python scripts/precompute_predictions.py` — loads the current `.pkl` models and `features_predict.parquet`, regenerates:
+  - `data/processed/wc2026_predictions.csv` — one row per remaining WC 2026 fixture.
+  - `data/processed/feature_importances.json` — XGBoost feature importance scores.
+- [ ] Commit both updated artifacts: `git add data/processed/wc2026_predictions.csv data/processed/feature_importances.json && git commit -m "chore: update predictions for GW<N>"`.
+- [ ] Push to the main branch to trigger Streamlit Community Cloud redeployment.
+
+**Verification Checklist**
+- [ ] `wc2026_predictions.csv` row count equals the number of upcoming (unplayed) fixtures.
+- [ ] All probability columns (`prob_home_win`, `prob_draw`, `prob_away_win`) sum to 1.0 per row.
+- [ ] `confidence` values are between 0.33 and 1.0.
+- [ ] Both files committed and absent from `git status` after push.
+- [ ] Streamlit Community Cloud app reloads with updated predictions.
+
+---
+
+### Subphase 9.4 — Model Retrain
 
 **Tasks**
 - [ ] Run `python scripts/train.py` to retrain all models on the updated training data.
@@ -1906,10 +1948,11 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 - [ ] All 7 `.pkl` files have updated modification timestamps.
 - [ ] Validation log-loss ≤ the pre-tournament baseline.
 - [ ] `MODEL_REGISTRY.md` updated with current date and metrics.
+- [ ] After retraining, re-run Subphase 9.3 (`precompute_predictions.py`) to refresh committed artifacts.
 
 ---
 
-### Subphase 9.4 — Odds Update & Prediction Refresh
+### Subphase 9.5 — Odds Update & Prediction Refresh
 
 **Tasks**
 - [ ] Collect bookmaker odds for the next round of matches from a free aggregator.
@@ -1922,6 +1965,7 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 - [ ] All new odds values are ≥ 1.0.
 - [ ] Dashboard Page 1 shows updated predictions post-restart.
 - [ ] Edge values match manual spot-check calculation.
+- [ ] If new odds change implied probabilities enough to shift recommendations, re-run Subphase 9.3 to refresh `wc2026_predictions.csv`.
 
 ---
 
@@ -1929,9 +1973,11 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 
 - [ ] `results.csv` updated with all completed matches in the current round.
 - [ ] `features_predict.parquet` contains only future fixtures.
-- [ ] All model `.pkl` files retrained and re-serialised.
+- [ ] `python scripts/precompute_predictions.py` run and `wc2026_predictions.csv` / `feature_importances.json` committed.
+- [ ] All model `.pkl` files retrained and re-serialised (when applicable).
 - [ ] `MODEL_REGISTRY.md` updated with retrain date.
 - [ ] `bookmaker_odds.csv` has odds for the next round.
+- [ ] Committed artifacts pushed; Streamlit Community Cloud redeployed.
 - [ ] Dashboard running cleanly with up-to-date predictions.
 
 ---
@@ -1956,6 +2002,8 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 | `data/processed/backtest_wc2018.csv` | Phase 6 | [ ] |
 | `data/processed/backtest_wc2022.csv` | Phase 6 | [ ] |
 | `data/processed/final_backtest_metrics.json` | Phase 6 | [ ] |
+| `data/processed/wc2026_predictions.csv` | Phase 9 | [ ] |
+| `data/processed/feature_importances.json` | Phase 9 | [ ] |
 | `models/outcome_xgb.pkl` | Phase 5 | [ ] |
 | `models/outcome_rf.pkl` | Phase 5 | [ ] |
 | `models/outcome_lr.pkl` | Phase 5 | [ ] |
@@ -1983,6 +2031,7 @@ T > 1 (slightly softening) confirms the ensemble was marginally overconfident. C
 | `scripts/train.py` | Phase 5 | [ ] |
 | `scripts/predict.py` | Phase 7 | [ ] |
 | `scripts/fetch_odds.py` | Phase 10 | [ ] |
+| `scripts/precompute_predictions.py` | Phase 9 | [ ] |
 | `app/dashboard.py` | Phase 7 | [ ] |
 | `app/components/tooltips.py` | Phase 12 | [ ] |
 | `tests/test_preprocess.py` | Phase 3 | [ ] |
@@ -2007,8 +2056,10 @@ Quick reference for running the project from scratch:
 5.  python scripts/run_baseline_models.py  ← train & evaluate baselines
 6.  python scripts/run_tuning.py           ← Optuna HPO (slow)
 7.  python scripts/train.py                ← train final models & serialise
+7b. python scripts/precompute_predictions.py ← generate committed prediction artifacts (required before deployment)
 8.  python scripts/run_backtest.py         ← backtest + betting edge
-9.  streamlit run app/dashboard.py         ← launch dashboard
+9.  streamlit run app/dashboard.py         ← launch dashboard (local)
+    # OR: push committed artifacts → Streamlit Community Cloud auto-redeploys
 ```
 
 ---

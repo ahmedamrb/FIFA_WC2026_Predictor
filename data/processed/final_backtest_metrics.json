@@ -1,0 +1,70 @@
+{
+  "wc2018": {
+    "log_loss": 1.008418,
+    "accuracy": 0.515625,
+    "brier_score": 0.201314,
+    "flat_stake_roi": 3.125,
+    "value_bet_roi": 4.3478,
+    "odds_matched": 0,
+    "odds_defaulted": 64
+  },
+  "wc2022": {
+    "log_loss": 1.026476,
+    "accuracy": 0.546875,
+    "brier_score": 0.201951,
+    "flat_stake_roi": 9.375,
+    "value_bet_roi": 44.4444,
+    "odds_matched": 0,
+    "odds_defaulted": 64
+  },
+  "comparison": {
+    "wc2018": {
+      "real": {
+        "log_loss": 1.008418,
+        "accuracy": 0.515625,
+        "brier_score": 0.201314,
+        "flat_stake_roi": 3.125,
+        "value_bet_roi": 4.3478,
+        "odds_matched": 0,
+        "odds_defaulted": 64
+      },
+      "stub_2.0": {
+        "log_loss": 1.008418,
+        "accuracy": 0.515625,
+        "brier_score": 0.201314,
+        "flat_stake_roi": 3.125,
+        "value_bet_roi": 4.3478,
+        "odds_matched": 0,
+        "odds_defaulted": 64
+      },
+      "delta": {
+        "flat_stake_roi": 0.0,
+        "value_bet_roi": 0.0
+      }
+    },
+    "wc2022": {
+      "real": {
+        "log_loss": 1.026476,
+        "accuracy": 0.546875,
+        "brier_score": 0.201951,
+        "flat_stake_roi": 9.375,
+        "value_bet_roi": 44.4444,
+        "odds_matched": 0,
+        "odds_defaulted": 64
+      },
+      "stub_2.0": {
+        "log_loss": 1.026476,
+        "accuracy": 0.546875,
+        "brier_score": 0.201951,
+        "flat_stake_roi": 9.375,
+        "value_bet_roi": 44.4444,
+        "odds_matched": 0,
+        "odds_defaulted": 64
+      },
+      "delta": {
+        "flat_stake_roi": 0.0,
+        "value_bet_roi": 0.0
+      }
+    }
+  }
+}

@@ -1,56 +1,11 @@
 """Prediction card UI component."""
 
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
 from components.tooltips import TOOLTIPS
 
-FEATURE_COLUMNS = [
-    # --- Rankings ---
-    "home_rank",
-    "away_rank",
-    "home_rank_points",
-    "away_rank_points",
-    "rank_diff",
-    "rank_points_ratio",
-    "rank_points_diff",
-    # --- Form 5-match window ---
-    "home_form_wins_5",
-    "home_form_goals_scored_5",
-    "home_form_goals_conceded_5",
-    "home_form_wdl_points_5",
-    "away_form_wins_5",
-    "away_form_goals_scored_5",
-    "away_form_goals_conceded_5",
-    "away_form_wdl_points_5",
-    # --- Form 10-match window ---
-    "home_form_wins_10",
-    "home_form_goals_scored_10",
-    "home_form_goals_conceded_10",
-    "home_form_wdl_points_10",
-    "away_form_wins_10",
-    "away_form_goals_scored_10",
-    "away_form_goals_conceded_10",
-    "away_form_wdl_points_10",
-    "form_diff_wdl_5",
-    "home_goal_efficiency_5",
-    "away_goal_efficiency_5",
-    # --- Head-to-Head ---
-    "h2h_home_win_rate",
-    "h2h_matches_count",
-    "h2h_avg_goals_home",
-    "h2h_avg_goals_away",
-    # --- Context & Venue ---
-    "tournament_stage",
-    "is_wc_match",
-    "is_neutral_venue",
-    "host_nation_advantage",
-    "home_days_rest",
-    "away_days_rest",
-    "rest_diff",
-]
 
 _COLOR_HOME_WIN = "#00CC66"
 _COLOR_DRAW = "#FFAA00"
@@ -132,10 +87,7 @@ def _lookup_odds(
 
 def render_prediction_card(
     fixture_row,
-    features_row,
-    ensemble,
-    home_goals_model,
-    away_goals_model,
+    prediction_row,
     odds_df: pd.DataFrame | None = None,
 ):
     """Render a prediction card for a single WC 2026 fixture.
@@ -145,16 +97,10 @@ def render_prediction_card(
     fixture_row : pd.Series
         Row from wc2026_fixtures_flat.csv with columns: match_date, home_team,
         away_team, stage, group, venue.
-    features_row : pd.Series or None
-        Row from features_predict.parquet containing ML feature columns.
-        Pass None when no prediction data is available for the fixture.
-    ensemble : WC2026Ensemble
-        Ensemble model with .predict_proba(X) returning shape (n, 3) in order
-        [Away Win=0, Draw=1, Home Win=2].
-    home_goals_model : sklearn-compatible regressor
-        Predicts expected home goals.
-    away_goals_model : sklearn-compatible regressor
-        Predicts expected away goals.
+    prediction_row : pd.Series or None
+        Row from predictions parquet/CSV containing pre-computed columns:
+        prob_home_win, prob_draw, prob_away_win, predicted_home_goals,
+        predicted_away_goals, confidence.  Pass None when unavailable.
     odds_df : pd.DataFrame or None
         Canonical odds table.  When provided, the fixture's latest real odds
         are used as default values for the inputs; users can still override.
@@ -168,23 +114,15 @@ def render_prediction_card(
         st.subheader(f"{home_team}  vs  {away_team}")
         st.caption(f"{stage} — {match_date}")
 
-        if features_row is None:
+        if prediction_row is None:
             st.info("No prediction data available for this fixture.")
             st.divider()
             return
 
-        # Build 2D input array for models
-        X = pd.DataFrame(
-            features_row[FEATURE_COLUMNS].values.reshape(1, -1),
-            columns=FEATURE_COLUMNS,
-        )
-
-        # --- Outcome probabilities ---
-        # predict_proba returns shape (1, 3): [Away Win=0, Draw=1, Home Win=2]
-        proba = ensemble.predict_proba(X)[0]
-        prob_away_win = float(proba[0])
-        prob_draw = float(proba[1])
-        prob_home_win = float(proba[2])
+        # --- Read pre-computed predictions ---
+        prob_home_win = float(prediction_row["prob_home_win"])
+        prob_draw     = float(prediction_row["prob_draw"])
+        prob_away_win = float(prediction_row["prob_away_win"])
 
         # --- W/D/L horizontal stacked bar chart ---
         fig = go.Figure()
@@ -254,16 +192,15 @@ def render_prediction_card(
         )
 
         # --- Predicted scoreline ---
-        h_goals = max(0, int(float(home_goals_model.predict(X)[0])))
-        a_goals = max(0, int(float(away_goals_model.predict(X)[0])))
+        h_goals    = int(prediction_row["predicted_home_goals"])
+        a_goals    = int(prediction_row["predicted_away_goals"])
+        confidence = float(prediction_row["confidence"])
         st.markdown(
             f"**Predicted:** {home_team} {h_goals} – {a_goals} {away_team}"
         )
         st.caption(TOOLTIPS["scoreline"])
 
         # --- Confidence score ---
-        probs_array = np.array([prob_away_win, prob_draw, prob_home_win], dtype=float)
-        confidence = float(np.max(probs_array))
         st.markdown(_confidence_tier_html(confidence), unsafe_allow_html=True)
 
         # --- Bookmaker odds inputs ---

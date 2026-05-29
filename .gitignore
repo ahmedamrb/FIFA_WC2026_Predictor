@@ -6,5 +6,4 @@ venv/
 .DS_Store
 Thumbs.db
 data/raw/
-data/processed/
 models/*.pkl

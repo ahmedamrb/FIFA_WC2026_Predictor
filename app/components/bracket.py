@@ -15,23 +15,6 @@ from components.tooltips import TOOLTIPS
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _RAW = _REPO_ROOT / "data" / "raw"
 
-FEATURE_COLUMNS = [
-    "home_rank", "away_rank", "home_rank_points", "away_rank_points",
-    "rank_diff", "rank_points_ratio", "rank_points_diff",
-    "home_form_wins_5", "home_form_goals_scored_5", "home_form_goals_conceded_5",
-    "home_form_wdl_points_5",
-    "away_form_wins_5", "away_form_goals_scored_5", "away_form_goals_conceded_5",
-    "away_form_wdl_points_5",
-    "home_form_wins_10", "home_form_goals_scored_10", "home_form_goals_conceded_10",
-    "home_form_wdl_points_10",
-    "away_form_wins_10", "away_form_goals_scored_10", "away_form_goals_conceded_10",
-    "away_form_wdl_points_10",
-    "form_diff_wdl_5", "home_goal_efficiency_5", "away_goal_efficiency_5",
-    "h2h_home_win_rate", "h2h_matches_count", "h2h_avg_goals_home", "h2h_avg_goals_away",
-    "tournament_stage", "is_wc_match", "is_neutral_venue", "host_nation_advantage",
-    "home_days_rest", "away_days_rest", "rest_diff",
-]
-
 # Bracket figure constants
 BOX_W = 0.195
 BOX_H_HALF = 0.028
@@ -233,18 +216,15 @@ def _identify_groups(fixtures_df: pd.DataFrame) -> list[list[str]]:
 
 def _simulate_group_stage(
     fixtures_df: pd.DataFrame,
-    features_df: pd.DataFrame,
-    ensemble,
+    predictions_df: pd.DataFrame,
     groups: list[list[str]],
     rank_lookup: dict[str, int],
 ) -> dict[str, pd.DataFrame]:
-    """Compute expected points per team from ML model probabilities.
+    """Compute expected points per team from precomputed prediction probabilities.
 
-    For each GROUP_STAGE fixture the model returns [p_away_win, p_draw, p_home_win].
+    For each GROUP_STAGE fixture reads prob_home_win, prob_draw, prob_away_win from
+    predictions_df (loaded with index_col=0, so labels match the original CSV row index).
     Expected points: home += 3*p_hw + 1*p_draw; away += 3*p_aw + 1*p_draw.
-
-    The row's .name is its original 0-based CSV RangeIndex, which maps directly
-    to features_df.iloc[row.name] (features are in the same CSV row order).
 
     Returns a dict mapping group label (A–L) to a sorted DataFrame with columns
     ['team', 'expected_pts', 'rank'], sorted by expected_pts DESC then rank ASC.
@@ -254,11 +234,10 @@ def _simulate_group_stage(
 
     group_stage = fixtures_df[fixtures_df["stage"] == "GROUP_STAGE"]
     for _, row in group_stage.iterrows():
-        row_idx = row.name  # original 0-based CSV position
-        X = features_df.iloc[[row_idx]][FEATURE_COLUMNS]
-        proba = ensemble.predict_proba(X)[0]  # [p_away_win, p_draw, p_home_win]
-        expected_pts[row["home_team"]] += 3 * proba[2] + 1 * proba[1]
-        expected_pts[row["away_team"]] += 3 * proba[0] + 1 * proba[1]
+        row_idx = row.name  # original CSV positional index
+        pred = predictions_df.loc[row_idx]
+        expected_pts[row["home_team"]] += 3 * float(pred["prob_home_win"]) + 1 * float(pred["prob_draw"])
+        expected_pts[row["away_team"]] += 3 * float(pred["prob_away_win"]) + 1 * float(pred["prob_draw"])
 
     standings: dict[str, pd.DataFrame] = {}
     for label, grp in zip(labels, groups):
@@ -614,27 +593,27 @@ def _draw_bracket_figure(bracket_tree: dict) -> go.Figure:
     return fig
 
 
-def render_bracket(fixtures_df: pd.DataFrame, features_predict_df, ensemble) -> None:
+def render_bracket(fixtures_df: pd.DataFrame, predictions_df) -> None:
     """Render group standings and predicted tournament bracket.
 
     Args:
         fixtures_df: DataFrame from wc2026_fixtures_flat.csv with default
-            RangeIndex; rows 0–71 are GROUP_STAGE, aligned with features_predict_df.
-        features_predict_df: DataFrame from features_predict.parquet (104 rows),
-            positionally aligned with fixtures_df. May be None if not yet generated.
-        ensemble: WC2026Ensemble instance with predict_proba().
+            RangeIndex; rows 0–71 are GROUP_STAGE, aligned with predictions_df.
+        predictions_df: DataFrame from wc2026_predictions.csv (loaded with
+            index_col=0), containing prob_home_win, prob_draw, prob_away_win
+            columns. May be None if not yet generated.
     """
-    if features_predict_df is None:
+    if predictions_df is None:
         st.warning(
-            "features_predict.parquet not found. "
-            "Run `python scripts/run_feature_engineering.py` first."
+            "wc2026_predictions.csv not found. "
+            "Run: python scripts/precompute_predictions.py"
         )
         return
 
     rank_lookup = _build_rank_lookup()
     groups = _identify_groups(fixtures_df)
     group_standings = _simulate_group_stage(
-        fixtures_df, features_predict_df, ensemble, groups, rank_lookup
+        fixtures_df, predictions_df, groups, rank_lookup
     )
     qualifiers_32 = _select_qualifiers(group_standings, rank_lookup)
     bracket_tree = _build_bracket_tree(qualifiers_32, rank_lookup)

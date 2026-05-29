@@ -4,7 +4,6 @@ import sys
 import json
 from pathlib import Path
 
-import joblib
 import pandas as pd
 import streamlit as st
 
@@ -12,12 +11,10 @@ import streamlit as st
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
-from src.models.ensemble import WC2026Ensemble  # noqa: E402
 from src.data.odds import load_odds_for_backtest  # noqa: E402
 from components.tooltips import TOOLTIPS  # noqa: E402
 
 # Path constants
-_MODELS_DIR = _REPO_ROOT / "models"
 _PROCESSED = _REPO_ROOT / "data" / "processed"
 _RAW = _REPO_ROOT / "data" / "raw"
 
@@ -28,27 +25,8 @@ st.set_page_config(page_title="WC 2026 Predictor", layout="wide")
 @st.cache_resource
 def load_resources() -> dict:
     """Load all models and data files once and cache them for the session."""
-    outcome_lr = joblib.load(_MODELS_DIR / "outcome_lr.pkl")
-    outcome_rf = joblib.load(_MODELS_DIR / "outcome_rf.pkl")
-    outcome_xgb = joblib.load(_MODELS_DIR / "outcome_xgb.pkl")
-    home_goals_xgb = joblib.load(_MODELS_DIR / "home_goals_xgb.pkl")
-    away_goals_xgb = joblib.load(_MODELS_DIR / "away_goals_xgb.pkl")
-    home_goals_poisson = joblib.load(_MODELS_DIR / "home_goals_poisson.pkl")
-    away_goals_poisson = joblib.load(_MODELS_DIR / "away_goals_poisson.pkl")
-
-    ensemble = WC2026Ensemble(outcome_lr, outcome_rf, outcome_xgb)
-
-    # Apply temperature scaling calibration if available
-    _temp_path = _PROCESSED / "temperature.json"
-    if _temp_path.exists():
-        with open(_temp_path, encoding="utf-8") as _f:
-            _temp_data = json.load(_f)
-        if _temp_data.get("applied", False):
-            from src.models.ensemble import TemperatureScaledEnsemble
-            ensemble = TemperatureScaledEnsemble(ensemble, float(_temp_data["temperature"]))
-
-    fp = _PROCESSED / "features_predict.parquet"
-    features_predict = pd.read_parquet(fp) if fp.exists() else None
+    predictions_path = _PROCESSED / "wc2026_predictions.csv"
+    predictions = pd.read_csv(predictions_path, index_col=0) if predictions_path.exists() else None
 
     ft = _PROCESSED / "features_train.parquet"
     features_train = pd.read_parquet(ft) if ft.exists() else None
@@ -63,15 +41,7 @@ def load_resources() -> dict:
     backtest_wc2022 = pd.read_csv(_PROCESSED / "backtest_wc2022.csv")
 
     return {
-        "outcome_lr": outcome_lr,
-        "outcome_rf": outcome_rf,
-        "outcome_xgb": outcome_xgb,
-        "home_goals_xgb": home_goals_xgb,
-        "away_goals_xgb": away_goals_xgb,
-        "home_goals_poisson": home_goals_poisson,
-        "away_goals_poisson": away_goals_poisson,
-        "ensemble": ensemble,
-        "features_predict": features_predict,
+        "predictions": predictions,
         "fixtures": fixtures,
         "odds": odds,
         "backtest_metrics": backtest_metrics,
@@ -99,10 +69,7 @@ if page == "Match Predictions":
     from app.components.prediction_card import render_prediction_card, FEATURE_COLUMNS
 
     fixtures = resources["fixtures"]
-    features_predict = resources["features_predict"]
-    ensemble = resources["ensemble"]
-    home_goals_model = resources["home_goals_xgb"]
-    away_goals_model = resources["away_goals_xgb"]
+    predictions = resources["predictions"]
 
     # --- Filters ---
     col_stage, col_conf, col_dates = st.columns(3)
@@ -153,37 +120,20 @@ if page == "Match Predictions":
         caption_placeholder = st.empty()
         n_shown = 0
         for _, fixture_row in filtered.iterrows():
-            # features_predict.parquet has no team-name columns; rows align
-            # positionally with wc2026_fixtures_flat.csv (same order, 0-indexed).
-            features_row = None
-            if features_predict is not None:
-                fixture_idx = fixture_row.name  # original 0-based index from CSV
-                if 0 <= fixture_idx < len(features_predict):
-                    features_row = features_predict.iloc[fixture_idx]
+            prediction_row = predictions.loc[fixture_row.name] if predictions is not None else None
 
             # Pre-filter by confidence when threshold is active
-            if min_conf_threshold > 0 and features_row is not None:
-                import numpy as _np
-                _proba = ensemble.predict_proba(
-                    pd.DataFrame(
-                        [features_row[FEATURE_COLUMNS].values],
-                        columns=FEATURE_COLUMNS
-                    )
-                )[0]
-                if float(_np.max(_proba)) < min_conf_threshold:
-                    continue
+            if prediction_row is None or (min_conf_threshold > 0 and float(prediction_row["confidence"]) < min_conf_threshold):
+                continue
 
             n_shown += 1
-            render_prediction_card(
-                fixture_row, features_row, ensemble, home_goals_model, away_goals_model,
-                odds_df=resources["odds"],
-            )
+            render_prediction_card(fixture_row, prediction_row, odds_df=resources["odds"])
         filter_note = f" \u00b7 confidence \u2265{min_conf_pct}% filter active" if min_conf_threshold > 0 else ""
         caption_placeholder.caption(f"Showing {n_shown} fixture(s){filter_note}")
 elif page == "Tournament Bracket":
     st.title("Tournament Bracket")
     from app.components.bracket import render_bracket
-    render_bracket(resources["fixtures"], resources["features_predict"], resources["ensemble"])
+    render_bracket(resources["fixtures"], resources["predictions"])
 elif page == "Model Performance":
     st.title("Model Performance")
 
@@ -244,7 +194,7 @@ elif page == "Data & Model Info":
 
     # --- Feature Importance ---
     st.subheader("Feature Importance")
-    render_feature_importance(resources["outcome_xgb"])
+    render_feature_importance()
 
     st.divider()
 

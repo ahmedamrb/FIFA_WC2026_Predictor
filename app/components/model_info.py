@@ -10,16 +10,17 @@ from components.tooltips import TOOLTIPS
 # Make src/ importable
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT))
-from src.data.preprocess import FEATURE_COLUMNS
 
 
-def render_feature_importance(xgb_model) -> None:
-    """Render a horizontal bar chart of top-20 XGBoost feature importances.
-
-    Args:
-        xgb_model: A fitted XGBClassifier trained with FEATURE_COLUMNS.
-    """
-    importances = pd.Series(xgb_model.feature_importances_, index=FEATURE_COLUMNS)
+def render_feature_importance() -> None:
+    """Render a horizontal bar chart of top-20 XGBoost feature importances."""
+    _fi_path = _REPO_ROOT / "data" / "processed" / "feature_importances.json"
+    if not _fi_path.exists():
+        st.warning("feature_importances.json not found. Run: python scripts/precompute_predictions.py")
+        return
+    import json as _json
+    with open(_fi_path, encoding="utf-8") as _f:
+        importances = pd.Series(_json.load(_f))
     top20 = importances.sort_values(ascending=False).head(20).sort_values(ascending=True)
 
     fig = go.Figure(
