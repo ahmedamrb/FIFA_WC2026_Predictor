@@ -212,6 +212,7 @@ def merge_rankings(
     matches_df: pd.DataFrame,
     rankings_df: pd.DataFrame,
     date_col: str = "date",
+    max_rank_date: pd.Timestamp | None = None,
 ) -> pd.DataFrame:
     """Attach FIFA rankings to each match row using the most recent available data.
 
@@ -241,6 +242,9 @@ def merge_rankings(
     # Ensure rank_date is datetime (defensive in case caller skips load_raw_data)
     rank_df = rankings_df.copy()
     rank_df["rank_date"] = pd.to_datetime(rank_df["rank_date"])
+
+    if max_rank_date is not None:
+        rank_df = rank_df[rank_df["rank_date"] <= max_rank_date]
 
     # Compute global medians used for null filling
     median_rank: float = float(rank_df["rank"].median())
