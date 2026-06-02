@@ -1001,6 +1001,12 @@ def export_features() -> None:
     fixtures_prep["tournament"] = "FIFA World Cup"
     fixtures_prep["neutral"] = 1
 
+    # Inject a stable ordering key into fixture rows so we can restore
+    # the original fixture file ordering after the pipeline re-sorts by date.
+    # (Same-day TBD knockout games share identical team names and dates,
+    # so a merge-based re-sort would create a Cartesian explosion.)
+    fixtures_prep["_fixture_order"] = range(len(fixtures_prep))
+
     combined = pd.concat([cleaned, fixtures_prep], ignore_index=True)
 
     ranked = merge_rankings(combined, rankings_df, date_col="date")
@@ -1008,8 +1014,17 @@ def export_features() -> None:
     h2h = compute_h2h_features(formed)
     context = compute_context_features(h2h)
 
-    # Fixture rows are those without completed home_score / away_score
-    predict_df = context[context["home_score"].isna()][FEATURE_COLUMNS].copy()
+    # Fixture rows are those without completed home_score / away_score.
+    # Re-sort by the stable key we injected before the pipeline so the row
+    # order matches wc2026_fixtures_flat.csv exactly.  (The pipeline's
+    # date-sort can displace same-day fixtures relative to each other.)
+    fixture_mask = context["home_score"].isna()
+    predict_df = (
+        context[fixture_mask]
+        .sort_values("_fixture_order")
+        .reset_index(drop=True)[FEATURE_COLUMNS]
+        .copy()
+    )
 
     null_sum = int(predict_df.isna().sum().sum())
     if null_sum != 0:

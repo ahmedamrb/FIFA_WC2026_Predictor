@@ -238,7 +238,7 @@ def main() -> None:
     )
 
     predictions_df.to_csv(_OUTPUT_PREDICTIONS, index=True)
-    print(f"  Saved predictions  → {_OUTPUT_PREDICTIONS}")
+    print(f"  Saved predictions  -> {_OUTPUT_PREDICTIONS}")
 
     # ------------------------------------------------------------------
     # Feature importances from XGBoost outcome model
@@ -249,7 +249,7 @@ def main() -> None:
 
     with open(_OUTPUT_IMPORTANCES, "w", encoding="utf-8") as f:
         json.dump(importance_dict, f, indent=2)
-    print(f"  Saved importances  → {_OUTPUT_IMPORTANCES}")
+    print(f"  Saved importances  -> {_OUTPUT_IMPORTANCES}")
 
     # ------------------------------------------------------------------
     # Summary
