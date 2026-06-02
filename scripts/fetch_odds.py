@@ -45,6 +45,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 _RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
+_DEFAULT_BOOKMAKER = "Paddy Power"
 _HISTORICAL_PATHS = {
     "wc2018": _RAW_DIR / "historical_odds_wc2018.csv",
     "wc2022": _RAW_DIR / "historical_odds_wc2022.csv",
@@ -109,7 +110,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Odds fetcher for FIFA WC 2026 Predictor")
     parser.add_argument("--live", action="store_true", help="Fetch live WC 2026 odds from The Odds API")
     parser.add_argument("--historical", action="store_true", help="Import historical WC 2018/2022 archive odds")
-    parser.add_argument("--bookmaker", default=None, help="Specific bookmaker key for live fetch (e.g. bet365)")
+    parser.add_argument(
+        "--bookmaker",
+        default=_DEFAULT_BOOKMAKER,
+        help=(
+            "Specific bookmaker key/title for live fetch "
+            f"(default: {_DEFAULT_BOOKMAKER})"
+        ),
+    )
     parser.add_argument("--summary", action="store_true", help="Print canonical odds table summary")
     args = parser.parse_args()
 

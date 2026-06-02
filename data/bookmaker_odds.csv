@@ -1,73 +1,73 @@
 match_date,home_team,away_team,home_win_odds,draw_odds,away_win_odds,source,fetched_at
-2026-06-11,Mexico,South Africa,1.45,3.80,7.50,OddsPortal,2026-05-17
-2026-06-12,South Korea,Czechia,2.10,3.40,3.20,OddsPortal,2026-05-23
-2026-06-12,Canada,Bosnia-Herzegovina,2.00,3.30,3.50,OddsPortal,2026-05-23
-2026-06-13,United States,Paraguay,1.70,3.50,4.80,OddsPortal,2026-05-23
-2026-06-13,Qatar,Switzerland,5.00,3.80,1.55,OddsPortal,2026-05-23
-2026-06-13,Brazil,Morocco,1.57,3.60,5.80,OddsPortal,2026-05-17
-2026-06-14,Haiti,Scotland,5.50,3.90,1.50,OddsPortal,2026-05-23
-2026-06-14,Australia,Turkey,2.60,3.30,2.50,OddsPortal,2026-05-23
-2026-06-14,Germany,Curaçao,1.18,8.00,18.00,OddsPortal,2026-05-17
-2026-06-14,Netherlands,Japan,1.80,3.40,4.20,OddsPortal,2026-05-23
-2026-06-14,Ivory Coast,Ecuador,2.80,3.20,2.40,OddsPortal,2026-05-23
-2026-06-15,Sweden,Tunisia,2.10,3.30,3.20,OddsPortal,2026-05-23
-2026-06-15,Spain,Cape Verde Islands,1.18,7.50,18.00,OddsPortal,2026-05-23
-2026-06-15,Belgium,Egypt,1.55,3.70,5.50,OddsPortal,2026-05-23
-2026-06-15,Saudi Arabia,Uruguay,4.00,3.50,1.80,OddsPortal,2026-05-23
-2026-06-16,Iran,New Zealand,2.20,3.30,3.00,OddsPortal,2026-05-23
-2026-06-16,France,Senegal,1.60,3.60,5.50,OddsPortal,2026-05-23
-2026-06-16,Iraq,Norway,4.50,3.60,1.72,OddsPortal,2026-05-23
-2026-06-17,Argentina,Algeria,1.25,6.50,13.00,OddsPortal,2026-05-23
-2026-06-17,Austria,Jordan,1.65,3.60,5.00,OddsPortal,2026-05-23
-2026-06-17,Portugal,Congo DR,1.28,6.00,12.00,OddsPortal,2026-05-23
-2026-06-17,England,Croatia,2.10,3.30,3.20,OddsPortal,2026-05-23
-2026-06-17,Ghana,Panama,2.40,3.20,2.80,OddsPortal,2026-05-23
-2026-06-18,Uzbekistan,Colombia,4.20,3.50,1.75,OddsPortal,2026-05-23
-2026-06-18,Czechia,South Africa,1.75,3.50,4.20,OddsPortal,2026-05-23
-2026-06-18,Switzerland,Bosnia-Herzegovina,1.65,3.60,4.80,OddsPortal,2026-05-23
-2026-06-18,Canada,Qatar,1.45,3.90,7.00,OddsPortal,2026-05-23
-2026-06-19,Mexico,South Korea,1.85,3.40,3.80,OddsPortal,2026-05-23
-2026-06-19,United States,Australia,1.70,3.50,4.80,OddsPortal,2026-05-23
-2026-06-19,Scotland,Morocco,3.20,3.20,2.20,OddsPortal,2026-05-23
-2026-06-20,Brazil,Haiti,1.12,7.50,22.00,OddsPortal,2026-05-23
-2026-06-20,Turkey,Paraguay,2.10,3.30,3.20,OddsPortal,2026-05-23
-2026-06-20,Netherlands,Sweden,1.90,3.40,3.80,OddsPortal,2026-05-23
-2026-06-20,Germany,Ivory Coast,1.35,4.50,8.50,OddsPortal,2026-05-23
-2026-06-21,Ecuador,Curaçao,1.35,4.50,9.00,OddsPortal,2026-05-23
-2026-06-21,Tunisia,Japan,3.40,3.30,2.05,OddsPortal,2026-05-23
-2026-06-21,Spain,Saudi Arabia,1.35,4.50,9.00,OddsPortal,2026-05-23
-2026-06-21,Belgium,Iran,1.65,3.60,5.00,OddsPortal,2026-05-23
-2026-06-21,Uruguay,Cape Verde Islands,1.38,4.20,8.50,OddsPortal,2026-05-23
-2026-06-22,New Zealand,Egypt,2.80,3.20,2.40,OddsPortal,2026-05-23
-2026-06-22,Argentina,Austria,1.52,4.00,5.50,OddsPortal,2026-05-23
-2026-06-22,France,Iraq,1.20,6.50,14.00,OddsPortal,2026-05-23
-2026-06-23,Norway,Senegal,1.85,3.40,3.80,OddsPortal,2026-05-23
-2026-06-23,Jordan,Algeria,3.00,3.20,2.20,OddsPortal,2026-05-23
-2026-06-23,Portugal,Uzbekistan,1.22,7.00,14.00,OddsPortal,2026-05-23
-2026-06-23,England,Ghana,1.50,3.80,6.50,OddsPortal,2026-05-23
-2026-06-23,Panama,Croatia,3.60,3.30,1.95,OddsPortal,2026-05-23
-2026-06-24,Colombia,Congo DR,1.55,3.70,5.50,OddsPortal,2026-05-23
-2026-06-24,Switzerland,Canada,2.10,3.30,3.20,OddsPortal,2026-05-23
-2026-06-24,Bosnia-Herzegovina,Qatar,1.85,3.40,4.00,OddsPortal,2026-05-23
-2026-06-24,Morocco,Haiti,1.40,4.00,9.00,OddsPortal,2026-05-23
-2026-06-24,Scotland,Brazil,9.00,5.50,1.28,OddsPortal,2026-05-23
-2026-06-25,Czechia,Mexico,3.80,3.40,1.85,OddsPortal,2026-05-23
-2026-06-25,South Africa,South Korea,5.00,3.80,1.55,OddsPortal,2026-05-23
-2026-06-25,Ecuador,Germany,7.00,4.50,1.38,OddsPortal,2026-05-23
-2026-06-25,Curaçao,Ivory Coast,8.00,5.00,1.33,OddsPortal,2026-05-23
-2026-06-25,Tunisia,Netherlands,6.50,4.50,1.42,OddsPortal,2026-05-23
-2026-06-25,Japan,Sweden,2.60,3.30,2.50,OddsPortal,2026-05-23
-2026-06-26,Turkey,United States,3.80,3.40,1.85,OddsPortal,2026-05-23
-2026-06-26,Paraguay,Australia,2.90,3.20,2.30,OddsPortal,2026-05-23
-2026-06-26,Norway,France,5.00,3.80,1.58,OddsPortal,2026-05-23
-2026-06-26,Senegal,Iraq,1.65,3.50,5.00,OddsPortal,2026-05-23
-2026-06-27,Uruguay,Spain,5.50,3.80,1.50,OddsPortal,2026-05-23
-2026-06-27,Cape Verde Islands,Saudi Arabia,3.20,3.20,2.10,OddsPortal,2026-05-23
-2026-06-27,New Zealand,Belgium,7.00,4.50,1.38,OddsPortal,2026-05-23
-2026-06-27,Egypt,Iran,3.00,3.20,2.20,OddsPortal,2026-05-23
-2026-06-27,Panama,England,8.00,5.00,1.33,OddsPortal,2026-05-23
-2026-06-27,Croatia,Ghana,2.10,3.30,3.20,OddsPortal,2026-05-23
-2026-06-27,Colombia,Portugal,4.20,3.50,1.75,OddsPortal,2026-05-23
-2026-06-27,Congo DR,Uzbekistan,2.80,3.20,2.40,OddsPortal,2026-05-23
-2026-06-28,Jordan,Argentina,9.50,5.50,1.27,OddsPortal,2026-05-23
-2026-06-28,Algeria,Austria,3.20,3.10,2.10,OddsPortal,2026-05-23
+2026-06-11,Mexico,South Africa,1.4,4.33,7.5,Paddy Power,2026-06-02 00:40:50
+2026-06-12,Canada,Bosnia-Herzegovina,1.8,3.5,4.33,Paddy Power,2026-06-02 00:40:50
+2026-06-12,South Korea,Czechia,2.62,3.0,2.8,Paddy Power,2026-06-02 00:40:50
+2026-06-13,Brazil,Morocco,1.57,3.8,5.5,Paddy Power,2026-06-02 00:40:50
+2026-06-13,Qatar,Switzerland,12.0,6.0,1.2,Paddy Power,2026-06-02 00:40:50
+2026-06-13,United States,Paraguay,1.95,3.3,3.8,Paddy Power,2026-06-02 00:40:50
+2026-06-14,Australia,Turkey,4.75,3.5,1.75,Paddy Power,2026-06-02 00:40:50
+2026-06-14,Germany,Curaçao,1.04,17.0,41.0,Paddy Power,2026-06-02 00:40:50
+2026-06-14,Haiti,Scotland,7.0,4.75,1.4,Paddy Power,2026-06-02 00:40:50
+2026-06-14,Ivory Coast,Ecuador,3.6,2.8,2.3,Paddy Power,2026-06-02 00:40:50
+2026-06-14,Netherlands,Japan,1.95,3.5,3.7,Paddy Power,2026-06-02 00:40:50
+2026-06-15,Belgium,Egypt,1.62,3.8,5.0,Paddy Power,2026-06-02 00:40:50
+2026-06-15,Saudi Arabia,Uruguay,7.0,4.2,1.44,Paddy Power,2026-06-02 00:40:50
+2026-06-15,Spain,Cape Verde Islands,1.08,10.0,34.0,Paddy Power,2026-06-02 00:40:50
+2026-06-15,Sweden,Tunisia,1.91,3.3,4.0,Paddy Power,2026-06-02 00:40:50
+2026-06-16,France,Senegal,1.4,4.5,7.5,Paddy Power,2026-06-02 00:40:50
+2026-06-16,Iran,New Zealand,1.85,3.3,4.33,Paddy Power,2026-06-02 00:40:50
+2026-06-16,Iraq,Norway,13.0,6.5,1.2,Paddy Power,2026-06-02 00:40:50
+2026-06-17,Argentina,Algeria,1.36,4.5,8.5,Paddy Power,2026-06-02 00:40:50
+2026-06-17,Austria,Jordan,1.3,5.0,9.0,Paddy Power,2026-06-02 00:40:50
+2026-06-17,England,Croatia,1.7,3.75,4.75,Paddy Power,2026-06-02 00:40:50
+2026-06-17,Ghana,Panama,2.0,3.4,3.6,Paddy Power,2026-06-02 00:40:50
+2026-06-17,Portugal,Congo DR,1.22,6.0,11.0,Paddy Power,2026-06-02 00:40:50
+2026-06-18,Canada,Qatar,1.33,5.0,9.0,Paddy Power,2026-06-02 00:40:50
+2026-06-18,Czechia,South Africa,2.0,3.3,3.8,Paddy Power,2026-06-02 00:40:50
+2026-06-18,Switzerland,Bosnia-Herzegovina,1.57,3.8,5.5,Paddy Power,2026-06-02 00:40:50
+2026-06-18,Uzbekistan,Colombia,8.0,4.33,1.4,Paddy Power,2026-06-02 00:40:50
+2026-06-19,Mexico,South Korea,1.8,3.4,4.5,Paddy Power,2026-06-02 00:40:50
+2026-06-19,Scotland,Morocco,3.8,3.3,2.0,Paddy Power,2026-06-02 00:40:50
+2026-06-19,United States,Australia,1.7,3.75,4.75,Paddy Power,2026-06-02 00:40:50
+2026-06-20,Brazil,Haiti,1.06,13.0,41.0,Paddy Power,2026-06-02 00:40:50
+2026-06-20,Germany,Ivory Coast,1.53,4.2,5.5,Paddy Power,2026-06-02 00:40:50
+2026-06-20,Netherlands,Sweden,1.62,3.8,5.0,Paddy Power,2026-06-02 00:40:50
+2026-06-20,Turkey,Paraguay,2.2,3.2,3.3,Paddy Power,2026-06-02 00:40:50
+2026-06-21,Belgium,Iran,1.36,4.5,8.0,Paddy Power,2026-06-02 00:40:50
+2026-06-21,Ecuador,Curaçao,1.25,5.0,11.0,Paddy Power,2026-06-02 00:40:50
+2026-06-21,Spain,Saudi Arabia,1.1,8.5,26.0,Paddy Power,2026-06-02 00:40:50
+2026-06-21,Tunisia,Japan,4.5,3.4,1.75,Paddy Power,2026-06-02 00:40:50
+2026-06-21,Uruguay,Cape Verde Islands,1.4,4.33,7.5,Paddy Power,2026-06-02 00:40:50
+2026-06-22,Argentina,Austria,1.62,3.8,5.5,Paddy Power,2026-06-02 00:40:50
+2026-06-22,France,Iraq,1.1,8.5,26.0,Paddy Power,2026-06-02 00:40:50
+2026-06-22,New Zealand,Egypt,5.0,3.5,1.73,Paddy Power,2026-06-02 00:40:50
+2026-06-23,England,Ghana,1.3,5.0,9.0,Paddy Power,2026-06-02 00:40:50
+2026-06-23,Jordan,Algeria,5.5,3.8,1.62,Paddy Power,2026-06-02 00:40:50
+2026-06-23,Norway,Senegal,2.0,3.5,3.5,Paddy Power,2026-06-02 00:40:50
+2026-06-23,Panama,Croatia,6.5,4.2,1.5,Paddy Power,2026-06-02 00:40:50
+2026-06-23,Portugal,Uzbekistan,1.22,6.0,12.0,Paddy Power,2026-06-02 00:40:50
+2026-06-24,Bosnia-Herzegovina,Qatar,1.57,3.8,5.5,Paddy Power,2026-06-02 00:40:50
+2026-06-24,Colombia,Congo DR,1.44,4.0,7.5,Paddy Power,2026-06-02 00:40:50
+2026-06-24,Morocco,Haiti,1.29,5.0,10.0,Paddy Power,2026-06-02 00:40:50
+2026-06-24,Scotland,Brazil,8.5,4.75,1.33,Paddy Power,2026-06-02 00:40:50
+2026-06-24,Switzerland,Canada,2.1,3.3,3.5,Paddy Power,2026-06-02 00:40:50
+2026-06-25,Curaçao,Ivory Coast,9.5,5.0,1.3,Paddy Power,2026-06-02 00:40:50
+2026-06-25,Czechia,Mexico,3.8,3.3,2.0,Paddy Power,2026-06-02 00:40:50
+2026-06-25,Ecuador,Germany,5.0,3.8,1.62,Paddy Power,2026-06-02 00:40:50
+2026-06-25,Japan,Sweden,2.0,3.4,3.5,Paddy Power,2026-06-02 00:40:50
+2026-06-25,South Africa,South Korea,3.8,3.3,2.0,Paddy Power,2026-06-02 00:40:50
+2026-06-25,Tunisia,Netherlands,6.5,4.0,1.5,Paddy Power,2026-06-02 00:40:50
+2026-06-26,Norway,France,4.75,3.6,1.73,Paddy Power,2026-06-02 00:40:50
+2026-06-26,Paraguay,Australia,2.15,3.3,3.3,Paddy Power,2026-06-02 00:40:50
+2026-06-26,Senegal,Iraq,1.4,4.33,7.5,Paddy Power,2026-06-02 00:40:50
+2026-06-26,Turkey,United States,2.7,3.4,2.45,Paddy Power,2026-06-02 00:40:50
+2026-06-27,Cape Verde Islands,Saudi Arabia,2.62,3.2,2.7,Paddy Power,2026-06-02 00:40:50
+2026-06-27,Colombia,Portugal,3.4,3.3,2.1,Paddy Power,2026-06-02 00:40:50
+2026-06-27,Congo DR,Uzbekistan,2.5,3.1,2.88,Paddy Power,2026-06-02 00:40:50
+2026-06-27,Croatia,Ghana,1.7,3.6,5.0,Paddy Power,2026-06-02 00:40:50
+2026-06-27,Egypt,Iran,2.3,3.1,3.3,Paddy Power,2026-06-02 00:40:50
+2026-06-27,New Zealand,Belgium,12.0,5.5,1.22,Paddy Power,2026-06-02 00:40:50
+2026-06-27,Panama,England,13.0,6.0,1.2,Paddy Power,2026-06-02 00:40:50
+2026-06-27,Uruguay,Spain,5.0,3.8,1.62,Paddy Power,2026-06-02 00:40:50
+2026-06-28,Algeria,Austria,3.2,3.3,2.25,Paddy Power,2026-06-02 00:40:50
+2026-06-28,Jordan,Argentina,16.0,7.0,1.14,Paddy Power,2026-06-02 00:40:50

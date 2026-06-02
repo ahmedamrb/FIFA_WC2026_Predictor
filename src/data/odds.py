@@ -61,6 +61,7 @@ ODDS_COLUMNS = [
 # The Odds API — try multiple sport keys (key changes once the tournament starts)
 _ODDS_API_BASE = "https://api.the-odds-api.com/v4/sports"
 _ODDS_API_SPORT_CANDIDATES = [
+    "soccer_fifa_world_cup",
     "soccer_fifa_world_cup_2026",
     "soccer_worldcup",
     "soccer_world_cup",
@@ -69,22 +70,83 @@ _ODDS_API_SPORT_CANDIDATES = [
 logger = logging.getLogger(__name__)
 
 
+_MANUAL_TEAM_ALIASES = {
+    "usa": "United States",
+    "us": "United States",
+    "u.s.a": "United States",
+    "czech republic": "Czechia",
+    "bosnia and herzegovina": "Bosnia-Herzegovina",
+    "bosnia & herzegovina": "Bosnia-Herzegovina",
+    "cape verde": "Cape Verde Islands",
+    "dr congo": "Congo DR",
+    "congo dr": "Congo DR",
+    "curacao": "Curaçao",
+}
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
 def _load_team_name_map() -> dict:
-    """Return a dict mapping provider/archive team names to canonical model names."""
+    """Return a dict mapping provider team aliases to canonical fixture names."""
     if not _TEAM_NAME_MAP_PATH.exists():
-        return {}
+        return _MANUAL_TEAM_ALIASES.copy()
+
+    def _norm(value: str) -> str:
+        return " ".join(
+            value.strip().lower().replace("&", "and").replace("-", " ").split()
+        )
+
     df = pd.read_csv(_TEAM_NAME_MAP_PATH)
     mapping: dict = {}
+
     for _, row in df.iterrows():
         fixture = str(row.get("fixture_name", "")).strip()
-        canonical = str(row.get("results_name", "")).strip()
-        if fixture and canonical:
-            mapping[fixture] = canonical
+        if not fixture:
+            continue
+
+        aliases = [
+            str(row.get("fixture_name", "")).strip(),
+            str(row.get("results_name", "")).strip(),
+            str(row.get("rankings_name", "")).strip(),
+        ]
+        for alias in aliases:
+            if alias:
+                mapping[_norm(alias)] = fixture
+
+    for alias, canonical in _MANUAL_TEAM_ALIASES.items():
+        mapping[_norm(alias)] = canonical
+
     return mapping
+
+
+def _discover_wc_sport_keys(api_key: str) -> List[str]:
+    """Discover active FIFA World Cup sport keys from The Odds API sports index."""
+    url = _ODDS_API_BASE
+    try:
+        resp = requests.get(url, params={"apiKey": api_key}, timeout=15)
+        if resp.status_code != 200:
+            logger.warning(
+                "Could not discover sport keys from %s (status %s).",
+                url,
+                resp.status_code,
+            )
+            return []
+
+        sports = resp.json() or []
+        discovered: List[str] = []
+        for sport in sports:
+            key = str(sport.get("key", ""))
+            title = str(sport.get("title", "")).lower()
+            is_world_cup = "fifa world cup" in title or "world_cup" in key
+            is_market = key.endswith("_winner")
+            if key and is_world_cup and not is_market:
+                discovered.append(key)
+        return discovered
+    except requests.RequestException as exc:
+        logger.warning("Failed to discover sport keys: %s", exc)
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -96,7 +158,10 @@ def normalize_team_name(name: str, name_map: dict) -> str:
 
     Falls back to the original name (stripped) if no mapping exists.
     """
-    return name_map.get(name.strip(), name.strip())
+    lookup = " ".join(
+        name.strip().lower().replace("&", "and").replace("-", " ").split()
+    )
+    return name_map.get(lookup, name.strip())
 
 
 def validate_odds_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -154,7 +219,8 @@ def get_latest_odds(df: pd.DataFrame) -> pd.DataFrame:
         return df.copy()
 
     df = df.copy()
-    df["fetched_at"] = pd.to_datetime(df["fetched_at"], errors="coerce")
+    # `fetched_at` may contain mixed formats (YYYY-MM-DD and full timestamps).
+    df["fetched_at"] = pd.to_datetime(df["fetched_at"], errors="coerce", format="mixed")
     df = df.sort_values("fetched_at", ascending=False)
     deduped = df.groupby(
         ["match_date", "home_team", "away_team"], as_index=False, sort=False
@@ -195,8 +261,13 @@ def fetch_live_odds(
 
     name_map = _load_team_name_map()
     resp = None
+    last_status = None
+    last_body = None
 
-    for sport in _ODDS_API_SPORT_CANDIDATES:
+    dynamic_sports = _discover_wc_sport_keys(key)
+    sport_candidates = list(dict.fromkeys(dynamic_sports + _ODDS_API_SPORT_CANDIDATES))
+
+    for sport in sport_candidates:
         url = f"{_ODDS_API_BASE}/{sport}/odds"
         try:
             resp = requests.get(
@@ -212,16 +283,21 @@ def fetch_live_odds(
             if resp.status_code == 200:
                 logger.info("The Odds API: using sport key '%s'.", sport)
                 break
+            last_status = resp.status_code
+            last_body = resp.text[:180].replace("\n", " ")
             resp = None
         except requests.RequestException as exc:
             logger.warning("Request to %s failed: %s", url, exc)
+            last_body = str(exc)
             resp = None
 
     if resp is None or resp.status_code != 200:
-        status = resp.status_code if resp is not None else "no response"
+        status = resp.status_code if resp is not None else (last_status or "no response")
         raise RuntimeError(
             f"The Odds API returned status {status}. "
-            "Check ODDS_API_KEY and that the tournament is live/upcoming."
+            f"Tried sport keys: {sport_candidates}. "
+            f"Last response: {last_body or 'none'}. "
+            "Check ODDS_API_KEY, account quota, and available sports for your region."
         )
 
     events = resp.json()
