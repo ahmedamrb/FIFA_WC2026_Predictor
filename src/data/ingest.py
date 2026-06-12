@@ -115,11 +115,12 @@ def fetch_openfootball_data(skip_existing: bool = False) -> dict:
 
 
 def flatten_fixtures() -> None:
-    """Normalise wc2026_fixtures.json into a flat 6-column CSV.
+    """Normalise wc2026_fixtures.json into a flat 7-column CSV.
 
     Reads data/raw/wc2026_fixtures.json from the repo root, extracts each
-    match into a row with columns fixture_id, match_date, home_team, away_team,
-    stage, and status, and writes the result to data/raw/wc2026_fixtures_flat.csv.
+    match into a row with columns fixture_id, match_date, kickoff_utc,
+    home_team, away_team, stage, and status, and writes the result to
+    data/raw/wc2026_fixtures_flat.csv.
     Rows where home_team or away_team is falsy are skipped.
 
     Raises:
@@ -138,12 +139,13 @@ def flatten_fixtures() -> None:
         rows.append({
             "fixture_id": match["id"],
             "match_date": match["utcDate"][:10],
+            "kickoff_utc": match["utcDate"],
             "home_team": home_team,
             "away_team": away_team,
             "stage": match.get("stage"),
             "status": match.get("status"),
         })
 
-    df = pd.DataFrame(rows, columns=["fixture_id", "match_date", "home_team", "away_team", "stage", "status"])
+    df = pd.DataFrame(rows, columns=["fixture_id", "match_date", "kickoff_utc", "home_team", "away_team", "stage", "status"])
     df.to_csv(out_path, index=False)
     print(f"Saved {len(df)} fixtures to {out_path}")

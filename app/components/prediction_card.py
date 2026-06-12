@@ -3,6 +3,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 from components.tooltips import TOOLTIPS
 
@@ -109,10 +110,29 @@ def render_prediction_card(
     away_team = fixture_row["away_team"]
     stage = fixture_row.get("stage", "")
     match_date = fixture_row.get("match_date", "")
+    kickoff_utc = str(fixture_row.get("kickoff_utc", ""))
 
     with st.container():
         st.subheader(f"{home_team}  vs  {away_team}")
-        st.caption(f"{stage} — {match_date}")
+        if kickoff_utc and kickoff_utc not in ("", "nan", "NaT"):
+            components.html(
+                f"""<!DOCTYPE html><html><head><style>
+                html,body{{margin:0;padding:0;overflow:hidden;font-family:"Source Sans Pro","Noto Sans",sans-serif;}}
+                div{{font-size:14px;color:rgba(49,51,63,0.6);line-height:1;}}
+                @media(prefers-color-scheme:dark){{div{{color:rgba(250,250,250,0.6);}}}}
+                </style></head><body>
+                <div>{stage} &mdash; <span id="kt"></span></div>
+                <script>
+                var d=new Date("{kickoff_utc}");
+                document.getElementById("kt").textContent=d.toLocaleString(undefined,
+                {{weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"}});
+                </script></body></html>""",
+                height=22,
+                scrolling=False,
+            )
+        else:
+            date_str = pd.to_datetime(match_date).strftime("%a, %b %d %Y") if match_date else ""
+            st.caption(f"{stage} — {date_str}")
 
         if prediction_row is None:
             st.info("No prediction data available for this fixture.")
