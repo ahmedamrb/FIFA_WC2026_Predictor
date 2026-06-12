@@ -50,6 +50,79 @@ def _confidence_tier_html(confidence: float) -> str:
         return f"<span style='background:#5a2a2a;color:white;{badge_style}' title=\"{conf_tip}\">Low Confidence · {pct}</span>"
 
 
+def _decided(value) -> bool:
+    """True when a nullable-boolean flag has a concrete (non-NA) value."""
+    return value is not None and not pd.isna(value)
+
+
+def _status_badge_html(status, minute) -> str:
+    """Return a styled HTML status badge (LIVE / HT / FT), or '' for upcoming."""
+    badge_style = "padding:2px 8px;border-radius:4px;font-size:0.75em;font-weight:bold;"
+    s = str(status or "").upper()
+    tip = TOOLTIPS["match_status"]
+    if s == "IN_PLAY":
+        mins = f" {int(minute)}'" if minute is not None and not pd.isna(minute) else ""
+        return f"<span style='background:#b3261e;color:white;{badge_style}' title=\"{tip}\">🔴 LIVE{mins}</span>"
+    if s == "PAUSED":
+        return f"<span style='background:#7a6a00;color:white;{badge_style}' title=\"{tip}\">HT</span>"
+    if s in ("FINISHED", "AWARDED"):
+        return f"<span style='background:#333333;color:#dddddd;{badge_style}' title=\"{tip}\">FT</span>"
+    if s in ("", "SCHEDULED", "TIMED"):
+        return ""  # upcoming — kickoff line already shows the time
+    return f"<span style='background:#555555;color:white;{badge_style}' title=\"{tip}\">{s.title()}</span>"
+
+
+def _result_badges_html(result_row: dict) -> str:
+    """Return verdict badges (outcome correct/miss, exact score) for a played match."""
+    badge_style = "padding:3px 10px;border-radius:4px;font-size:0.8em;font-weight:bold;"
+    outcome_correct = result_row.get("outcome_correct")
+    exact_correct = result_row.get("exact_score_correct")
+    verdict_tip = TOOLTIPS["outcome_verdict"]
+    exact_tip = TOOLTIPS["exact_score"]
+
+    parts: list[str] = []
+    if _decided(outcome_correct):
+        if bool(outcome_correct):
+            parts.append(
+                f"<span style='background:#1a7a3a;color:white;{badge_style}' title=\"{verdict_tip}\">✅ Outcome correct</span>"
+            )
+        else:
+            parts.append(
+                f"<span style='background:#7a1a1a;color:white;{badge_style}' title=\"{verdict_tip}\">❌ Outcome miss</span>"
+            )
+    if _decided(exact_correct) and bool(exact_correct):
+        parts.append(
+            f"<span style='background:#b8860b;color:white;{badge_style}' title=\"{exact_tip}\">⭐ Exact score</span>"
+        )
+    return "&nbsp;&nbsp;".join(parts)
+
+
+def _goals_compare_html(result_row: dict, home_team: str, away_team: str) -> str:
+    """Per-side predicted-vs-actual goals (home and away models are independent)."""
+    # Only meaningful for comparable matches (per-side flags are decided).
+    if not (_decided(result_row.get("home_goals_correct")) or _decided(result_row.get("away_goals_correct"))):
+        return ""
+    h_pred, a_pred = result_row.get("predicted_home_goals"), result_row.get("predicted_away_goals")
+    h_act, a_act = result_row.get("home_score"), result_row.get("away_score")
+    if not (_decided(h_pred) and _decided(a_pred) and _decided(h_act) and _decided(a_act)):
+        return ""
+
+    def _side(pred, actual, correct) -> str:
+        hit = _decided(correct) and bool(correct)
+        glyph = "✓" if hit else "✗"
+        color = _COLOR_HOME_WIN if hit else _COLOR_AWAY_WIN
+        return (f"pred {int(pred)} &rarr; actual {int(actual)} "
+                f"<span style='color:{color};font-weight:bold;'>{glyph}</span>")
+
+    tip = TOOLTIPS["goals_compare"]
+    return (
+        f"<div style='font-size:0.85em;line-height:1.5;' title=\"{tip}\">"
+        f"<b>Home goals</b> ({home_team}): {_side(h_pred, h_act, result_row.get('home_goals_correct'))}"
+        f"<br><b>Away goals</b> ({away_team}): {_side(a_pred, a_act, result_row.get('away_goals_correct'))}"
+        f"</div>"
+    )
+
+
 def _lookup_odds(
     odds_df: pd.DataFrame | None,
     match_date,
@@ -90,6 +163,7 @@ def render_prediction_card(
     fixture_row,
     prediction_row,
     odds_df: pd.DataFrame | None = None,
+    result_row: dict | None = None,
 ):
     """Render a prediction card for a single WC 2026 fixture.
 
@@ -105,6 +179,11 @@ def render_prediction_card(
     odds_df : pd.DataFrame or None
         Canonical odds table.  When provided, the fixture's latest real odds
         are used as default values for the inputs; users can still override.
+    result_row : dict or None
+        Live/full-time comparison row for this fixture (from
+        src.evaluation.live_tracking.build_comparison): status, home_score,
+        away_score, minute, actual_outcome, outcome_correct,
+        exact_score_correct.  When None or score-less, no actual score is shown.
     """
     home_team = fixture_row["home_team"]
     away_team = fixture_row["away_team"]
@@ -113,7 +192,17 @@ def render_prediction_card(
     kickoff_utc = str(fixture_row.get("kickoff_utc", ""))
 
     with st.container():
-        st.subheader(f"{home_team}  vs  {away_team}")
+        status_badge = ""
+        if result_row is not None:
+            status_badge = _status_badge_html(result_row.get("status"), result_row.get("minute"))
+        title = f"{home_team}  vs  {away_team}"
+        if status_badge:
+            st.markdown(
+                f"<h3 style='margin-bottom:0'>{title}&nbsp;&nbsp;{status_badge}</h3>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.subheader(title)
         if kickoff_utc and kickoff_utc not in ("", "nan", "NaT"):
             components.html(
                 f"""<!DOCTYPE html><html><head><style>
@@ -222,6 +311,26 @@ def render_prediction_card(
 
         # --- Confidence score ---
         st.markdown(_confidence_tier_html(confidence), unsafe_allow_html=True)
+
+        # --- Actual result (live or full-time) ---
+        if result_row is not None and _decided(result_row.get("has_score")) and bool(result_row.get("has_score")):
+            h_actual = result_row.get("home_score")
+            a_actual = result_row.get("away_score")
+            if _decided(h_actual) and _decided(a_actual):
+                actual_tip = TOOLTIPS["actual_score"]
+                st.markdown(
+                    f"<span title=\"{actual_tip}\"><b>Actual:</b> "
+                    f"{home_team} {int(h_actual)} &ndash; {int(a_actual)} {away_team}</span>",
+                    unsafe_allow_html=True,
+                )
+                badges = _result_badges_html(result_row)
+                if badges:
+                    st.markdown(badges, unsafe_allow_html=True)
+
+                # Per-side goals models (home model vs away model)
+                goals_html = _goals_compare_html(result_row, home_team, away_team)
+                if goals_html:
+                    st.markdown(goals_html, unsafe_allow_html=True)
 
         # --- Bookmaker odds inputs ---
         # Look up real odds from the canonical table; fall back to neutral defaults

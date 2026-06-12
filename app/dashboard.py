@@ -1,5 +1,6 @@
 """Streamlit dashboard entry point."""
 
+import os
 import sys
 import json
 from pathlib import Path
@@ -12,6 +13,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from src.data.odds import load_odds_for_backtest  # noqa: E402
+from src.data.ingest import fetch_wc2026_results  # noqa: E402
+from src.evaluation.live_tracking import build_comparison, summarize  # noqa: E402
 from components.tooltips import TOOLTIPS  # noqa: E402
 
 # Path constants
@@ -49,6 +52,36 @@ def load_resources() -> dict:
         "backtest_wc2022": backtest_wc2022,
         "features_train": features_train,
     }
+
+
+def _get_fd_key() -> str | None:
+    """Resolve the football-data.org key from Streamlit secrets or the env/.env."""
+    try:
+        key = st.secrets.get("FD_API_KEY")
+        if key:
+            return str(key)
+    except Exception:
+        pass  # no secrets.toml configured
+    return os.getenv("FD_API_KEY")
+
+
+@st.cache_data(ttl=60)
+def load_results_live():
+    """Fetch live WC 2026 results (cached 60s); fall back to the committed CSV.
+
+    Returns a results DataFrame (keyed by fixture_id) or None when neither a
+    live fetch nor a cached CSV is available.
+    """
+    results_csv = _PROCESSED / "wc2026_results.csv"
+    key = _get_fd_key()
+    if key:
+        try:
+            return fetch_wc2026_results(api_key=key, write_csv=True)
+        except Exception:
+            pass  # fall back to the committed snapshot below
+    if results_csv.exists():
+        return pd.read_csv(results_csv)
+    return None
 
 
 # Load all resources (cached after first run)
@@ -114,9 +147,68 @@ if page == "Match Predictions":
     # features_predict.parquet, which has rows in the same order as the CSV.
     filtered = filtered.sort_values("match_date")
 
-    if filtered.empty:
-        st.info("No fixtures match the selected filters.")
-    else:
+    # --- Live score refresh controls (kept outside the fragment so toggling
+    #     them rebuilds the auto-refresh interval) ---
+    ctrl_refresh, ctrl_auto, _ctrl_sp = st.columns([1.2, 1.2, 3])
+    with ctrl_refresh:
+        if st.button("🔄 Refresh scores", help="Pull the latest live / full-time scores now."):
+            load_results_live.clear()
+            st.rerun()
+    with ctrl_auto:
+        auto_refresh = st.checkbox(
+            "Auto-refresh (60s)",
+            value=False,
+            help="Automatically re-pull scores every 60 seconds while you watch.",
+        )
+
+    def render_results_section():
+        results = load_results_live()
+        comparison_df = build_comparison(fixtures, predictions, results)
+        results_lookup = comparison_df.set_index("fixture_id").to_dict("index")
+
+        # Freshness / availability note
+        if results is not None and not results.empty and "fetched_at" in results.columns:
+            fetched = str(results["fetched_at"].dropna().max())
+            st.caption(f"Scores updated: {fetched} UTC")
+        elif results is None:
+            st.caption("Live scores unavailable \u2014 showing predictions only.")
+
+        # --- Running accuracy banner (all finished known-team matches) ---
+        s = summarize(comparison_df)
+        if s["played"] > 0 or s["live"] > 0:
+            b1, b2, b3, b4, b5, b6 = st.columns(6)
+            b1.metric("Matches played", s["played"], help=TOOLTIPS["live_accuracy"])
+            b2.metric(
+                "Outcomes correct",
+                f"{s['outcome_correct']}/{s['played']} ({s['outcome_pct']:.0%})",
+                help=TOOLTIPS["outcome_verdict"],
+            )
+            b3.metric(
+                "Exact scorelines",
+                f"{s['exact']}/{s['played']} ({s['exact_pct']:.0%})",
+                help=TOOLTIPS["exact_score"],
+            )
+            b4.metric(
+                "Home goals exact",
+                f"{s['home_goals_correct']}/{s['played']} ({s['home_goals_pct']:.0%})",
+                delta=f"MAE {s['home_goals_mae']:.2f}",
+                delta_color="off",
+                help=TOOLTIPS["home_goals_model"],
+            )
+            b5.metric(
+                "Away goals exact",
+                f"{s['away_goals_correct']}/{s['played']} ({s['away_goals_pct']:.0%})",
+                delta=f"MAE {s['away_goals_mae']:.2f}",
+                delta_color="off",
+                help=TOOLTIPS["away_goals_model"],
+            )
+            b6.metric("Live now", s["live"], help=TOOLTIPS["match_status"])
+            st.divider()
+
+        if filtered.empty:
+            st.info("No fixtures match the selected filters.")
+            return
+
         caption_placeholder = st.empty()
         n_shown = 0
         for _, fixture_row in filtered.iterrows():
@@ -127,9 +219,21 @@ if page == "Match Predictions":
                 continue
 
             n_shown += 1
-            render_prediction_card(fixture_row, prediction_row, odds_df=resources["odds"])
+            render_prediction_card(
+                fixture_row,
+                prediction_row,
+                odds_df=resources["odds"],
+                result_row=results_lookup.get(fixture_row["fixture_id"]),
+            )
         filter_note = f" \u00b7 confidence \u2265{min_conf_pct}% filter active" if min_conf_threshold > 0 else ""
         caption_placeholder.caption(f"Showing {n_shown} fixture(s){filter_note}")
+
+    # Auto-refresh via a dynamically built fragment (built-in; no extra deps).
+    if hasattr(st, "fragment"):
+        _section = st.fragment(run_every=(60 if auto_refresh else None))(render_results_section)
+        _section()
+    else:
+        render_results_section()
 elif page == "Tournament Bracket":
     st.title("Tournament Bracket")
     from app.components.bracket import render_bracket

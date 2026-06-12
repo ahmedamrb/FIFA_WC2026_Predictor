@@ -72,4 +72,38 @@ TOOLTIPS: dict[str, str] = {
         "Most recent training date from MODEL_REGISTRY.md. "
         "Re-run scripts/train.py to update the models."
     ),
+    "actual_score": (
+        "Live or full-time score from football-data.org. During a match the score updates "
+        "with the in-play feed; after the final whistle it shows the full-time result."
+    ),
+    "match_status": (
+        "Match state from football-data.org: Upcoming (not started), LIVE with the current "
+        "minute, HT (half-time), or FT (finished)."
+    ),
+    "outcome_verdict": (
+        "Whether the model's predicted W/D/L outcome matched the actual result. "
+        "For in-play matches this is provisional and may change before full-time."
+    ),
+    "exact_score": (
+        "The predicted scoreline exactly matched the actual goals for both teams — "
+        "a much harder target than just calling the winner."
+    ),
+    "live_accuracy": (
+        "Running tally over finished matches with known teams: how many predicted outcomes "
+        "were correct and how many exact scorelines were hit. Knockout fixtures with TBD "
+        "teams are excluded until the matchup is set."
+    ),
+    "goals_compare": (
+        "Each scoreline comes from two separate XGBoost regressors — one for home goals, one "
+        "for away goals. This shows each model's predicted goals vs the actual goals, with a "
+        "✓ when that side's goal count was hit exactly."
+    ),
+    "home_goals_model": (
+        "Home-goals XGBoost regressor: how often it predicted the exact home score, plus its "
+        "mean absolute error (MAE) in goals over finished matches. Lower MAE is better."
+    ),
+    "away_goals_model": (
+        "Away-goals XGBoost regressor: how often it predicted the exact away score, plus its "
+        "mean absolute error (MAE) in goals over finished matches. Lower MAE is better."
+    ),
 }

@@ -3,6 +3,7 @@
 import json
 import os
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -10,6 +11,62 @@ import requests
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+# football-data.org WC 2026 matches endpoint (shared by fixtures + results fetch)
+WC_MATCHES_URL = "https://api.football-data.org/v4/competitions/WC/matches"
+WC_SEASON = "2026"
+
+# Column order for the flattened results table written to
+# data/processed/wc2026_results.csv (one row per WC 2026 match).
+RESULTS_COLUMNS = [
+    "fixture_id",
+    "status",
+    "home_score",
+    "away_score",
+    "half_home",
+    "half_away",
+    "winner",
+    "minute",
+    "last_updated",
+    "fetched_at",
+]
+
+
+def _resolve_fd_api_key(api_key: str | None = None) -> str:
+    """Return a usable football-data.org API key.
+
+    Resolution order: the explicit ``api_key`` argument, then ``FD_API_KEY``
+    from the environment / project ``.env``. Raises EnvironmentError when no
+    real key is found (the placeholder ``your_key_here`` is treated as unset).
+    """
+    if api_key and api_key != "your_key_here":
+        return api_key
+
+    load_dotenv(PROJECT_ROOT / ".env")
+    key = os.getenv("FD_API_KEY")
+    if not key or key == "your_key_here":
+        raise EnvironmentError(
+            "FD_API_KEY is not set. Add your football-data.org API key to the .env "
+            "file (or pass api_key=...)."
+        )
+    return key
+
+
+def _fetch_wc_matches_json(api_key: str) -> dict:
+    """GET the full WC 2026 matches payload from football-data.org.
+
+    Raises:
+        RuntimeError: If the API returns a non-2xx status code.
+    """
+    headers = {"X-Auth-Token": api_key}
+    params = {"season": WC_SEASON}
+    response = requests.get(WC_MATCHES_URL, headers=headers, params=params, timeout=30)
+
+    if not response.ok:
+        raise RuntimeError(
+            f"API request failed: HTTP {response.status_code}\n{response.text[:500]}"
+        )
+    return response.json()
 
 
 def fetch_wc2026_fixtures() -> None:
@@ -51,6 +108,59 @@ def fetch_wc2026_fixtures() -> None:
 
     count = data.get("resultSet", {}).get("count", "?")
     print(f"Saved {count} fixtures to {out_path}")
+
+
+def fetch_wc2026_results(api_key: str | None = None, write_csv: bool = True) -> pd.DataFrame:
+    """Fetch current WC 2026 match statuses and scores from football-data.org.
+
+    Pulls the live match feed and flattens each match into a results row keyed
+    by ``fixture_id`` (the same id used in data/raw/wc2026_fixtures_flat.csv).
+    Captures live (in-play) and full-time scores; columns are listed in
+    ``RESULTS_COLUMNS``. Matches that have not started have null scores.
+
+    Args:
+        api_key: Optional explicit football-data.org key. When omitted, falls
+            back to ``FD_API_KEY`` from the environment / ``.env``.
+        write_csv: When True, also writes data/processed/wc2026_results.csv.
+
+    Returns:
+        A DataFrame with one row per match and columns ``RESULTS_COLUMNS``.
+
+    Raises:
+        EnvironmentError: If no API key can be resolved.
+        RuntimeError: If the API returns a non-2xx status code.
+    """
+    key = _resolve_fd_api_key(api_key)
+    data = _fetch_wc_matches_json(key)
+
+    fetched_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rows = []
+    for match in data.get("matches", []):
+        score = match.get("score") or {}
+        full_time = score.get("fullTime") or {}
+        half_time = score.get("halfTime") or {}
+        rows.append({
+            "fixture_id": match["id"],
+            "status": match.get("status"),
+            "home_score": full_time.get("home"),
+            "away_score": full_time.get("away"),
+            "half_home": half_time.get("home"),
+            "half_away": half_time.get("away"),
+            "winner": score.get("winner"),
+            "minute": match.get("minute"),
+            "last_updated": match.get("lastUpdated"),
+            "fetched_at": fetched_at,
+        })
+
+    df = pd.DataFrame(rows, columns=RESULTS_COLUMNS)
+
+    if write_csv:
+        out_path = PROJECT_ROOT / "data" / "processed" / "wc2026_results.csv"
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(out_path, index=False)
+        print(f"Saved {len(df)} match results to {out_path}")
+
+    return df
 
 
 def fetch_openfootball_data(skip_existing: bool = False) -> dict:
