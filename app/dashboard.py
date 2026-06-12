@@ -16,13 +16,20 @@ from src.data.odds import load_odds_for_backtest  # noqa: E402
 from src.data.ingest import fetch_wc2026_results  # noqa: E402
 from src.evaluation.live_tracking import build_comparison, summarize  # noqa: E402
 from components.tooltips import TOOLTIPS  # noqa: E402
+from components.theme import inject_global_css, page_header  # noqa: E402
 
 # Path constants
 _PROCESSED = _REPO_ROOT / "data" / "processed"
 _RAW = _REPO_ROOT / "data" / "raw"
 
 # Must be the first Streamlit call
-st.set_page_config(page_title="WC 2026 Predictor", layout="wide")
+st.set_page_config(
+    page_title="WC 2026 Predictor",
+    page_icon="⚽",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+inject_global_css()
 
 
 @st.cache_resource
@@ -88,47 +95,81 @@ def load_results_live():
 resources = load_resources()
 
 # Sidebar navigation
+_NAV_PREDICTIONS = "⚽ Match Predictions"
+_NAV_BRACKET = "🏆 Tournament Bracket"
+_NAV_PERFORMANCE = "📊 Model Performance"
+_NAV_INFO = "🧠 Data & Model Info"
+
 with st.sidebar:
-    st.title("WC 2026 Predictor")
+    st.markdown(
+        '<div class="sb-brand"><span class="ttl">⚽ WC 2026 Predictor</span>'
+        '<span class="sub">ML match predictions · live tracking</span></div>',
+        unsafe_allow_html=True,
+    )
     page = st.radio(
         "Navigate",
-        ["Match Predictions", "Tournament Bracket", "Model Performance", "Data & Model Info"],
+        [_NAV_PREDICTIONS, _NAV_BRACKET, _NAV_PERFORMANCE, _NAV_INFO],
+        label_visibility="collapsed",
+    )
+    st.markdown(
+        '<div class="sb-foot">Data: football-data.org · FIFA rankings<br>'
+        "Models: XGBoost · Random Forest · LogReg</div>",
+        unsafe_allow_html=True,
     )
 
 # Page routing
-if page == "Match Predictions":
-    st.title("Match Predictions")
+if page == _NAV_PREDICTIONS:
+    page_header(
+        "Match Predictions",
+        "Win probabilities, scorelines and live results for every fixture — "
+        "open a card's odds section for value-bet analysis.",
+    )
 
     from app.components.prediction_card import render_prediction_card
 
     fixtures = resources["fixtures"]
     predictions = resources["predictions"]
 
-    # --- Filters ---
-    col_stage, col_conf, col_dates = st.columns(3)
+    # --- Filter & refresh toolbar ---
+    with st.container(border=True):
+        col_stage, col_conf, col_dates = st.columns(3)
 
-    with col_stage:
-        stages = ["All"] + sorted(fixtures["stage"].dropna().unique().tolist())
-        selected_stage = st.selectbox("Filter by Stage", stages, help=TOOLTIPS["stage_filter"])
+        with col_stage:
+            stages = ["All"] + sorted(fixtures["stage"].dropna().unique().tolist())
+            selected_stage = st.selectbox("Filter by Stage", stages, help=TOOLTIPS["stage_filter"])
 
-    with col_conf:
-        min_conf_pct = st.slider(
-            "Min. Model Confidence",
-            min_value=0, max_value=70, value=0, step=5, format="%d%%",
-            help=TOOLTIPS["min_confidence_filter"]
-        )
-        min_conf_threshold = min_conf_pct / 100.0
+        with col_conf:
+            min_conf_pct = st.slider(
+                "Min. Model Confidence",
+                min_value=0, max_value=70, value=0, step=5, format="%d%%",
+                help=TOOLTIPS["min_confidence_filter"]
+            )
+            min_conf_threshold = min_conf_pct / 100.0
 
-    with col_dates:
-        min_date = fixtures["match_date"].min().date()
-        max_date = fixtures["match_date"].max().date()
-        date_range = st.date_input(
-            "Filter by Date",
-            value=(min_date, max_date),
-            min_value=min_date,
-            max_value=max_date,
-            help=TOOLTIPS["date_filter"],
-        )
+        with col_dates:
+            min_date = fixtures["match_date"].min().date()
+            max_date = fixtures["match_date"].max().date()
+            date_range = st.date_input(
+                "Filter by Date",
+                value=(min_date, max_date),
+                min_value=min_date,
+                max_value=max_date,
+                help=TOOLTIPS["date_filter"],
+            )
+
+        # --- Live score refresh controls (kept outside the fragment so toggling
+        #     them rebuilds the auto-refresh interval) ---
+        ctrl_refresh, ctrl_auto, _ctrl_sp = st.columns([1.2, 1.2, 3])
+        with ctrl_refresh:
+            if st.button("🔄 Refresh scores", help="Pull the latest live / full-time scores now."):
+                load_results_live.clear()
+                st.rerun()
+        with ctrl_auto:
+            auto_refresh = st.checkbox(
+                "Auto-refresh (60s)",
+                value=False,
+                help="Automatically re-pull scores every 60 seconds while you watch.",
+            )
 
     # Apply filters
     filtered = fixtures.copy()
@@ -146,20 +187,6 @@ if page == "Match Predictions":
     # Preserve the original CSV row index (0-based) for positional lookup in
     # features_predict.parquet, which has rows in the same order as the CSV.
     filtered = filtered.sort_values("match_date")
-
-    # --- Live score refresh controls (kept outside the fragment so toggling
-    #     them rebuilds the auto-refresh interval) ---
-    ctrl_refresh, ctrl_auto, _ctrl_sp = st.columns([1.2, 1.2, 3])
-    with ctrl_refresh:
-        if st.button("🔄 Refresh scores", help="Pull the latest live / full-time scores now."):
-            load_results_live.clear()
-            st.rerun()
-    with ctrl_auto:
-        auto_refresh = st.checkbox(
-            "Auto-refresh (60s)",
-            value=False,
-            help="Automatically re-pull scores every 60 seconds while you watch.",
-        )
 
     def render_results_section():
         results = load_results_live()
@@ -209,24 +236,29 @@ if page == "Match Predictions":
             st.info("No fixtures match the selected filters.")
             return
 
-        caption_placeholder = st.empty()
-        n_shown = 0
+        cards = []
         for _, fixture_row in filtered.iterrows():
             prediction_row = predictions.loc[fixture_row.name] if predictions is not None else None
 
             # Pre-filter by confidence when threshold is active
             if prediction_row is None or (min_conf_threshold > 0 and float(prediction_row["confidence"]) < min_conf_threshold):
                 continue
+            cards.append((fixture_row, prediction_row))
 
-            n_shown += 1
-            render_prediction_card(
-                fixture_row,
-                prediction_row,
-                odds_df=resources["odds"],
-                result_row=results_lookup.get(fixture_row["fixture_id"]),
-            )
         filter_note = f" \u00b7 confidence \u2265{min_conf_pct}% filter active" if min_conf_threshold > 0 else ""
-        caption_placeholder.caption(f"Showing {n_shown} fixture(s){filter_note}")
+        st.caption(f"Showing {len(cards)} fixture(s){filter_note}")
+
+        # Two-column card grid on desktop; Streamlit stacks columns on mobile.
+        for i in range(0, len(cards), 2):
+            cols = st.columns(2, gap="medium")
+            for col, (fixture_row, prediction_row) in zip(cols, cards[i:i + 2]):
+                with col:
+                    render_prediction_card(
+                        fixture_row,
+                        prediction_row,
+                        odds_df=resources["odds"],
+                        result_row=results_lookup.get(fixture_row["fixture_id"]),
+                    )
 
     # Auto-refresh via a dynamically built fragment (built-in; no extra deps).
     if hasattr(st, "fragment"):
@@ -234,12 +266,18 @@ if page == "Match Predictions":
         _section()
     else:
         render_results_section()
-elif page == "Tournament Bracket":
-    st.title("Tournament Bracket")
+elif page == _NAV_BRACKET:
+    page_header(
+        "Tournament Bracket",
+        "Predicted group standings and a simulated knockout path to the final.",
+    )
     from app.components.bracket import render_bracket
     render_bracket(resources["fixtures"], resources["predictions"])
-elif page == "Model Performance":
-    st.title("Model Performance")
+elif page == _NAV_PERFORMANCE:
+    page_header(
+        "Model Performance",
+        "Walk-forward backtests on World Cup 2018 and 2022 — no look-ahead bias.",
+    )
 
     from app.components.performance_charts import (
         render_calibration_chart,
@@ -274,8 +312,11 @@ elif page == "Model Performance":
 
     st.subheader("Model Calibration")
     render_calibration_chart()
-elif page == "Data & Model Info":
-    st.title("Data & Model Info")
+elif page == _NAV_INFO:
+    page_header(
+        "Data & Model Info",
+        "What the models learn from, how they are trained, and version history.",
+    )
 
     from app.components.model_info import (
         render_feature_importance,

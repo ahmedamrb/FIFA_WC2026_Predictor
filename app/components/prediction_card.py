@@ -1,125 +1,156 @@
-"""Prediction card UI component."""
+"""Prediction card UI component.
+
+Card anatomy (top to bottom):
+  stage chip + live/FT status chip
+  scoreboard: home flag/name · focal scoreline (actual when played, else predicted) · away flag/name
+  kickoff time in the viewer's local timezone
+  segmented W/D/L probability bar with legend
+  chips: confidence tier, outcome/exact-score verdicts, per-side goals-model hits, value-bet signal
+  expander: bookmaker odds inputs + per-outcome edge breakdown
+"""
 
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
-import streamlit.components.v1 as components
 
+from components.flags import flag_url
 from components.tooltips import TOOLTIPS
-
-
-_COLOR_HOME_WIN = "#00CC66"
-_COLOR_DRAW = "#FFAA00"
-_COLOR_AWAY_WIN = "#CC3333"
 
 _BEST_VALUE_THRESHOLD = 0.05
 _AVOID_THRESHOLD = -0.05
 _CONF_HIGH = 0.55   # >=55% -> High confidence
 _CONF_MED  = 0.45   # 45-54% -> Medium confidence; <45% -> Low confidence
 
+_STAGE_LABELS = {
+    "GROUP_STAGE": "Group Stage",
+    "LAST_32": "Round of 32",
+    "LAST_16": "Round of 16",
+    "QUARTER_FINALS": "Quarter-finals",
+    "SEMI_FINALS": "Semi-finals",
+    "THIRD_PLACE": "Third Place",
+    "FINAL": "Final",
+}
 
-def _edge_label_html(edge: float, is_best: bool, show_labels: bool, outcome_prob: float | None = None) -> str:
-    edge_raw = f"Edge: {edge:+.1%}"
-    if outcome_prob is not None:
-        edge_raw += f"  ·  Model: {outcome_prob:.0%}"
-    edge_tip = TOOLTIPS["edge"]
-    edge_text = f'<span title="{edge_tip}">{edge_raw}</span>'
-    if not show_labels:
-        return edge_text
-    badge_style = "padding:2px 8px;border-radius:4px;font-size:0.75em;font-weight:bold;"
-    value_tip = TOOLTIPS["value_bet"]
-    if is_best:
-        badge = f"<span style='background:#1a7a3a;color:white;{badge_style}' title=\"{value_tip}\">\u2705 Best Value</span>"
-    elif edge < _AVOID_THRESHOLD:
-        badge = f"<span style='background:#7a1a1a;color:white;{badge_style}' title=\"{value_tip}\">\u274c Avoid</span>"
-    else:
-        badge = f"<span style='background:#555555;color:white;{badge_style}' title=\"{value_tip}\">&mdash; Neutral</span>"
-    return f"{edge_text}&nbsp;&nbsp;{badge}"
-
-
-def _confidence_tier_html(confidence: float) -> str:
-    """Return a styled HTML badge for the confidence tier."""
-    badge_style = "padding:3px 10px;border-radius:4px;font-size:0.8em;font-weight:bold;"
-    pct = f"{confidence:.0%}"
-    conf_tip = TOOLTIPS["confidence"]
-    if confidence >= _CONF_HIGH:
-        return f"<span style='background:#1a7a3a;color:white;{badge_style}' title=\"{conf_tip}\">High Confidence · {pct}</span>"
-    elif confidence >= _CONF_MED:
-        return f"<span style='background:#7a6a00;color:white;{badge_style}' title=\"{conf_tip}\">Medium Confidence · {pct}</span>"
-    else:
-        return f"<span style='background:#5a2a2a;color:white;{badge_style}' title=\"{conf_tip}\">Low Confidence · {pct}</span>"
+# Probability-bar segments narrower than this hide their inline % label;
+# the legend below always shows the exact numbers.
+_MIN_SEG_LABEL = 0.14
 
 
 def _decided(value) -> bool:
-    """True when a nullable-boolean flag has a concrete (non-NA) value."""
+    """True when a nullable flag/number has a concrete (non-NA) value."""
     return value is not None and not pd.isna(value)
 
 
-def _status_badge_html(status, minute) -> str:
-    """Return a styled HTML status badge (LIVE / HT / FT), or '' for upcoming."""
-    badge_style = "padding:2px 8px;border-radius:4px;font-size:0.75em;font-weight:bold;"
+def _stage_label(stage) -> str:
+    s = str(stage or "").strip()
+    return _STAGE_LABELS.get(s, s.replace("_", " ").title())
+
+
+def _chip(label: str, cls: str, tip: str = "") -> str:
+    t = f' title="{tip}"' if tip else ""
+    return f'<span class="pc-chip {cls}"{t}>{label}</span>'
+
+
+def _status_chip(status, minute) -> str:
+    """Live/HT/FT status chip for the card's top-right corner ('' for upcoming)."""
     s = str(status or "").upper()
     tip = TOOLTIPS["match_status"]
     if s == "IN_PLAY":
-        mins = f" {int(minute)}'" if minute is not None and not pd.isna(minute) else ""
-        return f"<span style='background:#b3261e;color:white;{badge_style}' title=\"{tip}\">🔴 LIVE{mins}</span>"
+        mins = f" {int(minute)}&prime;" if _decided(minute) else ""
+        return _chip(f"&#9679; LIVE{mins}", "chip-live", tip)
     if s == "PAUSED":
-        return f"<span style='background:#7a6a00;color:white;{badge_style}' title=\"{tip}\">HT</span>"
+        return _chip("HT", "chip-amber", tip)
     if s in ("FINISHED", "AWARDED"):
-        return f"<span style='background:#333333;color:#dddddd;{badge_style}' title=\"{tip}\">FT</span>"
-    if s in ("", "SCHEDULED", "TIMED"):
-        return ""  # upcoming — kickoff line already shows the time
-    return f"<span style='background:#555555;color:white;{badge_style}' title=\"{tip}\">{s.title()}</span>"
+        return _chip("FT", "chip-gray", tip)
+    return ""
 
 
-def _result_badges_html(result_row: dict) -> str:
-    """Return verdict badges (outcome correct/miss, exact score) for a played match."""
-    badge_style = "padding:3px 10px;border-radius:4px;font-size:0.8em;font-weight:bold;"
-    outcome_correct = result_row.get("outcome_correct")
-    exact_correct = result_row.get("exact_score_correct")
-    verdict_tip = TOOLTIPS["outcome_verdict"]
-    exact_tip = TOOLTIPS["exact_score"]
-
-    parts: list[str] = []
-    if _decided(outcome_correct):
-        if bool(outcome_correct):
-            parts.append(
-                f"<span style='background:#1a7a3a;color:white;{badge_style}' title=\"{verdict_tip}\">✅ Outcome correct</span>"
-            )
-        else:
-            parts.append(
-                f"<span style='background:#7a1a1a;color:white;{badge_style}' title=\"{verdict_tip}\">❌ Outcome miss</span>"
-            )
-    if _decided(exact_correct) and bool(exact_correct):
-        parts.append(
-            f"<span style='background:#b8860b;color:white;{badge_style}' title=\"{exact_tip}\">⭐ Exact score</span>"
-        )
-    return "&nbsp;&nbsp;".join(parts)
+def _team_html(team: str) -> str:
+    url = flag_url(team, size="w80")
+    if url:
+        flag = f'<img src="{url}" alt="" loading="lazy"/>'
+    else:
+        initials = "".join(w[0] for w in str(team).split()[:2]).upper() or "?"
+        flag = f'<div class="flag-tbd">{initials}</div>'
+    return f'<div class="pc-team">{flag}<div class="name">{team}</div></div>'
 
 
-def _goals_compare_html(result_row: dict, home_team: str, away_team: str) -> str:
-    """Per-side predicted-vs-actual goals (home and away models are independent)."""
-    # Only meaningful for comparable matches (per-side flags are decided).
-    if not (_decided(result_row.get("home_goals_correct")) or _decided(result_row.get("away_goals_correct"))):
-        return ""
-    h_pred, a_pred = result_row.get("predicted_home_goals"), result_row.get("predicted_away_goals")
-    h_act, a_act = result_row.get("home_score"), result_row.get("away_score")
-    if not (_decided(h_pred) and _decided(a_pred) and _decided(h_act) and _decided(a_act)):
-        return ""
-
-    def _side(pred, actual, correct) -> str:
-        hit = _decided(correct) and bool(correct)
-        glyph = "✓" if hit else "✗"
-        color = _COLOR_HOME_WIN if hit else _COLOR_AWAY_WIN
-        return (f"pred {int(pred)} &rarr; actual {int(actual)} "
-                f"<span style='color:{color};font-weight:bold;'>{glyph}</span>")
-
-    tip = TOOLTIPS["goals_compare"]
+def _scoreboard_html(home_team, away_team, label, score, sub="", tip="") -> str:
+    sub_html = f'<div class="sub">{sub}</div>' if sub else ""
+    t = f' title="{tip}"' if tip else ""
     return (
-        f"<div style='font-size:0.85em;line-height:1.5;' title=\"{tip}\">"
-        f"<b>Home goals</b> ({home_team}): {_side(h_pred, h_act, result_row.get('home_goals_correct'))}"
-        f"<br><b>Away goals</b> ({away_team}): {_side(a_pred, a_act, result_row.get('away_goals_correct'))}"
-        f"</div>"
+        '<div class="pc-score-row">'
+        + _team_html(home_team)
+        + f'<div class="pc-center"{t}><div class="label">{label}</div>'
+        + f'<div class="score">{score}</div>{sub_html}</div>'
+        + _team_html(away_team)
+        + "</div>"
+    )
+
+
+def _prob_block_html(p_home, p_draw, p_away, home_team, away_team) -> str:
+    """Segmented W/D/L probability bar plus a three-item legend."""
+    def seg(p: float, cls: str) -> str:
+        label = f"{p:.0%}" if p >= _MIN_SEG_LABEL else ""
+        return f'<div class="seg {cls}" style="width:{p * 100:.2f}%">{label}</div>'
+
+    bar = (
+        f'<div class="pc-bar" title="{TOOLTIPS["outcome_probs"]}">'
+        f'{seg(p_home, "home")}{seg(p_draw, "draw")}{seg(p_away, "away")}</div>'
+    )
+    legend = (
+        '<div class="pc-legend">'
+        f'<span class="item"><span class="dot dot-home"></span>{home_team} <b>{p_home:.0%}</b></span>'
+        f'<span class="item"><span class="dot dot-draw"></span>Draw <b>{p_draw:.0%}</b></span>'
+        f'<span class="item"><span class="dot dot-away"></span>{away_team} <b>{p_away:.0%}</b></span>'
+        "</div>"
+    )
+    return bar + legend
+
+
+def _confidence_chip(confidence: float) -> str:
+    if confidence >= _CONF_HIGH:
+        cls, word = "chip-green", "High"
+    elif confidence >= _CONF_MED:
+        cls, word = "chip-amber", "Medium"
+    else:
+        cls, word = "chip-gray", "Low"
+    return _chip(f"{word} confidence &middot; {confidence:.0%}", cls, TOOLTIPS["confidence"])
+
+
+def _render_kickoff(kickoff_utc: str) -> None:
+    """Kickoff datetime converted to the viewer's local timezone (needs JS, so iframe)."""
+    st.iframe(
+        f"""<!DOCTYPE html><html><head><style>
+        html,body{{margin:0;padding:0;overflow:hidden;}}
+        div{{font:500 12.5px -apple-system,'Segoe UI',Roboto,sans-serif;color:#8B96AD;
+             text-align:center;line-height:24px;}}
+        </style></head><body>
+        <div>&#128467;&#65039; <span id="kt"></span></div>
+        <script>
+        var d=new Date("{kickoff_utc}");
+        document.getElementById("kt").textContent=d.toLocaleString(undefined,
+        {{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"}});
+        </script></body></html>""",
+        height=24,
+    )
+
+
+def _edge_row_html(name: str, prob: float, odds: float, edge: float, is_best: bool, show_labels: bool) -> str:
+    if edge > _BEST_VALUE_THRESHOLD:
+        cls = "chip-green"
+    elif edge < _AVOID_THRESHOLD:
+        cls = "chip-red"
+    else:
+        cls = "chip-gray"
+    badge = f"{edge:+.1%}"
+    if is_best and show_labels:
+        badge += " &middot; Best value"
+    return (
+        f'<div class="pc-edge-row" title="{TOOLTIPS["edge"]}">'
+        f'<span class="nm">{name}</span>'
+        f'<span class="nums">model {prob:.0%} &middot; implied {1.0 / odds:.0%}</span>'
+        f"{_chip(badge, cls)}"
+        "</div>"
     )
 
 
@@ -171,7 +202,7 @@ def render_prediction_card(
     ----------
     fixture_row : pd.Series
         Row from wc2026_fixtures_flat.csv with columns: match_date, home_team,
-        away_team, stage, group, venue.
+        away_team, stage, kickoff_utc, fixture_id.
     prediction_row : pd.Series or None
         Row from predictions parquet/CSV containing pre-computed columns:
         prob_home_win, prob_draw, prob_away_win, predicted_home_goals,
@@ -191,244 +222,196 @@ def render_prediction_card(
     match_date = fixture_row.get("match_date", "")
     kickoff_utc = str(fixture_row.get("kickoff_utc", ""))
 
-    with st.container():
-        status_badge = ""
-        if result_row is not None:
-            status_badge = _status_badge_html(result_row.get("status"), result_row.get("minute"))
-        title = f"{home_team}  vs  {away_team}"
-        if status_badge:
-            st.markdown(
-                f"<h3 style='margin-bottom:0'>{title}&nbsp;&nbsp;{status_badge}</h3>",
-                unsafe_allow_html=True,
-            )
+    status = result_row.get("status") if result_row is not None else None
+    minute = result_row.get("minute") if result_row is not None else None
+
+    h_act = a_act = None
+    has_score = result_row is not None and _decided(result_row.get("has_score")) and bool(result_row.get("has_score"))
+    if has_score:
+        h_act = result_row.get("home_score")
+        a_act = result_row.get("away_score")
+        has_score = _decided(h_act) and _decided(a_act)
+
+    with st.container(border=True):
+        # --- Top row: stage chip + status chip ---
+        st.markdown(
+            f'<div class="pc-top"><span class="pc-stage">{_stage_label(stage)}</span>'
+            f"{_status_chip(status, minute) or '<span></span>'}</div>",
+            unsafe_allow_html=True,
+        )
+
+        # --- Scoreboard: actual score when played/live, else predicted ---
+        h_pred_g = a_pred_g = None
+        if prediction_row is not None:
+            h_pred_g = int(prediction_row["predicted_home_goals"])
+            a_pred_g = int(prediction_row["predicted_away_goals"])
+
+        if has_score:
+            label, score, tip = "Score", f"{int(h_act)} &ndash; {int(a_act)}", TOOLTIPS["actual_score"]
+            sub = f"Model: {h_pred_g} &ndash; {a_pred_g}" if h_pred_g is not None else ""
+        elif prediction_row is not None:
+            label, score, tip = "AI Prediction", f"{h_pred_g} &ndash; {a_pred_g}", TOOLTIPS["scoreline"]
+            sub = ""
         else:
-            st.subheader(title)
+            label, score, tip, sub = "Upcoming", "vs", "", ""
+        st.markdown(
+            _scoreboard_html(home_team, away_team, label, score, sub=sub, tip=tip),
+            unsafe_allow_html=True,
+        )
+
+        # --- Kickoff time (browser-local via JS; static date as fallback) ---
         if kickoff_utc and kickoff_utc not in ("", "nan", "NaT"):
-            components.html(
-                f"""<!DOCTYPE html><html><head><style>
-                html,body{{margin:0;padding:0;overflow:hidden;font-family:"Source Sans Pro","Noto Sans",sans-serif;}}
-                div{{font-size:14px;color:rgba(49,51,63,0.6);line-height:1;}}
-                @media(prefers-color-scheme:dark){{div{{color:rgba(250,250,250,0.6);}}}}
-                </style></head><body>
-                <div>{stage} &mdash; <span id="kt"></span></div>
-                <script>
-                var d=new Date("{kickoff_utc}");
-                document.getElementById("kt").textContent=d.toLocaleString(undefined,
-                {{weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"}});
-                </script></body></html>""",
-                height=22,
-                scrolling=False,
-            )
-        else:
-            date_str = pd.to_datetime(match_date).strftime("%a, %b %d %Y") if match_date else ""
-            st.caption(f"{stage} — {date_str}")
+            _render_kickoff(kickoff_utc)
+        elif match_date is not None and str(match_date) not in ("", "nan", "NaT"):
+            date_str = pd.to_datetime(match_date).strftime("%a, %b %d %Y")
+            st.markdown(f'<div class="pc-kickoff">&#128467;&#65039; {date_str}</div>', unsafe_allow_html=True)
 
         if prediction_row is None:
-            st.info("No prediction data available for this fixture.")
-            st.divider()
+            st.markdown(
+                _chip("Prediction available once both teams are known", "chip-gray"),
+                unsafe_allow_html=True,
+            )
             return
 
-        # --- Read pre-computed predictions ---
+        # --- W/D/L probability bar ---
         prob_home_win = float(prediction_row["prob_home_win"])
         prob_draw     = float(prediction_row["prob_draw"])
         prob_away_win = float(prediction_row["prob_away_win"])
-
-        # --- W/D/L horizontal stacked bar chart ---
-        fig = go.Figure()
-        fig.add_trace(
-            go.Bar(
-                x=[prob_home_win * 100],
-                y=[""],
-                orientation="h",
-                name="Home Win",
-                marker_color=_COLOR_HOME_WIN,
-                text=[f"{prob_home_win:.0%}"],
-                textposition="inside",
-                insidetextanchor="middle",
-                hovertemplate="Home Win: %{x:.1f}%<extra></extra>",
-            )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=[prob_draw * 100],
-                y=[""],
-                orientation="h",
-                name="Draw",
-                marker_color=_COLOR_DRAW,
-                text=[f"{prob_draw:.0%}"],
-                textposition="inside",
-                insidetextanchor="middle",
-                hovertemplate="Draw: %{x:.1f}%<extra></extra>",
-            )
-        )
-        fig.add_trace(
-            go.Bar(
-                x=[prob_away_win * 100],
-                y=[""],
-                orientation="h",
-                name="Away Win",
-                marker_color=_COLOR_AWAY_WIN,
-                text=[f"{prob_away_win:.0%}"],
-                textposition="inside",
-                insidetextanchor="middle",
-                hovertemplate="Away Win: %{x:.1f}%<extra></extra>",
-            )
-        )
-        fig.update_layout(
-            barmode="stack",
-            showlegend=False,
-            width=500,
-            height=100,
-            margin=dict(l=0, r=0, t=0, b=0),
-            xaxis=dict(range=[0, 100], showticklabels=False),
-            yaxis=dict(showticklabels=False),
-        )
-        st.plotly_chart(fig, width='stretch', key=f"{fixture_row.name}_chart")
-
-        # --- Legend labels below the chart ---
-        leg_col1, leg_col2, leg_col3 = st.columns(3)
-        leg_col1.markdown(
-            f"<span style='color:{_COLOR_HOME_WIN}'>&#9632;</span> Home Win",
-            unsafe_allow_html=True,
-        )
-        leg_col2.markdown(
-            f"<span style='color:{_COLOR_DRAW}'>&#9632;</span> Draw",
-            unsafe_allow_html=True,
-        )
-        leg_col3.markdown(
-            f"<span style='color:{_COLOR_AWAY_WIN}'>&#9632;</span> Away Win",
-            unsafe_allow_html=True,
-        )
-
-        # --- Predicted scoreline ---
-        h_goals    = int(prediction_row["predicted_home_goals"])
-        a_goals    = int(prediction_row["predicted_away_goals"])
-        confidence = float(prediction_row["confidence"])
         st.markdown(
-            f"**Predicted:** {home_team} {h_goals} – {a_goals} {away_team}"
+            _prob_block_html(prob_home_win, prob_draw, prob_away_win, home_team, away_team),
+            unsafe_allow_html=True,
         )
-        st.caption(TOOLTIPS["scoreline"])
 
-        # --- Confidence score ---
-        st.markdown(_confidence_tier_html(confidence), unsafe_allow_html=True)
-
-        # --- Actual result (live or full-time) ---
-        if result_row is not None and _decided(result_row.get("has_score")) and bool(result_row.get("has_score")):
-            h_actual = result_row.get("home_score")
-            a_actual = result_row.get("away_score")
-            if _decided(h_actual) and _decided(a_actual):
-                actual_tip = TOOLTIPS["actual_score"]
-                st.markdown(
-                    f"<span title=\"{actual_tip}\"><b>Actual:</b> "
-                    f"{home_team} {int(h_actual)} &ndash; {int(a_actual)} {away_team}</span>",
-                    unsafe_allow_html=True,
-                )
-                badges = _result_badges_html(result_row)
-                if badges:
-                    st.markdown(badges, unsafe_allow_html=True)
-
-                # Per-side goals models (home model vs away model)
-                goals_html = _goals_compare_html(result_row, home_team, away_team)
-                if goals_html:
-                    st.markdown(goals_html, unsafe_allow_html=True)
-
-        # --- Bookmaker odds inputs ---
-        # Look up real odds from the canonical table; fall back to neutral defaults
+        # --- Odds defaults (needed up-front so the value chip can be shown in the chips row) ---
         real_odds = _lookup_odds(odds_df, match_date, home_team, away_team)
         default_home_odds = real_odds["home_win_odds"] if real_odds else 2.0
         default_draw_odds = real_odds["draw_odds"] if real_odds else 3.0
         default_away_odds = real_odds["away_win_odds"] if real_odds else 2.5
 
-        # Show source badge when real odds are available
-        if real_odds:
-            src_label = real_odds.get("source", "")
-            fetched = real_odds.get("fetched_at", "")[:10]
-            st.caption(f"Odds: {src_label} (fetched {fetched})")
-        else:
-            st.caption("Odds: no real odds found — using neutral defaults (edit below)")
-
         key_prefix = f"{fixture_row.name}_{home_team}_{away_team}"
-        odds_col1, odds_col2, odds_col3 = st.columns(3)
-        home_odds = odds_col1.number_input(
-            "Home Win Odds",
-            min_value=1.01,
-            value=float(default_home_odds),
-            step=0.01,
-            format="%.2f",
-            key=f"{key_prefix}_home_odds",
-            help=TOOLTIPS["home_odds"],
-        )
-        draw_odds = odds_col2.number_input(
-            "Draw Odds",
-            min_value=1.01,
-            value=float(default_draw_odds),
-            step=0.01,
-            format="%.2f",
-            key=f"{key_prefix}_draw_odds",
-            help=TOOLTIPS["draw_odds"],
-        )
-        away_odds = odds_col3.number_input(
-            "Away Win Odds",
-            min_value=1.01,
-            value=float(default_away_odds),
-            step=0.01,
-            format="%.2f",
-            key=f"{key_prefix}_away_odds",
-            help=TOOLTIPS["away_odds"],
-        )
+        cur_home_odds = float(st.session_state.get(f"{key_prefix}_home_odds", default_home_odds))
+        cur_draw_odds = float(st.session_state.get(f"{key_prefix}_draw_odds", default_draw_odds))
+        cur_away_odds = float(st.session_state.get(f"{key_prefix}_away_odds", default_away_odds))
 
-        # --- Edge values ---
-        home_edge = prob_home_win - (1.0 / home_odds)
-        draw_edge = prob_draw - (1.0 / draw_odds)
-        away_edge = prob_away_win - (1.0 / away_odds)
-
+        home_edge = prob_home_win - (1.0 / cur_home_odds)
+        draw_edge = prob_draw - (1.0 / cur_draw_odds)
+        away_edge = prob_away_win - (1.0 / cur_away_odds)
         edges = [home_edge, draw_edge, away_edge]
         best_val = max(edges)
         show_labels = best_val > _BEST_VALUE_THRESHOLD
 
-        edge_col1, edge_col2, edge_col3 = st.columns(3)
-        edge_col1.markdown(
-            _edge_label_html(home_edge, home_edge == best_val and show_labels, show_labels, outcome_prob=prob_home_win),
-            unsafe_allow_html=True,
-        )
-        edge_col2.markdown(
-            _edge_label_html(draw_edge, draw_edge == best_val and show_labels, show_labels, outcome_prob=prob_draw),
-            unsafe_allow_html=True,
-        )
-        edge_col3.markdown(
-            _edge_label_html(away_edge, away_edge == best_val and show_labels, show_labels, outcome_prob=prob_away_win),
-            unsafe_allow_html=True,
-        )
+        outcome_names = [f"{home_team} win", "Draw", f"{away_team} win"]
+        outcome_probs = [prob_home_win, prob_draw, prob_away_win]
+        best_idx = edges.index(best_val)
 
-        # Summary signal row — only shown when there is a positive-edge bet
+        # --- Chips row: confidence, verdicts, goals-model hits, value signal ---
+        confidence = float(prediction_row["confidence"])
+        chips = [_confidence_chip(confidence)]
+
+        if has_score:
+            outcome_correct = result_row.get("outcome_correct")
+            if _decided(outcome_correct):
+                hit = bool(outcome_correct)
+                chips.append(_chip(
+                    "&#9989; Outcome correct" if hit else "&#10060; Outcome missed",
+                    "chip-green" if hit else "chip-red",
+                    TOOLTIPS["outcome_verdict"],
+                ))
+            exact_correct = result_row.get("exact_score_correct")
+            if _decided(exact_correct) and bool(exact_correct):
+                chips.append(_chip("&#11088; Exact score", "chip-gold", TOOLTIPS["exact_score"]))
+
+            # Per-side goals models (home and away regressors are independent)
+            for side, flag_key, pred_g, act_g in (
+                ("Home", "home_goals_correct", h_pred_g, h_act),
+                ("Away", "away_goals_correct", a_pred_g, a_act),
+            ):
+                side_flag = result_row.get(flag_key)
+                if _decided(side_flag):
+                    hit = bool(side_flag)
+                    glyph = "&#10003;" if hit else "&#10007;"
+                    chips.append(_chip(
+                        f"{side} goals {pred_g}&rarr;{int(act_g)} {glyph}",
+                        "chip-green" if hit else "chip-red",
+                        TOOLTIPS["goals_compare"],
+                    ))
+
         if show_labels:
-            outcome_names = [f"{home_team} Win", "Draw", f"{away_team} Win"]
-            outcome_probs = [prob_home_win, prob_draw, prob_away_win]
-            all_edges = [home_edge, draw_edge, away_edge]
-            best_idx = all_edges.index(max(all_edges))
-            best_outcome_name = outcome_names[best_idx]
-            best_outcome_prob = outcome_probs[best_idx]
-            best_edge_val = all_edges[best_idx]
+            chips.append(_chip(
+                f"&#128176; Value: {outcome_names[best_idx]} {best_val:+.1%}",
+                "chip-gold",
+                TOOLTIPS["value_bet"],
+            ))
 
-            is_high_conf_value = confidence >= _CONF_HIGH and best_outcome_prob == confidence
+        st.markdown(f'<div class="pc-chips">{"".join(chips)}</div>', unsafe_allow_html=True)
 
-            if is_high_conf_value:
-                summary_bg = "#0d4f2e"
-                summary_label = f"⭐ High-Confidence Value Bet"
+        # --- Betting odds & edge analysis (collapsed to keep the card scannable) ---
+        with st.expander("Betting odds & value analysis"):
+            if real_odds:
+                fetched = real_odds.get("fetched_at", "")[:10]
+                st.caption(f"Odds: {real_odds.get('source', '')} (fetched {fetched})")
             else:
-                summary_bg = "#1a2a4a"
-                summary_label = f"✅ Best Value Bet"
+                st.caption("No real odds found — using neutral defaults (edit below).")
 
-            value_tip = TOOLTIPS["value_bet"]
-            summary_html = (
-                f"<div style='background:{summary_bg};color:white;padding:8px 14px;"
-                f"border-radius:6px;margin-top:8px;font-size:0.85em;font-weight:bold;' title=\"{value_tip}\">"
-                f"{summary_label}: {best_outcome_name} &nbsp;|&nbsp; "
-                f"Edge: {best_edge_val:+.1%} &nbsp;|&nbsp; "
-                f"Model: {best_outcome_prob:.0%}"
-                f"</div>"
+            odds_col1, odds_col2, odds_col3 = st.columns(3)
+            home_odds = odds_col1.number_input(
+                "Home Win Odds",
+                min_value=1.01,
+                value=float(default_home_odds),
+                step=0.01,
+                format="%.2f",
+                key=f"{key_prefix}_home_odds",
+                help=TOOLTIPS["home_odds"],
             )
-            st.markdown(summary_html, unsafe_allow_html=True)
+            draw_odds = odds_col2.number_input(
+                "Draw Odds",
+                min_value=1.01,
+                value=float(default_draw_odds),
+                step=0.01,
+                format="%.2f",
+                key=f"{key_prefix}_draw_odds",
+                help=TOOLTIPS["draw_odds"],
+            )
+            away_odds = odds_col3.number_input(
+                "Away Win Odds",
+                min_value=1.01,
+                value=float(default_away_odds),
+                step=0.01,
+                format="%.2f",
+                key=f"{key_prefix}_away_odds",
+                help=TOOLTIPS["away_odds"],
+            )
 
-        st.divider()
+            # Recompute from the widget values (authoritative within the expander)
+            home_edge = prob_home_win - (1.0 / home_odds)
+            draw_edge = prob_draw - (1.0 / draw_odds)
+            away_edge = prob_away_win - (1.0 / away_odds)
+            edges = [home_edge, draw_edge, away_edge]
+            best_val = max(edges)
+            show_labels = best_val > _BEST_VALUE_THRESHOLD
+            best_idx = edges.index(best_val)
 
+            rows = "".join(
+                _edge_row_html(name, prob, odds, edge, edge == best_val, show_labels)
+                for name, prob, odds, edge in zip(
+                    outcome_names, outcome_probs, [home_odds, draw_odds, away_odds], edges
+                )
+            )
+            st.markdown(rows, unsafe_allow_html=True)
+
+            # Summary signal — only shown when there is a positive-edge bet
+            if show_labels:
+                best_outcome_prob = outcome_probs[best_idx]
+                is_high_conf_value = confidence >= _CONF_HIGH and best_outcome_prob == confidence
+                banner_cls = "pc-value-banner hc" if is_high_conf_value else "pc-value-banner"
+                banner_label = (
+                    "&#11088; High-Confidence Value Bet" if is_high_conf_value else "&#9989; Best Value Bet"
+                )
+                st.markdown(
+                    f'<div class="{banner_cls}" title="{TOOLTIPS["value_bet"]}">'
+                    f"{banner_label}: {outcome_names[best_idx]} &nbsp;|&nbsp; "
+                    f"Edge: {best_val:+.1%} &nbsp;|&nbsp; "
+                    f"Model: {best_outcome_prob:.0%}"
+                    "</div>",
+                    unsafe_allow_html=True,
+                )

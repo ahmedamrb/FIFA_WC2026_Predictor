@@ -4,6 +4,7 @@ from pathlib import Path
 
 import plotly.graph_objects as go
 import streamlit as st
+from components.theme import style_plotly
 from components.tooltips import TOOLTIPS
 
 
@@ -39,12 +40,12 @@ def render_metrics_bar_chart(metrics_dict):
 
     fig.update_layout(
         barmode="group",
-        title="Model Performance by Tournament",
         xaxis_title="Metric",
         yaxis_title="Value",
     )
+    style_plotly(fig, height=380)
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption("Bars show backtest results on WC 2018 (held-out test) and WC 2022 (validation). Hover each bar for the exact value.")
 
 
@@ -73,15 +74,15 @@ def render_cumulative_profit_chart(wc2018_df, wc2022_df):
     ))
 
     # Horizontal reference line at y=0
-    fig.add_hline(y=0, line_dash="dash", line_color="grey")
+    fig.add_hline(y=0, line_dash="dash", line_color="rgba(139,150,173,0.5)")
 
     fig.update_layout(
-        title="Cumulative Flat-stake Profit",
         xaxis_title="Match #",
         yaxis_title="Cumulative Profit (units)",
     )
+    style_plotly(fig, height=380)
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption("Flat-stake simulation: one unit bet on the model's top-probability outcome for every match. Profit/loss accumulates over the tournament.")
 
 
@@ -103,7 +104,7 @@ def render_calibration_chart():
             found_any = True
             caption = path.stem  # filename without extension
             with st.expander(caption):
-                st.image(str(path), caption=caption, use_container_width=True)
+                st.image(str(path), caption=caption, width="stretch")
                 st.caption("A well-calibrated model's curve follows the diagonal. Points above the diagonal mean the model underestimates probability; points below mean overconfidence.")
 
     if not found_any:

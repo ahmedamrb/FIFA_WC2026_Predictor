@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 
+from components.theme import style_plotly
 from components.tooltips import TOOLTIPS
 
 # Make src/ importable
@@ -28,16 +29,15 @@ def render_feature_importance() -> None:
             x=top20.values,
             y=top20.index,
             orientation="h",
-            marker_color="#1f77b4",
+            marker_color="#4DA3FF",
         )
     )
     fig.update_layout(
-        title="Top 20 Feature Importances (XGBoost)",
         xaxis_title="Importance",
         yaxis_title="Feature",
-        height=600,
-        margin={"l": 200, "r": 40, "t": 60, "b": 60},
+        margin={"l": 200, "r": 40, "t": 20, "b": 60},
     )
+    style_plotly(fig, height=600)
     st.plotly_chart(fig, width='stretch')
     st.caption(TOOLTIPS["feature_importance"])
 
