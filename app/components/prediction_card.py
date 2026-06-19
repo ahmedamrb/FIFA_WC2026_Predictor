@@ -9,14 +9,27 @@ Card anatomy (top to bottom):
   expander: bookmaker odds inputs + per-outcome edge breakdown
 """
 
+import sys
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
 from components.flags import flag_url
 from components.tooltips import TOOLTIPS
 
-_BEST_VALUE_THRESHOLD = 0.05
-_AVOID_THRESHOLD = -0.05
+# Make src/ importable so the dashboard reuses the canonical edge/staking logic
+# (one shared definition of "value" across dashboard and backtest).
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO_ROOT))
+from src.betting.edge import remove_vig, VALUE_THRESHOLD, AVOID_THRESHOLD  # noqa: E402
+from src.betting.staking import kelly_fraction  # noqa: E402
+
+# Neutral placeholder odds shown only when a fixture has no real bookmaker odds.
+_NEUTRAL_ODDS = (2.0, 3.0, 2.5)
+
+_BEST_VALUE_THRESHOLD = VALUE_THRESHOLD
+_AVOID_THRESHOLD = AVOID_THRESHOLD
 _CONF_HIGH = 0.55   # >=55% -> High confidence
 _CONF_MED  = 0.45   # 45-54% -> Medium confidence; <45% -> Low confidence
 
@@ -135,7 +148,7 @@ def _render_kickoff(kickoff_utc: str) -> None:
     )
 
 
-def _edge_row_html(name: str, prob: float, odds: float, edge: float, is_best: bool, show_labels: bool) -> str:
+def _edge_row_html(name: str, prob: float, implied: float, edge: float, is_best: bool, show_labels: bool) -> str:
     if edge > _BEST_VALUE_THRESHOLD:
         cls = "chip-green"
     elif edge < _AVOID_THRESHOLD:
@@ -148,10 +161,26 @@ def _edge_row_html(name: str, prob: float, odds: float, edge: float, is_best: bo
     return (
         f'<div class="pc-edge-row" title="{TOOLTIPS["edge"]}">'
         f'<span class="nm">{name}</span>'
-        f'<span class="nums">model {prob:.0%} &middot; implied {1.0 / odds:.0%}</span>'
+        f'<span class="nums">model {prob:.0%} &middot; fair {implied:.0%}</span>'
         f"{_chip(badge, cls)}"
         "</div>"
     )
+
+
+def _value_visible(best_edge: float, has_real_odds: bool, cur_odds: tuple) -> bool:
+    """Whether to surface a value signal for this card.
+
+    A value signal is shown only when the edge clears the threshold AND it is
+    priced off genuine odds (or odds the user explicitly entered) — never off the
+    neutral placeholder defaults used when a fixture has no real bookmaker odds,
+    which would otherwise fabricate value flags.
+    """
+    if best_edge <= _BEST_VALUE_THRESHOLD:
+        return False
+    if has_real_odds:
+        return True
+    # No real odds: only a what-if signal once the user edits off the neutral defaults.
+    return any(abs(o - n) > 1e-9 for o, n in zip(cur_odds, _NEUTRAL_ODDS))
 
 
 def _lookup_odds(
@@ -284,25 +313,26 @@ def render_prediction_card(
 
         # --- Odds defaults (needed up-front so the value chip can be shown in the chips row) ---
         real_odds = _lookup_odds(odds_df, match_date, home_team, away_team)
-        default_home_odds = real_odds["home_win_odds"] if real_odds else 2.0
-        default_draw_odds = real_odds["draw_odds"] if real_odds else 3.0
-        default_away_odds = real_odds["away_win_odds"] if real_odds else 2.5
+        has_real_odds = real_odds is not None
+        default_home_odds = real_odds["home_win_odds"] if has_real_odds else _NEUTRAL_ODDS[0]
+        default_draw_odds = real_odds["draw_odds"] if has_real_odds else _NEUTRAL_ODDS[1]
+        default_away_odds = real_odds["away_win_odds"] if has_real_odds else _NEUTRAL_ODDS[2]
 
         key_prefix = f"{fixture_row.name}_{home_team}_{away_team}"
         cur_home_odds = float(st.session_state.get(f"{key_prefix}_home_odds", default_home_odds))
         cur_draw_odds = float(st.session_state.get(f"{key_prefix}_draw_odds", default_draw_odds))
         cur_away_odds = float(st.session_state.get(f"{key_prefix}_away_odds", default_away_odds))
 
-        home_edge = prob_home_win - (1.0 / cur_home_odds)
-        draw_edge = prob_draw - (1.0 / cur_draw_odds)
-        away_edge = prob_away_win - (1.0 / cur_away_odds)
-        edges = [home_edge, draw_edge, away_edge]
+        # Edge vs vig-free implied probabilities (no fabricated 1/odds margin).
+        f_home, f_draw, f_away = remove_vig(cur_home_odds, cur_draw_odds, cur_away_odds)
+        edges = [prob_home_win - f_home, prob_draw - f_draw, prob_away_win - f_away]
+        implied = [f_home, f_draw, f_away]
         best_val = max(edges)
-        show_labels = best_val > _BEST_VALUE_THRESHOLD
+        best_idx = edges.index(best_val)
+        show_labels = _value_visible(best_val, has_real_odds, (cur_home_odds, cur_draw_odds, cur_away_odds))
 
         outcome_names = [f"{home_team} win", "Draw", f"{away_team} win"]
         outcome_probs = [prob_home_win, prob_draw, prob_away_win]
-        best_idx = edges.index(best_val)
 
         # --- Chips row: confidence, verdicts, goals-model hits, value signal ---
         confidence = float(prediction_row["confidence"])
@@ -337,8 +367,10 @@ def render_prediction_card(
                     ))
 
         if show_labels:
+            best_odds = (cur_home_odds, cur_draw_odds, cur_away_odds)[best_idx]
+            stake_frac = kelly_fraction(outcome_probs[best_idx], best_odds)
             chips.append(_chip(
-                f"&#128176; Value: {outcome_names[best_idx]} {best_val:+.1%}",
+                f"&#128176; Value: {outcome_names[best_idx]} {best_val:+.1%} &middot; stake {stake_frac:.1%}",
                 "chip-gold",
                 TOOLTIPS["value_bet"],
             ))
@@ -382,19 +414,20 @@ def render_prediction_card(
                 help=TOOLTIPS["away_odds"],
             )
 
-            # Recompute from the widget values (authoritative within the expander)
-            home_edge = prob_home_win - (1.0 / home_odds)
-            draw_edge = prob_draw - (1.0 / draw_odds)
-            away_edge = prob_away_win - (1.0 / away_odds)
-            edges = [home_edge, draw_edge, away_edge]
+            # Recompute from the widget values (authoritative within the expander).
+            # Edges are vs vig-free implied probabilities; the neutral-default gate
+            # prevents a fabricated signal when no real odds back the fixture.
+            f_home, f_draw, f_away = remove_vig(home_odds, draw_odds, away_odds)
+            edges = [prob_home_win - f_home, prob_draw - f_draw, prob_away_win - f_away]
+            implied = [f_home, f_draw, f_away]
             best_val = max(edges)
-            show_labels = best_val > _BEST_VALUE_THRESHOLD
             best_idx = edges.index(best_val)
+            show_labels = _value_visible(best_val, has_real_odds, (home_odds, draw_odds, away_odds))
 
             rows = "".join(
-                _edge_row_html(name, prob, odds, edge, edge == best_val, show_labels)
-                for name, prob, odds, edge in zip(
-                    outcome_names, outcome_probs, [home_odds, draw_odds, away_odds], edges
+                _edge_row_html(name, prob, imp, edge, edge == best_val, show_labels)
+                for name, prob, imp, edge in zip(
+                    outcome_names, outcome_probs, implied, edges
                 )
             )
             st.markdown(rows, unsafe_allow_html=True)
@@ -402,6 +435,8 @@ def render_prediction_card(
             # Summary signal — only shown when there is a positive-edge bet
             if show_labels:
                 best_outcome_prob = outcome_probs[best_idx]
+                best_odds = (home_odds, draw_odds, away_odds)[best_idx]
+                stake_frac = kelly_fraction(best_outcome_prob, best_odds)
                 is_high_conf_value = confidence >= _CONF_HIGH and best_outcome_prob == confidence
                 banner_cls = "pc-value-banner hc" if is_high_conf_value else "pc-value-banner"
                 banner_label = (
@@ -411,7 +446,8 @@ def render_prediction_card(
                     f'<div class="{banner_cls}" title="{TOOLTIPS["value_bet"]}">'
                     f"{banner_label}: {outcome_names[best_idx]} &nbsp;|&nbsp; "
                     f"Edge: {best_val:+.1%} &nbsp;|&nbsp; "
-                    f"Model: {best_outcome_prob:.0%}"
+                    f"Model: {best_outcome_prob:.0%} &nbsp;|&nbsp; "
+                    f"Stake: {stake_frac:.1%} bank"
                     "</div>",
                     unsafe_allow_html=True,
                 )

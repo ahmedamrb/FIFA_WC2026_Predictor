@@ -156,11 +156,14 @@ def _collect_stats(df: pd.DataFrame, odds_mode: str) -> dict:
     """Collect betting + coverage stats from an enriched backtest DataFrame."""
     total_profit = float(df["profit"].sum())
     n = len(df)
-    flat_roi = total_profit / n * 100.0
+    # ROI is profit per unit staked (stake-aware: skipped/Kelly stakes differ from 1.0).
+    total_stake = float(df["stake"].sum()) if "stake" in df.columns else float(n)
+    flat_roi = total_profit / total_stake * 100.0 if total_stake > 0 else float("nan")
 
     value_df = df[df["bet_recommendation"] == "Value"] if "bet_recommendation" in df.columns else df.iloc[0:0]
     value_count = len(value_df)
-    value_roi = float(value_df["profit"].sum() / value_count * 100.0) if value_count > 0 else float("nan")
+    value_stake = float(value_df["stake"].sum()) if "stake" in value_df.columns else float(value_count)
+    value_roi = float(value_df["profit"].sum() / value_stake * 100.0) if value_stake > 0 else float("nan")
 
     matched = int(df["odds_matched"].sum()) if "odds_matched" in df.columns else (0 if odds_mode == "stub_2.0" else n)
     defaulted = n - matched

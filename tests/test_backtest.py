@@ -21,9 +21,17 @@ _BACKTEST_CSV = _REPO_ROOT / "data" / "processed" / "backtest_wc2022.csv"
 # ---------------------------------------------------------------------------
 
 def test_backtest_df_no_nulls():
+    # Odds-derived columns (implied probs, edges, value_outcome) are legitimately
+    # NaN for fixtures without real odds; only the core prediction/outcome/betting
+    # columns must always be populated.
     df = pd.read_csv(_BACKTEST_CSV)
-    null_count = df.isnull().sum().sum()
-    assert null_count == 0, f"Expected zero nulls, found {null_count}"
+    core_cols = [
+        "predicted_home_win_prob", "predicted_draw_prob", "predicted_away_win_prob",
+        "predicted_outcome", "actual_outcome", "profit", "cumulative_profit",
+    ]
+    present = [c for c in core_cols if c in df.columns]
+    null_count = df[present].isnull().sum().sum()
+    assert null_count == 0, f"Expected zero nulls in core columns, found {null_count}"
 
 
 def test_probabilities_sum_to_one():
@@ -132,6 +140,46 @@ def test_simulate_betting_comparison_roi_differs_with_real_odds():
     assert stub_roi != pytest.approx(real_roi, abs=0.01), (
         "ROI should differ between stub and real modes when real odds differ from 2.0"
     )
+
+
+# ---------------------------------------------------------------------------
+# New: Kelly staking + skip-unmatched
+# ---------------------------------------------------------------------------
+
+def test_simulate_betting_kelly_stake_within_cap():
+    """Kelly stakes are positive only on edges and never exceed the cap."""
+    bt = _make_minimal_backtest()
+    odds = _make_real_odds(
+        match_dates=["2022-11-20", "2022-11-21"],
+        home_teams=["Qatar", "England"],
+        away_teams=["Ecuador", "Iran"],
+    )
+    result = simulate_betting(
+        bt, label="test_kelly", odds_df=odds, odds_mode="real",
+        staking="kelly", kelly_frac=0.25, kelly_cap=0.05,
+    )
+    assert "stake" in result.columns
+    assert (result["stake"] >= 0).all()
+    assert (result["stake"] <= 0.05 + 1e-9).all()
+    # Stakes differ from flat 1-unit (edge-proportional sizing in effect).
+    assert not (result["stake"] == 1.0).all()
+
+
+def test_simulate_betting_real_mode_skips_unmatched():
+    """In real mode, fixtures without matched odds get stake 0 (skipped)."""
+    bt = _make_minimal_backtest()
+    odds = _make_real_odds()  # matches only the first two fixtures
+    result = simulate_betting(bt, label="test_skip", odds_df=odds, odds_mode="real")
+    unmatched = result[~result["odds_matched"]]
+    assert (unmatched["stake"] == 0.0).all()
+    assert (unmatched["profit"] == 0.0).all()
+
+
+def test_simulate_betting_flat_stub_stakes_all():
+    """Stub mode keeps flat 1-unit stakes on every match."""
+    bt = _make_minimal_backtest()
+    result = simulate_betting(bt, label="test_flat", odds_df=None, odds_mode="stub_2.0")
+    assert (result["stake"] == 1.0).all()
 
 
 # ---------------------------------------------------------------------------

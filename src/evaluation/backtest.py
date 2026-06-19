@@ -15,6 +15,8 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, log_loss
 
+from src.betting.staking import kelly_fraction
+
 _PROCESSED_DIR = Path(__file__).resolve().parents[2] / "data" / "processed"
 _PLOTS_DIR = Path(__file__).resolve().parents[2] / "outputs" / "plots"
 _ODDS_PATH = Path(__file__).resolve().parents[2] / "data" / "bookmaker_odds.csv"
@@ -166,32 +168,48 @@ def simulate_betting(
     odds_df: Optional[pd.DataFrame] = None,
     odds_mode: str = "real",
     odds_col: str = "bookmaker_odds_used",
+    staking: str = "flat",
+    kelly_frac: float = 0.25,
+    kelly_cap: float = 0.05,
 ) -> pd.DataFrame:
-    """Simulate flat-stake (1 unit) betting on each match in a backtest DataFrame.
+    """Simulate betting on each match in a backtest DataFrame.
 
     Odds are supplied via the *odds_df* parameter (injected explicitly by the
-    caller) rather than loaded internally.  Unmatched rows use 2.0 **only when
-    odds_mode='stub_2.0'**; in 'real' mode the fallback is still 2.0 but the
-    coverage metadata columns make gaps visible so they are never silently
-    masked.
+    caller) rather than loaded internally.
+
+    Two staking schemes:
+
+    * ``staking="flat"`` — 1 unit per bet (the original behaviour).
+    * ``staking="kelly"`` — fractional Kelly: stake = ``kelly_fraction`` of
+      bankroll on the predicted outcome, sized by the model probability and the
+      odds (see :func:`src.betting.staking.kelly_fraction`).
+
+    In ``odds_mode="real"`` fixtures **without** a matched real odds row are
+    skipped (stake 0) so ROI reflects only genuine prices.  In
+    ``odds_mode="stub_2.0"`` every match is staked at the 2.0 baseline, giving a
+    "what if everything were even money" reference.
 
     Args:
         backtest_df: DataFrame returned by :func:`run_backtest`, containing at
             least the columns ``match_date``, ``home_team``, ``away_team``,
-            ``predicted_outcome``, and ``actual_outcome``.
+            ``predicted_outcome``, ``actual_outcome``, and (for Kelly) the
+            ``predicted_*_prob`` columns.
         label: Short identifier used in printed output and the plot filename
             (e.g. ``"wc2022"`` or ``"wc2018"``).
         odds_df: External odds DataFrame with columns ``match_date``,
             ``home_team``, ``away_team``, ``home_win_odds``, ``draw_odds``,
             ``away_win_odds``.  Pass ``None`` or an empty DataFrame to use only
             the 2.0 baseline (same as ``odds_mode='stub_2.0'``).
-        odds_mode: Label recorded in printed output — ``"real"`` or
-            ``"stub_2.0"``.  Does not change computation; used for reporting.
+        odds_mode: ``"real"`` or ``"stub_2.0"``.  Controls whether unmatched
+            fixtures are skipped (real) or staked at 2.0 (stub).
         odds_col: Name to assign to the bookmaker-odds output column.
+        staking: ``"flat"`` or ``"kelly"``.
+        kelly_frac: Kelly multiplier when ``staking="kelly"`` (0.25 = quarter).
+        kelly_cap: Maximum stake fraction per bet when ``staking="kelly"``.
 
     Returns:
         A copy of *backtest_df* with these additional columns:
-        ``bookmaker_odds_used``, ``odds_source``, ``odds_matched``,
+        ``bookmaker_odds_used``, ``odds_source``, ``odds_matched``, ``stake``,
         ``payout``, ``profit``, ``cumulative_profit``.
     """
     df = backtest_df.copy()
@@ -247,25 +265,49 @@ def simulate_betting(
     df[odds_col] = df.apply(_pick_odds, axis=1)
 
     # ------------------------------------------------------------------
-    # Compute payout, profit, cumulative_profit
+    # Determine the stake for each match
+    # ------------------------------------------------------------------
+    # In real mode, skip fixtures with no matched odds (stake 0) so ROI reflects
+    # only genuine prices.  In stub mode every match is staked at the baseline.
+    skip_unmatched = odds_mode == "real"
+    prob_cols = {
+        0: "predicted_away_win_prob",
+        1: "predicted_draw_prob",
+        2: "predicted_home_win_prob",
+    }
+
+    def _stake(row: pd.Series) -> float:
+        if skip_unmatched and not bool(row["odds_matched"]):
+            return 0.0
+        if staking == "kelly":
+            col = prob_cols.get(int(row["predicted_outcome"]))
+            prob = float(row.get(col, 0.0)) if col else 0.0
+            return kelly_fraction(prob, float(row[odds_col]), fraction=kelly_frac, cap=kelly_cap)
+        return 1.0
+
+    df["stake"] = df.apply(_stake, axis=1)
+
+    # ------------------------------------------------------------------
+    # Compute payout, profit, cumulative_profit (stake-aware)
     # ------------------------------------------------------------------
     correct = (df["predicted_outcome"] == df["actual_outcome"]).astype(int)
-    df["payout"] = df[odds_col] * correct
-    df["profit"] = df["payout"] - 1.0
+    df["payout"] = df["stake"] * df[odds_col] * correct
+    df["profit"] = df["payout"] - df["stake"]
     df["cumulative_profit"] = df["profit"].cumsum()
 
     # ------------------------------------------------------------------
     # Print summary
     # ------------------------------------------------------------------
-    total_stake = float(len(df))
+    total_stake = float(df["stake"].sum())
     total_profit = df["profit"].sum()
-    roi = total_profit / total_stake * 100.0
+    roi = total_profit / total_stake * 100.0 if total_stake > 0 else float("nan")
     n_matched = int(odds_available.sum())
     n_defaulted = len(df) - n_matched
+    n_bets = int((df["stake"] > 0).sum())
 
     print(
-        f"  [{label}|{odds_mode}] Betting: stake={total_stake:.0f} | "
-        f"profit={total_profit:+.2f} | ROI={roi:+.2f}% | "
+        f"  [{label}|{odds_mode}|{staking}] Betting: bets={n_bets} "
+        f"stake={total_stake:.2f} | profit={total_profit:+.2f} | ROI={roi:+.2f}% | "
         f"matched={n_matched} defaulted={n_defaulted}"
     )
 

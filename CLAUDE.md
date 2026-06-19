@@ -37,7 +37,11 @@ python scripts/predict.py                  # generates data/processed/wc2026_pre
 python scripts/precompute_predictions.py   # top-3 scoreline probs per match
 ```
 
-During the live tournament, only the first and last two scripts need to re-run after new results land.
+During the live tournament, don't re-run tuning/training. After each round use
+`scripts/update_after_round.py` (see "After each round" below), which re-runs feature
+engineering + `precompute_predictions.py` — but only after backfilling the new scores into
+`data/raw/results.csv`. (`scripts/predict.py` is an unused stub; `precompute_predictions.py`
+is what writes `wc2026_predictions.csv`.)
 
 ### Live results (actual scores vs predictions)
 
@@ -51,6 +55,23 @@ status badge (Upcoming / 🔴 LIVE / FT), the actual scoreline, a ✅/❌ outcom
 flag, a per-side home-model/away-model goals comparison per card, and a running-accuracy banner
 (outcome, exact, and each goals model's hit-rate + MAE). Set `FD_API_KEY` in Streamlit Cloud **secrets** for live
 fetch on the hosted app; it falls back to the committed `wc2026_results.csv` when the API/key is absent.
+
+### After each round (refresh predictions)
+
+```bash
+python scripts/update_after_round.py              # full: fetch -> backfill -> features -> predict -> accuracy
+python scripts/update_after_round.py --no-fetch   # offline: reuse the saved wc2026_results.csv
+python scripts/update_after_round.py --skip-features --skip-predictions  # data sync + accuracy only
+```
+
+This is the single post-round command. Why a plain pipeline re-run isn't enough: the WC 2026
+fixtures sit in `data/raw/results.csv` as *score-less* rows that feature engineering treats as
+unplayed, so predictions never change until the finished scores are written onto those rows.
+`src/data/backfill.py` (`backfill_raw_results`) does that write — joining the live feed
+(`wc2026_results.csv`, keyed by `fixture_id`) to the raw history by canonical team-name pair via
+`team_name_map.csv` / `src/data/odds._load_team_name_map` (the feed's `Czechia`/`Congo DR` map to
+the history's `Czech Republic`/`DR Congo`). Knockout matches with no existing row are appended. The
+script only updates the working tree — review `git diff` and commit yourself.
 
 ## Architecture
 

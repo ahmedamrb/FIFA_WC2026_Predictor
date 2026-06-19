@@ -9,12 +9,13 @@ import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.betting.edge import compute_edge
+from src.betting.edge import compute_edge, remove_vig, VALUE_THRESHOLD
 from src.data.odds import validate_odds_df, normalize_team_name, get_latest_odds
 
 _BACKTEST_WC2022 = pathlib.Path(__file__).resolve().parents[1] / "data" / "processed" / "backtest_wc2022.csv"
 
-_VALID_RECOMMENDATIONS = {"Value", "Neutral", "Avoid"}
+# "No Odds" is a valid recommendation for fixtures without real bookmaker prices.
+_VALID_RECOMMENDATIONS = {"Value", "Neutral", "Avoid", "No Odds"}
 _IMPLIED_PROB_COLUMNS = [
     "home_win_implied_prob",
     "draw_implied_prob",
@@ -38,8 +39,11 @@ def test_implied_prob_in_range():
     df = pd.read_csv(_BACKTEST_WC2022)
     for col in _IMPLIED_PROB_COLUMNS:
         assert col in df.columns, f"Column '{col}' not found in backtest_wc2022.csv"
-        assert (df[col] > 0).all(), f"Column '{col}' contains values <= 0"
-        assert (df[col] <= 1.0).all(), f"Column '{col}' contains values > 1.0"
+        # Implied probs are NaN for fixtures without real odds; only the priced
+        # rows must lie in (0, 1].
+        priced = df[col].dropna()
+        assert (priced > 0).all(), f"Column '{col}' contains values <= 0"
+        assert (priced <= 1.0).all(), f"Column '{col}' contains values > 1.0"
 
 
 # ---------------------------------------------------------------------------
@@ -79,14 +83,27 @@ def _make_odds_df() -> pd.DataFrame:
 
 
 def test_compute_edge_adds_implied_probs():
-    """compute_edge must produce all three implied probability columns."""
+    """compute_edge must produce vig-free implied prob columns for priced rows."""
     bt = _make_backtest_df()
     odds = _make_odds_df()
     result = compute_edge(bt, odds)
     for col in _IMPLIED_PROB_COLUMNS:
         assert col in result.columns, f"Missing {col}"
-        assert (result[col] > 0).all()
-        assert (result[col] <= 1.0).all()
+        priced = result[col].dropna()
+        assert (priced > 0).all()
+        assert (priced <= 1.0).all()
+    # Two of four synthetic fixtures have odds → two priced rows.
+    assert result["home_win_implied_prob"].notna().sum() == 2
+
+
+def test_compute_edge_implied_probs_are_vig_free():
+    """The three implied probs must sum to 1.0 on priced rows (margin removed)."""
+    bt = _make_backtest_df()
+    odds = _make_odds_df()
+    result = compute_edge(bt, odds)
+    priced = result.dropna(subset=_IMPLIED_PROB_COLUMNS)
+    sums = priced[_IMPLIED_PROB_COLUMNS].sum(axis=1)
+    np.testing.assert_allclose(sums.to_numpy(), 1.0, atol=1e-9)
 
 
 def test_compute_edge_adds_recommendation():
@@ -98,14 +115,26 @@ def test_compute_edge_adds_recommendation():
     assert result["bet_recommendation"].isin(_VALID_RECOMMENDATIONS).all()
 
 
-def test_compute_edge_unmatched_rows_use_fallback_2():
-    """Rows without matching odds should use 0.5 as implied prob (from 2.0 odds)."""
+def test_compute_edge_unmatched_rows_get_no_odds():
+    """Rows without matching odds must NOT fabricate an edge: NaN + 'No Odds'."""
     bt = _make_backtest_df()
     odds = pd.DataFrame(columns=["match_date", "home_team", "away_team",
                                   "home_win_odds", "draw_odds", "away_win_odds"])
     result = compute_edge(bt, odds)
-    # With 2.0 odds, implied prob = 0.5
-    np.testing.assert_allclose(result["home_win_implied_prob"].astype(float), 0.5, atol=1e-6)
+    assert result["home_win_implied_prob"].isna().all()
+    assert result["best_edge"].isna().all()
+    assert (result["bet_recommendation"] == "No Odds").all()
+
+
+def test_compute_edge_value_outcome_named():
+    """value_outcome must name the leg carrying the best edge on priced rows."""
+    bt = _make_backtest_df()
+    odds = _make_odds_df()
+    result = compute_edge(bt, odds)
+    priced = result.dropna(subset=["best_edge"])
+    assert priced["value_outcome"].isin({"Home Win", "Draw", "Away Win"}).all()
+    # Unpriced rows carry no value outcome.
+    assert result[result["best_edge"].isna()]["value_outcome"].isna().all()
 
 
 def test_validate_odds_df_drops_invalid_rows():
@@ -164,4 +193,44 @@ def test_get_latest_odds_deduplicates():
     result = get_latest_odds(df)
     assert len(result) == 1
     assert float(result.iloc[0]["home_win_odds"]) == pytest.approx(1.9)
+
+
+# ---------------------------------------------------------------------------
+# New: vig removal
+# ---------------------------------------------------------------------------
+
+def test_remove_vig_sums_to_one():
+    """Vig-free probabilities must sum to exactly 1.0."""
+    fh, fd, fa = remove_vig(2.0, 3.0, 4.0)
+    assert fh + fd + fa == pytest.approx(1.0)
+
+
+def test_remove_vig_preserves_favourite_order():
+    """The shortest odds (favourite) must keep the highest fair probability."""
+    fh, fd, fa = remove_vig(1.5, 4.0, 6.0)
+    assert fh > fd > fa
+
+
+def test_remove_vig_strips_margin():
+    """Fair home prob must be below the raw 1/odds implied prob (margin removed)."""
+    fh, _, _ = remove_vig(2.0, 3.0, 4.0)
+    assert fh < 0.5  # raw implied was 1/2.0 = 0.5
+
+
+def test_remove_vig_missing_leg_is_nan():
+    """A missing or sub-1.0 leg yields NaN for all three fair probabilities."""
+    for bad in (float("nan"), 0.0, 0.9):
+        fh, fd, fa = remove_vig(2.0, bad, 4.0)
+        assert np.isnan(fh) and np.isnan(fd) and np.isnan(fa)
+
+
+def test_remove_vig_vectorized():
+    """remove_vig must accept array-like input and mask invalid rows independently."""
+    h = np.array([2.0, 1.5, float("nan")])
+    d = np.array([3.0, 4.0, 3.0])
+    a = np.array([4.0, 6.0, 2.0])
+    fh, fd, fa = remove_vig(h, d, a)
+    sums = fh + fd + fa
+    np.testing.assert_allclose(sums[:2], 1.0, atol=1e-9)
+    assert np.isnan(sums[2])
 
