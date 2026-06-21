@@ -15,6 +15,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 from src.data.odds import load_odds_for_backtest  # noqa: E402
 from src.data.ingest import fetch_wc2026_results  # noqa: E402
 from src.evaluation.live_tracking import build_comparison, summarize  # noqa: E402
+from src.betting.roi import bankroll_curve, settle_value_bets, summarize_roi  # noqa: E402
 from components.tooltips import TOOLTIPS  # noqa: E402
 from components.theme import inject_global_css, page_header  # noqa: E402
 
@@ -230,6 +231,79 @@ if page == _NAV_PREDICTIONS:
                 help=TOOLTIPS["away_goals_model"],
             )
             b6.metric("Live now", s["live"], help=TOOLTIPS["match_status"])
+            st.divider()
+
+        # --- Realised value-bet ROI (best value bets settled on finished matches) ---
+        ledger = settle_value_bets(comparison_df, predictions, resources["odds"])
+        if not ledger.empty and ledger["settled"].astype(bool).any():
+            st.markdown("##### 💰 Value-bet performance")
+
+            mc1, mc2, _msp = st.columns([1.2, 1.5, 2.3])
+            with mc1:
+                bankroll0 = st.number_input(
+                    "Starting bankroll ($)",
+                    min_value=1.0, value=1000.0, step=100.0,
+                    key="vb_bankroll", help=TOOLTIPS["staking_bankroll"],
+                )
+            with mc2:
+                compound = st.toggle(
+                    "Compound (reinvest winnings)",
+                    value=False, key="vb_compound", help=TOOLTIPS["staking_mode"],
+                )
+            mode = "compound" if compound else "flat"
+
+            curve = bankroll_curve(ledger, mode, bankroll0)
+            pending = int((~ledger["settled"].astype(bool)).sum())
+            roi = summarize_roi(curve, bankroll0, pending)
+
+            v1, v2, v3, v4 = st.columns(4)
+            v1.metric(
+                "Final bankroll",
+                f"${roi['final']:,.0f}",
+                delta=f"{roi['growth']:+.1%}",
+                help=TOOLTIPS["final_bankroll"],
+            )
+            v2.metric("Net P/L", f"${roi['profit']:+,.0f}", help=TOOLTIPS["bankroll_pl"])
+            v3.metric("Value-bet ROI", f"{roi['roi']:+.1%}", help=TOOLTIPS["actual_value_roi"])
+            v4.metric(
+                "Bets settled",
+                f"{roi['won']}/{roi['n_bets']} won ({roi['win_pct']:.0%})",
+                help=TOOLTIPS["value_bets_settled"],
+            )
+
+            mode_label = "Compound" if mode == "compound" else "Flat"
+            st.caption(
+                f"{mode_label} staking from \\${bankroll0:,.0f} · "
+                f"\\${roi['staked']:,.0f} staked across {roi['n_bets']} settled bet(s)"
+                + (f" · {pending} pending" if pending else "")
+            )
+
+            with st.expander("Value-bet ledger"):
+                # Edge is a fraction; scale to % for display since st.column_config
+                # applies printf to the raw value (no automatic ×100).
+                view = pd.DataFrame({
+                    "Date": curve["match_date"].astype(str).str.slice(0, 10),
+                    "Fixture": curve["home_team"] + " vs " + curve["away_team"],
+                    "Bet": curve["value_outcome"],
+                    "Edge %": curve["edge"] * 100,
+                    "Odds": curve["odds"],
+                    "Stake $": curve["stake_dollars"],
+                    "Result": curve["won"].map({True: "✅ Won", False: "❌ Lost"}),
+                    "P/L $": curve["pl_dollars"],
+                    "Bankroll $": curve["bankroll"],
+                })
+                st.dataframe(
+                    view,
+                    hide_index=True,
+                    use_container_width=True,
+                    column_config={
+                        "Edge %": st.column_config.NumberColumn(format="%+.1f", help=TOOLTIPS["edge"]),
+                        "Odds": st.column_config.NumberColumn(format="%.2f"),
+                        "Stake $": st.column_config.NumberColumn(format="$%.2f", help=TOOLTIPS["staking_bankroll"]),
+                        "P/L $": st.column_config.NumberColumn(format="$%+.2f", help=TOOLTIPS["bankroll_pl"]),
+                        "Bankroll $": st.column_config.NumberColumn(format="$%.2f", help=TOOLTIPS["final_bankroll"]),
+                    },
+                )
             st.divider()
 
         if filtered.empty:

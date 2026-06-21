@@ -56,6 +56,40 @@ TOOLTIPS: dict[str, str] = {
         "ROI (%) when betting only on outcomes where Edge > 5%. "
         "Filters out low-confidence bets to focus on underpriced markets."
     ),
+    "actual_value_roi": (
+        "Realised return on the model's best value bets (Edge > 5%, priced off real "
+        "bookmaker odds) for fixtures that have already finished. ROI = net profit ÷ total "
+        "staked, where each bet risks the displayed fractional-Kelly stake on the value "
+        "outcome at its odds and is settled against the actual result. Pending bets on "
+        "fixtures still to be played are excluded."
+    ),
+    "value_bets_settled": (
+        "How many best-value bets (Edge > 5%) have been settled on finished fixtures, and "
+        "how many of those won. Bets on fixtures that have not kicked off yet are pending."
+    ),
+    "bankroll_pl": (
+        "Net profit/loss in dollars across all settled value bets, staking the displayed "
+        "fractional-Kelly amount on each value outcome at its odds. Positive = simulated profit."
+    ),
+    "total_staked": (
+        "Total amount risked across all settled value bets "
+        "(the sum of each bet's displayed fractional-Kelly stake)."
+    ),
+    "staking_mode": (
+        "Flat: every bet is sized off your fixed starting bankroll — path-independent and the "
+        "cleanest read on the model's edge. Compound: winnings are reinvested, so each bet is "
+        "sized off the current bankroll (bets settled in date order) — maximises growth but adds "
+        "variance and is sensitive to the model's probability estimates."
+    ),
+    "staking_bankroll": (
+        "Starting bankroll used to convert each fractional-Kelly stake into dollars. "
+        "Defaults to $1,000."
+    ),
+    "final_bankroll": (
+        "Your bankroll after settling every finished value bet at the displayed stake and odds, "
+        "under the selected staking mode. The delta shows the percentage change from the "
+        "starting bankroll."
+    ),
     "expected_pts": (
         "Expected group-stage points = Σ(3 × P(win) + P(draw)) across all 3 group matches, "
         "using the ML ensemble probabilities. Teams are ranked by this value; FIFA ranking breaks ties."
