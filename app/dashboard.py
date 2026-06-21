@@ -127,6 +127,7 @@ if page == _NAV_PREDICTIONS:
     )
 
     from app.components.prediction_card import render_prediction_card
+    from app.components.bankroll_chart import render_bankroll_chart
 
     fixtures = resources["fixtures"]
     predictions = resources["predictions"]
@@ -277,6 +278,8 @@ if page == _NAV_PREDICTIONS:
                 f"\\${roi['staked']:,.0f} staked across {roi['n_bets']} settled bet(s)"
                 + (f" · {pending} pending" if pending else "")
             )
+
+            render_bankroll_chart(curve, bankroll0, mode)
 
             with st.expander("Value-bet ledger"):
                 # Edge is a fraction; scale to % for display since st.column_config
