@@ -139,9 +139,11 @@ def _discover_wc_sport_keys(api_key: str) -> List[str]:
         for sport in sports:
             key = str(sport.get("key", ""))
             title = str(sport.get("title", "")).lower()
-            is_world_cup = "fifa world cup" in title or "world_cup" in key
+            is_fifa_wc = "fifa world cup" in title or (
+                "world_cup" in key and key.startswith("soccer")
+            )
             is_market = key.endswith("_winner")
-            if key and is_world_cup and not is_market:
+            if key and is_fifa_wc and not is_market:
                 discovered.append(key)
         return discovered
     except requests.RequestException as exc:

@@ -100,7 +100,7 @@ def run_summary() -> None:
     latest = odds_df["match_date"].max()
 
     print(f"  Total rows : {total}")
-    print(f"  Date range : {earliest} → {latest}")
+    print(f"  Date range : {earliest} to {latest}")
     print(f"  By source  :")
     for src, count in sorted(by_source.items()):
         print(f"    {src:<30} {count:>4} rows")

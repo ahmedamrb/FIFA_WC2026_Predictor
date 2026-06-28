@@ -6,7 +6,7 @@
     "count": 104,
     "first": "2026-06-11",
     "last": "2026-07-19",
-    "played": 0
+    "played": 72
   },
   "competition": {
     "id": 2000,
@@ -34,16 +34,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537327,
       "utcDate": "2026-06-11T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_A",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 769,
         "name": "Mexico",
@@ -59,21 +59,28 @@
         "crest": "https://crests.football-data.org/9396.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11412,
+          "name": "Wilton Sampaio",
+          "type": "REFEREE",
+          "nationality": "Brazil"
+        }
+      ]
     },
     {
       "area": {
@@ -93,16 +100,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537328,
       "utcDate": "2026-06-12T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_A",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 772,
         "name": "South Korea",
@@ -118,21 +125,28 @@
         "crest": "https://crests.football-data.org/798.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 276653,
+          "name": "Amin Omar",
+          "type": "REFEREE",
+          "nationality": "Egypt"
+        }
+      ]
     },
     {
       "area": {
@@ -152,16 +166,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537333,
       "utcDate": "2026-06-12T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_B",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 828,
         "name": "Canada",
@@ -177,21 +191,28 @@
         "crest": "https://crests.football-data.org/bosnia.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 57301,
+          "name": "Facundo Tello",
+          "type": "REFEREE",
+          "nationality": "Argentina"
+        }
+      ]
     },
     {
       "area": {
@@ -211,16 +232,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537345,
       "utcDate": "2026-06-13T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_D",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 771,
         "name": "United States",
@@ -236,21 +257,28 @@
         "crest": "https://crests.football-data.org/761.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 4,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43899,
+          "name": "Danny Makkelie",
+          "type": "REFEREE",
+          "nationality": "Netherlands"
+        }
+      ]
     },
     {
       "area": {
@@ -270,16 +298,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537334,
       "utcDate": "2026-06-13T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_B",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8030,
         "name": "Qatar",
@@ -295,21 +323,28 @@
         "crest": "https://crests.football-data.org/788.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 190002,
+          "name": "Said Martinez",
+          "type": "REFEREE",
+          "nationality": "Honduras"
+        }
+      ]
     },
     {
       "area": {
@@ -329,16 +364,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537339,
       "utcDate": "2026-06-13T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_C",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 764,
         "name": "Brazil",
@@ -354,21 +389,28 @@
         "crest": "https://crests.football-data.org/morocco.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 9351,
+          "name": "Slavko Vinčič",
+          "type": "REFEREE",
+          "nationality": "Slovenia"
+        }
+      ]
     },
     {
       "area": {
@@ -388,16 +430,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537340,
       "utcDate": "2026-06-14T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_C",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 836,
         "name": "Haiti",
@@ -413,21 +455,28 @@
         "crest": "https://crests.football-data.org/814.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 190017,
+          "name": "Mustapha Ghorbal",
+          "type": "REFEREE",
+          "nationality": null
+        }
+      ]
     },
     {
       "area": {
@@ -447,16 +496,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537346,
       "utcDate": "2026-06-14T04:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_D",
-      "lastUpdated": "2026-04-02T15:21:05Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 779,
         "name": "Australia",
@@ -472,21 +521,28 @@
         "crest": "https://crests.football-data.org/803.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 28805,
+          "name": "Jesús Valenzuela",
+          "type": "REFEREE",
+          "nationality": "Venezuela"
+        }
+      ]
     },
     {
       "area": {
@@ -506,16 +562,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537351,
       "utcDate": "2026-06-14T17:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_E",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 759,
         "name": "Germany",
@@ -527,25 +583,32 @@
         "id": 9460,
         "name": "Curaçao",
         "shortName": "Curaçao",
-        "tla": "CUR",
+        "tla": "CUW",
         "crest": "https://crests.football-data.org/curacao.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 7,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 289426,
+          "name": "Jalal Jayed",
+          "type": "REFEREE",
+          "nationality": "Morocco"
+        }
+      ]
     },
     {
       "area": {
@@ -565,16 +628,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537357,
       "utcDate": "2026-06-14T20:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_F",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8601,
         "name": "Netherlands",
@@ -590,21 +653,28 @@
         "crest": "https://crests.football-data.org/766.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 76608,
+          "name": "Ismail Elfath",
+          "type": "REFEREE",
+          "nationality": "United States"
+        }
+      ]
     },
     {
       "area": {
@@ -624,16 +694,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537352,
       "utcDate": "2026-06-14T23:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_E",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 1935,
         "name": "Ivory Coast",
@@ -649,21 +719,28 @@
         "crest": "https://crests.football-data.org/791.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43918,
+          "name": "François Letexier",
+          "type": "REFEREE",
+          "nationality": "France"
+        }
+      ]
     },
     {
       "area": {
@@ -683,16 +760,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537358,
       "utcDate": "2026-06-15T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_F",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 792,
         "name": "Sweden",
@@ -708,21 +785,28 @@
         "crest": "https://crests.football-data.org/tunisia.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 5,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 57435,
+          "name": "Yael Falcón",
+          "type": "REFEREE",
+          "nationality": "Argentina"
+        }
+      ]
     },
     {
       "area": {
@@ -742,16 +826,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537369,
       "utcDate": "2026-06-15T16:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_H",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 760,
         "name": "Spain",
@@ -767,21 +851,28 @@
         "crest": "https://crests.football-data.org/cape_verde.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 129250,
+          "name": "Adham Makhadmeh",
+          "type": "REFEREE",
+          "nationality": "Jordan"
+        }
+      ]
     },
     {
       "area": {
@@ -801,16 +892,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537363,
       "utcDate": "2026-06-15T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_G",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 805,
         "name": "Belgium",
@@ -826,21 +917,28 @@
         "crest": "https://crests.football-data.org/825.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 18754,
+          "name": "Ramon Abatti Abel",
+          "type": "REFEREE",
+          "nationality": "Brazil"
+        }
+      ]
     },
     {
       "area": {
@@ -860,16 +958,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537370,
       "utcDate": "2026-06-15T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_H",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 801,
         "name": "Saudi Arabia",
@@ -881,25 +979,32 @@
         "id": 758,
         "name": "Uruguay",
         "shortName": "Uruguay",
-        "tla": "URY",
+        "tla": "URU",
         "crest": "https://crests.football-data.org/758.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11043,
+          "name": "Maurizio Mariani",
+          "type": "REFEREE",
+          "nationality": "Italy"
+        }
+      ]
     },
     {
       "area": {
@@ -919,16 +1024,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537364,
       "utcDate": "2026-06-16T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_G",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 840,
         "name": "Iran",
@@ -944,21 +1049,28 @@
         "crest": "https://crests.football-data.org/783.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 56007,
+          "name": "César Ramos",
+          "type": "REFEREE",
+          "nationality": "Mexico"
+        }
+      ]
     },
     {
       "area": {
@@ -978,16 +1090,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537391,
       "utcDate": "2026-06-16T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_I",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 773,
         "name": "France",
@@ -1003,21 +1115,28 @@
         "crest": "https://crests.football-data.org/senegal.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 55970,
+          "name": "Alireza Faghani",
+          "type": "REFEREE",
+          "nationality": "Iran"
+        }
+      ]
     },
     {
       "area": {
@@ -1037,16 +1156,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537392,
       "utcDate": "2026-06-16T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_I",
-      "lastUpdated": "2026-04-01T10:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8062,
         "name": "Iraq",
@@ -1062,21 +1181,28 @@
         "crest": "https://crests.football-data.org/813.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 4
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 2
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 276648,
+          "name": "Pierre Atcho",
+          "type": "REFEREE",
+          "nationality": "Gabon"
+        }
+      ]
     },
     {
       "area": {
@@ -1096,16 +1222,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537397,
       "utcDate": "2026-06-17T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_J",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 762,
         "name": "Argentina",
@@ -1121,21 +1247,28 @@
         "crest": "https://crests.football-data.org/algeria.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43888,
+          "name": "Szymon Marciniak",
+          "type": "REFEREE",
+          "nationality": "Poland"
+        }
+      ]
     },
     {
       "area": {
@@ -1155,16 +1288,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537398,
       "utcDate": "2026-06-17T04:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_J",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 816,
         "name": "Austria",
@@ -1180,21 +1313,28 @@
         "crest": "https://crests.football-data.org/8049.png"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 262323,
+          "name": "Dahane Beida",
+          "type": "REFEREE",
+          "nationality": "Mauritania"
+        }
+      ]
     },
     {
       "area": {
@@ -1214,16 +1354,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537403,
       "utcDate": "2026-06-17T17:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_K",
-      "lastUpdated": "2026-04-01T10:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 765,
         "name": "Portugal",
@@ -1239,21 +1379,28 @@
         "crest": "https://crests.football-data.org/congo_dr.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 236084,
+          "name": "Abdulrahman Al Jassim",
+          "type": "REFEREE",
+          "nationality": "Qatar"
+        }
+      ]
     },
     {
       "area": {
@@ -1273,16 +1420,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537409,
       "utcDate": "2026-06-17T20:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_L",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 770,
         "name": "England",
@@ -1298,21 +1445,28 @@
         "crest": "https://crests.football-data.org/799.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 4,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 2
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 9374,
+          "name": "Clément Turpin",
+          "type": "REFEREE",
+          "nationality": "France"
+        }
+      ]
     },
     {
       "area": {
@@ -1332,16 +1486,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537410,
       "utcDate": "2026-06-17T23:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_L",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 763,
         "name": "Ghana",
@@ -1357,21 +1511,28 @@
         "crest": "https://crests.football-data.org/panama.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 30960,
+          "name": "Glenn Nyberg",
+          "type": "REFEREE",
+          "nationality": "Sweden"
+        }
+      ]
     },
     {
       "area": {
@@ -1391,16 +1552,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537404,
       "utcDate": "2026-06-18T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 1,
       "stage": "GROUP_STAGE",
       "group": "GROUP_K",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8070,
         "name": "Uzbekistan",
@@ -1416,21 +1577,28 @@
         "crest": "https://crests.football-data.org/818.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 3
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11580,
+          "name": "Anthony Taylor",
+          "type": "REFEREE",
+          "nationality": "England"
+        }
+      ]
     },
     {
       "area": {
@@ -1450,16 +1618,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537329,
       "utcDate": "2026-06-18T16:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_A",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 798,
         "name": "Czechia",
@@ -1475,21 +1643,28 @@
         "crest": "https://crests.football-data.org/9396.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 212450,
+          "name": "Tori Penso",
+          "type": "REFEREE",
+          "nationality": "USA"
+        }
+      ]
     },
     {
       "area": {
@@ -1509,16 +1684,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537335,
       "utcDate": "2026-06-18T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_B",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 788,
         "name": "Switzerland",
@@ -1534,21 +1709,28 @@
         "crest": "https://crests.football-data.org/bosnia.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 4,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 38806,
+          "name": "João Pinheiro",
+          "type": "REFEREE",
+          "nationality": "Portugal"
+        }
+      ]
     },
     {
       "area": {
@@ -1568,16 +1750,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537336,
       "utcDate": "2026-06-18T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_B",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 828,
         "name": "Canada",
@@ -1593,21 +1775,28 @@
         "crest": "https://crests.football-data.org/8030.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 6,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 58065,
+          "name": "Cristián Garay",
+          "type": "REFEREE",
+          "nationality": "Chile"
+        }
+      ]
     },
     {
       "area": {
@@ -1627,16 +1816,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537330,
       "utcDate": "2026-06-19T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_A",
-      "lastUpdated": "2026-03-30T20:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 769,
         "name": "Mexico",
@@ -1652,21 +1841,28 @@
         "crest": "https://crests.football-data.org/772.png"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 260120,
+          "name": "Gustavo Tejera",
+          "type": "REFEREE",
+          "nationality": "Uruguay"
+        }
+      ]
     },
     {
       "area": {
@@ -1686,16 +1882,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537348,
       "utcDate": "2026-06-19T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_D",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 771,
         "name": "United States",
@@ -1711,21 +1907,28 @@
         "crest": "https://crests.football-data.org/779.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43878,
+          "name": "Felix Zwayer",
+          "type": "REFEREE",
+          "nationality": "Germany"
+        }
+      ]
     },
     {
       "area": {
@@ -1745,16 +1948,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537342,
       "utcDate": "2026-06-19T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_C",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8873,
         "name": "Scotland",
@@ -1770,21 +1973,28 @@
         "crest": "https://crests.football-data.org/morocco.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 236055,
+          "name": "Il'giz Tantashev",
+          "type": "REFEREE",
+          "nationality": "Uzbekistan"
+        }
+      ]
     },
     {
       "area": {
@@ -1804,16 +2014,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537341,
       "utcDate": "2026-06-20T00:30:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_C",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 764,
         "name": "Brazil",
@@ -1829,21 +2039,28 @@
         "crest": "https://crests.football-data.org/haiti.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 206208,
+          "name": "Alejandro Hernández Hernández",
+          "type": "REFEREE",
+          "nationality": "Spain"
+        }
+      ]
     },
     {
       "area": {
@@ -1863,16 +2080,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537347,
       "utcDate": "2026-06-20T03:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_D",
-      "lastUpdated": "2026-04-01T15:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 803,
         "name": "Turkey",
@@ -1888,21 +2105,28 @@
         "crest": "https://crests.football-data.org/761.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 190010,
+          "name": "Ivan Barton",
+          "type": "REFEREE",
+          "nationality": null
+        }
+      ]
     },
     {
       "area": {
@@ -1922,16 +2146,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537359,
       "utcDate": "2026-06-20T17:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_F",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8601,
         "name": "Netherlands",
@@ -1947,21 +2171,28 @@
         "crest": "https://crests.football-data.org/792.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 5,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11605,
+          "name": "Michael Oliver",
+          "type": "REFEREE",
+          "nationality": "England"
+        }
+      ]
     },
     {
       "area": {
@@ -1981,16 +2212,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537353,
       "utcDate": "2026-06-20T20:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_E",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 759,
         "name": "Germany",
@@ -2006,21 +2237,28 @@
         "crest": "https://crests.football-data.org/787.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 116383,
+          "name": "Juan Benítez",
+          "type": "REFEREE",
+          "nationality": "Paraguay"
+        }
+      ]
     },
     {
       "area": {
@@ -2040,16 +2278,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537354,
       "utcDate": "2026-06-21T00:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_E",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 791,
         "name": "Ecuador",
@@ -2061,25 +2299,32 @@
         "id": 9460,
         "name": "Curaçao",
         "shortName": "Curaçao",
-        "tla": "CUR",
+        "tla": "CUW",
         "crest": "https://crests.football-data.org/curacao.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 176659,
+          "name": "Ning Ma",
+          "type": "REFEREE",
+          "nationality": "China PR"
+        }
+      ]
     },
     {
       "area": {
@@ -2099,16 +2344,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537360,
       "utcDate": "2026-06-21T04:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_F",
-      "lastUpdated": "2026-03-30T20:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 802,
         "name": "Tunisia",
@@ -2124,21 +2369,28 @@
         "crest": "https://crests.football-data.org/766.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 4
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 2
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 37278,
+          "name": "István Kovács",
+          "type": "REFEREE",
+          "nationality": "Romania"
+        }
+      ]
     },
     {
       "area": {
@@ -2158,16 +2410,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537371,
       "utcDate": "2026-06-21T16:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_H",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 760,
         "name": "Spain",
@@ -2183,21 +2435,28 @@
         "crest": "https://crests.football-data.org/saudi_arabia.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 4,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11260,
+          "name": "Raphael Claus",
+          "type": "REFEREE",
+          "nationality": "Brazil"
+        }
+      ]
     },
     {
       "area": {
@@ -2217,16 +2476,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537365,
       "utcDate": "2026-06-21T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_G",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 805,
         "name": "Belgium",
@@ -2242,21 +2501,28 @@
         "crest": "https://crests.football-data.org/iran.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 57288,
+          "name": "Darío Herrera",
+          "type": "REFEREE",
+          "nationality": "Argentina"
+        }
+      ]
     },
     {
       "area": {
@@ -2276,21 +2542,21 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537372,
       "utcDate": "2026-06-21T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_H",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 758,
         "name": "Uruguay",
         "shortName": "Uruguay",
-        "tla": "URY",
+        "tla": "URU",
         "crest": "https://crests.football-data.org/758.svg"
       },
       "awayTeam": {
@@ -2301,21 +2567,28 @@
         "crest": "https://crests.football-data.org/cape_verde.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 215543,
+          "name": "Espen Eskås",
+          "type": "REFEREE",
+          "nationality": "Norway"
+        }
+      ]
     },
     {
       "area": {
@@ -2335,16 +2608,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537366,
       "utcDate": "2026-06-22T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_G",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 783,
         "name": "New Zealand",
@@ -2360,21 +2633,28 @@
         "crest": "https://crests.football-data.org/825.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 3
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 129569,
+          "name": "Omar Mohamed Al Ali",
+          "type": "REFEREE",
+          "nationality": "United Arab Emirates"
+        }
+      ]
     },
     {
       "area": {
@@ -2394,16 +2674,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537399,
       "utcDate": "2026-06-22T17:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_J",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 762,
         "name": "Argentina",
@@ -2419,21 +2699,28 @@
         "crest": "https://crests.football-data.org/816.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 276653,
+          "name": "Amin Omar",
+          "type": "REFEREE",
+          "nationality": "Egypt"
+        }
+      ]
     },
     {
       "area": {
@@ -2453,16 +2740,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537393,
       "utcDate": "2026-06-22T21:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_I",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 773,
         "name": "France",
@@ -2478,21 +2765,28 @@
         "crest": "https://crests.football-data.org/iraq.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 77052,
+          "name": "Drew Fischer",
+          "type": "REFEREE",
+          "nationality": "Canada"
+        }
+      ]
     },
     {
       "area": {
@@ -2512,16 +2806,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537394,
       "utcDate": "2026-06-23T00:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_I",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8872,
         "name": "Norway",
@@ -2537,21 +2831,28 @@
         "crest": "https://crests.football-data.org/senegal.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11412,
+          "name": "Wilton Sampaio",
+          "type": "REFEREE",
+          "nationality": "Brazil"
+        }
+      ]
     },
     {
       "area": {
@@ -2571,16 +2872,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537400,
       "utcDate": "2026-06-23T03:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_J",
-      "lastUpdated": "2026-03-30T20:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8049,
         "name": "Jordan",
@@ -2596,21 +2897,28 @@
         "crest": "https://crests.football-data.org/algeria.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 9351,
+          "name": "Slavko Vinčič",
+          "type": "REFEREE",
+          "nationality": "Slovenia"
+        }
+      ]
     },
     {
       "area": {
@@ -2630,16 +2938,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537405,
       "utcDate": "2026-06-23T17:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_K",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 765,
         "name": "Portugal",
@@ -2655,21 +2963,28 @@
         "crest": "https://crests.football-data.org/8070.png"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 5,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 289426,
+          "name": "Jalal Jayed",
+          "type": "REFEREE",
+          "nationality": "Morocco"
+        }
+      ]
     },
     {
       "area": {
@@ -2689,16 +3004,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537411,
       "utcDate": "2026-06-23T20:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_L",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 770,
         "name": "England",
@@ -2714,21 +3029,28 @@
         "crest": "https://crests.football-data.org/ghana.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 190002,
+          "name": "Said Martinez",
+          "type": "REFEREE",
+          "nationality": "Honduras"
+        }
+      ]
     },
     {
       "area": {
@@ -2748,16 +3070,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537412,
       "utcDate": "2026-06-23T23:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_L",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 1836,
         "name": "Panama",
@@ -2773,15 +3095,15 @@
         "crest": "https://crests.football-data.org/799.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
@@ -2807,16 +3129,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537406,
       "utcDate": "2026-06-24T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 2,
       "stage": "GROUP_STAGE",
       "group": "GROUP_K",
-      "lastUpdated": "2026-04-01T10:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 818,
         "name": "Colombia",
@@ -2832,15 +3154,15 @@
         "crest": "https://crests.football-data.org/congo_dr.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
@@ -2866,16 +3188,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537337,
       "utcDate": "2026-06-24T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_B",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 788,
         "name": "Switzerland",
@@ -2891,21 +3213,28 @@
         "crest": "https://crests.football-data.org/canada.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 18754,
+          "name": "Ramon Abatti Abel",
+          "type": "REFEREE",
+          "nationality": "Brazil"
+        }
+      ]
     },
     {
       "area": {
@@ -2925,16 +3254,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537338,
       "utcDate": "2026-06-24T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_B",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 1060,
         "name": "Bosnia-Herzegovina",
@@ -2950,21 +3279,28 @@
         "crest": "https://crests.football-data.org/8030.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 28805,
+          "name": "Jesús Valenzuela",
+          "type": "REFEREE",
+          "nationality": "Venezuela"
+        }
+      ]
     },
     {
       "area": {
@@ -2984,16 +3320,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537344,
       "utcDate": "2026-06-24T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_C",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 815,
         "name": "Morocco",
@@ -3009,21 +3345,28 @@
         "crest": "https://crests.football-data.org/haiti.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 4,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 2
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43899,
+          "name": "Danny Makkelie",
+          "type": "REFEREE",
+          "nationality": "Netherlands"
+        }
+      ]
     },
     {
       "area": {
@@ -3043,16 +3386,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537343,
       "utcDate": "2026-06-24T22:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_C",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8873,
         "name": "Scotland",
@@ -3068,21 +3411,28 @@
         "crest": "https://crests.football-data.org/764.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 3
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 2
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 56007,
+          "name": "César Ramos",
+          "type": "REFEREE",
+          "nationality": "Mexico"
+        }
+      ]
     },
     {
       "area": {
@@ -3102,16 +3452,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537331,
       "utcDate": "2026-06-25T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_A",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 798,
         "name": "Czechia",
@@ -3127,21 +3477,28 @@
         "crest": "https://crests.football-data.org/769.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 3
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 57435,
+          "name": "Yael Falcón",
+          "type": "REFEREE",
+          "nationality": "Argentina"
+        }
+      ]
     },
     {
       "area": {
@@ -3161,16 +3518,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537332,
       "utcDate": "2026-06-25T01:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_A",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 774,
         "name": "South Africa",
@@ -3186,21 +3543,28 @@
         "crest": "https://crests.football-data.org/772.png"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 57301,
+          "name": "Facundo Tello",
+          "type": "REFEREE",
+          "nationality": "Argentina"
+        }
+      ]
     },
     {
       "area": {
@@ -3220,16 +3584,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537355,
       "utcDate": "2026-06-25T20:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_E",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 791,
         "name": "Ecuador",
@@ -3245,21 +3609,28 @@
         "crest": "https://crests.football-data.org/759.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 212450,
+          "name": "Tori Penso",
+          "type": "REFEREE",
+          "nationality": "USA"
+        }
+      ]
     },
     {
       "area": {
@@ -3279,21 +3650,21 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537356,
       "utcDate": "2026-06-25T20:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_E",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 9460,
         "name": "Curaçao",
         "shortName": "Curaçao",
-        "tla": "CUR",
+        "tla": "CUW",
         "crest": "https://crests.football-data.org/curacao.svg"
       },
       "awayTeam": {
@@ -3304,21 +3675,28 @@
         "crest": "https://crests.football-data.org/787.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 30960,
+          "name": "Glenn Nyberg",
+          "type": "REFEREE",
+          "nationality": "Sweden"
+        }
+      ]
     },
     {
       "area": {
@@ -3338,16 +3716,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537361,
       "utcDate": "2026-06-25T23:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_F",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 802,
         "name": "Tunisia",
@@ -3363,21 +3741,28 @@
         "crest": "https://crests.football-data.org/8601.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 3
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 2
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 212546,
+          "name": "Katia García",
+          "type": "REFEREE",
+          "nationality": "Mexico"
+        }
+      ]
     },
     {
       "area": {
@@ -3397,16 +3782,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537362,
       "utcDate": "2026-06-25T23:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_F",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 766,
         "name": "Japan",
@@ -3422,21 +3807,28 @@
         "crest": "https://crests.football-data.org/792.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 190010,
+          "name": "Ivan Barton",
+          "type": "REFEREE",
+          "nationality": null
+        }
+      ]
     },
     {
       "area": {
@@ -3456,16 +3848,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537349,
       "utcDate": "2026-06-26T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_D",
-      "lastUpdated": "2026-04-01T00:21:07Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 803,
         "name": "Turkey",
@@ -3481,21 +3873,28 @@
         "crest": "https://crests.football-data.org/usa.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 190017,
+          "name": "Mustapha Ghorbal",
+          "type": "REFEREE",
+          "nationality": null
+        }
+      ]
     },
     {
       "area": {
@@ -3515,16 +3914,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537350,
       "utcDate": "2026-06-26T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_D",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 761,
         "name": "Paraguay",
@@ -3540,21 +3939,28 @@
         "crest": "https://crests.football-data.org/779.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 9374,
+          "name": "Clément Turpin",
+          "type": "REFEREE",
+          "nationality": "France"
+        }
+      ]
     },
     {
       "area": {
@@ -3574,16 +3980,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537395,
       "utcDate": "2026-06-26T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_I",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 8872,
         "name": "Norway",
@@ -3599,21 +4005,28 @@
         "crest": "https://crests.football-data.org/773.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 4
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 3
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11605,
+          "name": "Michael Oliver",
+          "type": "REFEREE",
+          "nationality": "England"
+        }
+      ]
     },
     {
       "area": {
@@ -3633,16 +4046,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537396,
       "utcDate": "2026-06-26T19:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_I",
-      "lastUpdated": "2026-04-01T10:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 804,
         "name": "Senegal",
@@ -3658,21 +4071,28 @@
         "crest": "https://crests.football-data.org/iraq.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 5,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 11580,
+          "name": "Anthony Taylor",
+          "type": "REFEREE",
+          "nationality": "England"
+        }
+      ]
     },
     {
       "area": {
@@ -3692,21 +4112,21 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537373,
       "utcDate": "2026-06-27T00:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_H",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 758,
         "name": "Uruguay",
         "shortName": "Uruguay",
-        "tla": "URY",
+        "tla": "URU",
         "crest": "https://crests.football-data.org/758.svg"
       },
       "awayTeam": {
@@ -3717,21 +4137,28 @@
         "crest": "https://crests.football-data.org/760.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 76608,
+          "name": "Ismail Elfath",
+          "type": "REFEREE",
+          "nationality": "United States"
+        }
+      ]
     },
     {
       "area": {
@@ -3751,16 +4178,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537374,
       "utcDate": "2026-06-27T00:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_H",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 1930,
         "name": "Cape Verde Islands",
@@ -3776,21 +4203,28 @@
         "crest": "https://crests.football-data.org/saudi_arabia.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43918,
+          "name": "François Letexier",
+          "type": "REFEREE",
+          "nationality": "France"
+        }
+      ]
     },
     {
       "area": {
@@ -3810,16 +4244,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537367,
       "utcDate": "2026-06-27T03:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_G",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 783,
         "name": "New Zealand",
@@ -3835,21 +4269,28 @@
         "crest": "https://crests.football-data.org/805.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 5
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 129250,
+          "name": "Adham Makhadmeh",
+          "type": "REFEREE",
+          "nationality": "Jordan"
+        }
+      ]
     },
     {
       "area": {
@@ -3869,16 +4310,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537368,
       "utcDate": "2026-06-27T03:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_G",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 825,
         "name": "Egypt",
@@ -3894,21 +4335,28 @@
         "crest": "https://crests.football-data.org/iran.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43888,
+          "name": "Szymon Marciniak",
+          "type": "REFEREE",
+          "nationality": "Poland"
+        }
+      ]
     },
     {
       "area": {
@@ -3928,16 +4376,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537413,
       "utcDate": "2026-06-27T21:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_L",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 1836,
         "name": "Panama",
@@ -3953,21 +4401,28 @@
         "crest": "https://crests.football-data.org/770.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 2
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 236084,
+          "name": "Abdulrahman Al Jassim",
+          "type": "REFEREE",
+          "nationality": "Qatar"
+        }
+      ]
     },
     {
       "area": {
@@ -3987,16 +4442,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537414,
       "utcDate": "2026-06-27T21:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_L",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 799,
         "name": "Croatia",
@@ -4012,21 +4467,28 @@
         "crest": "https://crests.football-data.org/ghana.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 2,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 77052,
+          "name": "Drew Fischer",
+          "type": "REFEREE",
+          "nationality": "Canada"
+        }
+      ]
     },
     {
       "area": {
@@ -4046,16 +4508,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537407,
       "utcDate": "2026-06-27T23:30:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_K",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 818,
         "name": "Colombia",
@@ -4071,21 +4533,28 @@
         "crest": "https://crests.football-data.org/765.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 55970,
+          "name": "Alireza Faghani",
+          "type": "REFEREE",
+          "nationality": "Iran"
+        }
+      ]
     },
     {
       "area": {
@@ -4105,16 +4574,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537408,
       "utcDate": "2026-06-27T23:30:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_K",
-      "lastUpdated": "2026-04-01T10:21:10Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 1934,
         "name": "Congo DR",
@@ -4130,21 +4599,28 @@
         "crest": "https://crests.football-data.org/8070.png"
       },
       "score": {
-        "winner": null,
+        "winner": "HOME_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 1
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 43878,
+          "name": "Felix Zwayer",
+          "type": "REFEREE",
+          "nationality": "Germany"
+        }
+      ]
     },
     {
       "area": {
@@ -4164,16 +4640,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537401,
       "utcDate": "2026-06-28T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_J",
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T08:25:01Z",
       "homeTeam": {
         "id": 8049,
         "name": "Jordan",
@@ -4189,21 +4665,28 @@
         "crest": "https://crests.football-data.org/762.png"
       },
       "score": {
-        "winner": null,
+        "winner": "AWAY_TEAM",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 3
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 2
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 37278,
+          "name": "István Kovács",
+          "type": "REFEREE",
+          "nationality": "Romania"
+        }
+      ]
     },
     {
       "area": {
@@ -4223,16 +4706,16 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537402,
       "utcDate": "2026-06-28T02:00:00Z",
-      "status": "TIMED",
+      "status": "FINISHED",
       "matchday": 3,
       "stage": "GROUP_STAGE",
       "group": "GROUP_J",
-      "lastUpdated": "2025-12-06T20:20:44Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": 778,
         "name": "Algeria",
@@ -4248,21 +4731,28 @@
         "crest": "https://crests.football-data.org/816.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 3,
+          "away": 3
         },
         "halfTime": {
-          "home": null,
-          "away": null
+          "home": 1,
+          "away": 1
         }
       },
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 236055,
+          "name": "Il'giz Tantashev",
+          "type": "REFEREE",
+          "nationality": "Uzbekistan"
+        }
+      ]
     },
     {
       "area": {
@@ -4282,36 +4772,36 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537417,
       "utcDate": "2026-06-28T19:00:00Z",
-      "status": "TIMED",
+      "status": "IN_PLAY",
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T19:42:42Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 774,
+        "name": "South Africa",
+        "shortName": "South Africa",
+        "tla": "RSA",
+        "crest": "https://crests.football-data.org/9396.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 828,
+        "name": "Canada",
+        "shortName": "Canada",
+        "tla": "CAN",
+        "crest": "https://crests.football-data.org/canada.svg"
       },
       "score": {
-        "winner": null,
+        "winner": "DRAW",
         "duration": "REGULAR",
         "fullTime": {
-          "home": null,
-          "away": null
+          "home": 0,
+          "away": 0
         },
         "halfTime": {
           "home": null,
@@ -4321,7 +4811,14 @@
       "odds": {
         "msg": "Activate Odds-Package in User-Panel to retrieve odds."
       },
-      "referees": []
+      "referees": [
+        {
+          "id": 38806,
+          "name": "João Pinheiro",
+          "type": "REFEREE",
+          "nationality": "Portugal"
+        }
+      ]
     },
     {
       "area": {
@@ -4341,7 +4838,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537423,
@@ -4350,20 +4847,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 764,
+        "name": "Brazil",
+        "shortName": "Brazil",
+        "tla": "BRA",
+        "crest": "https://crests.football-data.org/764.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 766,
+        "name": "Japan",
+        "shortName": "Japan",
+        "tla": "JPN",
+        "crest": "https://crests.football-data.org/766.svg"
       },
       "score": {
         "winner": null,
@@ -4400,7 +4897,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537415,
@@ -4409,20 +4906,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 759,
+        "name": "Germany",
+        "shortName": "Germany",
+        "tla": "GER",
+        "crest": "https://crests.football-data.org/759.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 761,
+        "name": "Paraguay",
+        "shortName": "Paraguay",
+        "tla": "PAR",
+        "crest": "https://crests.football-data.org/761.svg"
       },
       "score": {
         "winner": null,
@@ -4459,7 +4956,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537418,
@@ -4468,20 +4965,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 8601,
+        "name": "Netherlands",
+        "shortName": "Netherlands",
+        "tla": "NED",
+        "crest": "https://crests.football-data.org/8601.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 815,
+        "name": "Morocco",
+        "shortName": "Morocco",
+        "tla": "MAR",
+        "crest": "https://crests.football-data.org/morocco.svg"
       },
       "score": {
         "winner": null,
@@ -4518,7 +5015,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537424,
@@ -4527,20 +5024,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 1935,
+        "name": "Ivory Coast",
+        "shortName": "Ivory Coast",
+        "tla": "CIV",
+        "crest": "https://crests.football-data.org/787.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 8872,
+        "name": "Norway",
+        "shortName": "Norway",
+        "tla": "NOR",
+        "crest": "https://crests.football-data.org/813.svg"
       },
       "score": {
         "winner": null,
@@ -4577,7 +5074,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537416,
@@ -4586,20 +5083,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 773,
+        "name": "France",
+        "shortName": "France",
+        "tla": "FRA",
+        "crest": "https://crests.football-data.org/773.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 792,
+        "name": "Sweden",
+        "shortName": "Sweden",
+        "tla": "SWE",
+        "crest": "https://crests.football-data.org/792.svg"
       },
       "score": {
         "winner": null,
@@ -4636,7 +5133,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537425,
@@ -4645,20 +5142,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 769,
+        "name": "Mexico",
+        "shortName": "Mexico",
+        "tla": "MEX",
+        "crest": "https://crests.football-data.org/769.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 791,
+        "name": "Ecuador",
+        "shortName": "Ecuador",
+        "tla": "ECU",
+        "crest": "https://crests.football-data.org/791.svg"
       },
       "score": {
         "winner": null,
@@ -4695,7 +5192,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537426,
@@ -4704,20 +5201,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 770,
+        "name": "England",
+        "shortName": "England",
+        "tla": "ENG",
+        "crest": "https://crests.football-data.org/770.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 1934,
+        "name": "Congo DR",
+        "shortName": "Congo DR",
+        "tla": "COD",
+        "crest": "https://crests.football-data.org/congo_dr.svg"
       },
       "score": {
         "winner": null,
@@ -4754,7 +5251,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537422,
@@ -4763,20 +5260,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 805,
+        "name": "Belgium",
+        "shortName": "Belgium",
+        "tla": "BEL",
+        "crest": "https://crests.football-data.org/805.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 804,
+        "name": "Senegal",
+        "shortName": "Senegal",
+        "tla": "SEN",
+        "crest": "https://crests.football-data.org/senegal.svg"
       },
       "score": {
         "winner": null,
@@ -4813,7 +5310,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537421,
@@ -4822,20 +5319,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 771,
+        "name": "United States",
+        "shortName": "USA",
+        "tla": "USA",
+        "crest": "https://crests.football-data.org/usa.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 1060,
+        "name": "Bosnia-Herzegovina",
+        "shortName": "Bosnia-H.",
+        "tla": "BIH",
+        "crest": "https://crests.football-data.org/bosnia.svg"
       },
       "score": {
         "winner": null,
@@ -4872,7 +5369,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537420,
@@ -4881,20 +5378,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:03:32Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 760,
+        "name": "Spain",
+        "shortName": "Spain",
+        "tla": "ESP",
+        "crest": "https://crests.football-data.org/760.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 816,
+        "name": "Austria",
+        "shortName": "Austria",
+        "tla": "AUT",
+        "crest": "https://crests.football-data.org/816.svg"
       },
       "score": {
         "winner": null,
@@ -4931,7 +5428,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537419,
@@ -4940,20 +5437,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 765,
+        "name": "Portugal",
+        "shortName": "Portugal",
+        "tla": "POR",
+        "crest": "https://crests.football-data.org/765.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 799,
+        "name": "Croatia",
+        "shortName": "Croatia",
+        "tla": "CRO",
+        "crest": "https://crests.football-data.org/799.svg"
       },
       "score": {
         "winner": null,
@@ -4990,7 +5487,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537429,
@@ -4999,20 +5496,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:04:12Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 788,
+        "name": "Switzerland",
+        "shortName": "Switzerland",
+        "tla": "SUI",
+        "crest": "https://crests.football-data.org/788.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 778,
+        "name": "Algeria",
+        "shortName": "Algeria",
+        "tla": "ALG",
+        "crest": "https://crests.football-data.org/algeria.svg"
       },
       "score": {
         "winner": null,
@@ -5049,7 +5546,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537428,
@@ -5058,20 +5555,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 779,
+        "name": "Australia",
+        "shortName": "Australia",
+        "tla": "AUS",
+        "crest": "https://crests.football-data.org/779.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 825,
+        "name": "Egypt",
+        "shortName": "Egypt",
+        "tla": "EGY",
+        "crest": "https://crests.football-data.org/825.svg"
       },
       "score": {
         "winner": null,
@@ -5108,7 +5605,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537427,
@@ -5117,20 +5614,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 762,
+        "name": "Argentina",
+        "shortName": "Argentina",
+        "tla": "ARG",
+        "crest": "https://crests.football-data.org/762.png"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 1930,
+        "name": "Cape Verde Islands",
+        "shortName": "Cape Verde",
+        "tla": "CPV",
+        "crest": "https://crests.football-data.org/cape_verde.svg"
       },
       "score": {
         "winner": null,
@@ -5167,7 +5664,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537430,
@@ -5176,20 +5673,20 @@
       "matchday": null,
       "stage": "LAST_32",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 818,
+        "name": "Colombia",
+        "shortName": "Colombia",
+        "tla": "COL",
+        "crest": "https://crests.football-data.org/818.svg"
       },
       "awayTeam": {
-        "id": null,
-        "name": null,
-        "shortName": null,
-        "tla": null,
-        "crest": null
+        "id": 763,
+        "name": "Ghana",
+        "shortName": "Ghana",
+        "tla": "GHA",
+        "crest": "https://crests.football-data.org/ghana.svg"
       },
       "score": {
         "winner": null,
@@ -5226,7 +5723,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537376,
@@ -5235,7 +5732,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5285,7 +5782,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537375,
@@ -5294,7 +5791,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5344,7 +5841,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537377,
@@ -5353,7 +5850,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5403,7 +5900,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537378,
@@ -5412,7 +5909,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5462,7 +5959,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537379,
@@ -5471,7 +5968,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5521,7 +6018,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537380,
@@ -5530,7 +6027,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5580,7 +6077,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537381,
@@ -5589,7 +6086,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5639,7 +6136,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537382,
@@ -5648,7 +6145,7 @@
       "matchday": null,
       "stage": "LAST_16",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5698,7 +6195,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537383,
@@ -5707,7 +6204,7 @@
       "matchday": null,
       "stage": "QUARTER_FINALS",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5757,7 +6254,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537384,
@@ -5766,7 +6263,7 @@
       "matchday": null,
       "stage": "QUARTER_FINALS",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5816,7 +6313,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537385,
@@ -5825,7 +6322,7 @@
       "matchday": null,
       "stage": "QUARTER_FINALS",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5875,7 +6372,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537386,
@@ -5884,7 +6381,7 @@
       "matchday": null,
       "stage": "QUARTER_FINALS",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5934,7 +6431,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537387,
@@ -5943,7 +6440,7 @@
       "matchday": null,
       "stage": "SEMI_FINALS",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -5993,7 +6490,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537388,
@@ -6002,7 +6499,7 @@
       "matchday": null,
       "stage": "SEMI_FINALS",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -6052,7 +6549,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537389,
@@ -6061,7 +6558,7 @@
       "matchday": null,
       "stage": "THIRD_PLACE",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
@@ -6111,7 +6608,7 @@
         "id": 2398,
         "startDate": "2026-06-11",
         "endDate": "2026-07-19",
-        "currentMatchday": 1,
+        "currentMatchday": 3,
         "winner": null
       },
       "id": 537390,
@@ -6120,7 +6617,7 @@
       "matchday": null,
       "stage": "FINAL",
       "group": null,
-      "lastUpdated": "2026-05-16T00:20:52Z",
+      "lastUpdated": "2026-06-28T06:02:40Z",
       "homeTeam": {
         "id": null,
         "name": null,
